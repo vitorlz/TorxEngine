@@ -74,7 +74,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>vendor/GLFW/include;vendor/glad/include;vendor/glm/include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>vendor/GLFW/include;vendor/glad/include;vendor/glm/include;vendor/stb_image;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -87,7 +87,28 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="src\Application.cpp" />
+    <ClCompile Include="src\util\Window.cpp" />
+    <ClCompile Include="src\Rendering\Renderer.cpp" />
+    <ClCompile Include="src\util\Shader.cpp" />
     <ClCompile Include="vendor\glad\src\glad.c" />
+    <ClCompile Include="vendor\stb_image\stb_img_implementation.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="src\Components\Transform.hpp" />
+    <ClInclude Include="src\Core\ComponentArray.hpp" />
+    <ClInclude Include="src\Core\ComponentManager.hpp" />
+    <ClInclude Include="src\Core\Coordinator.hpp" />
+    <ClInclude Include="src\Core\EntityManager.hpp" />
+    <ClInclude Include="src\Core\System.hpp" />
+    <ClInclude Include="src\Core\SystemManager.hpp" />
+    <ClInclude Include="src\Core\Types.hpp" />
+    <ClInclude Include="src\util\Window.h" />
+    <ClInclude Include="src\Rendering\Renderer.h" />
+    <ClInclude Include="src\util\Shader.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="res\shaders\solidColor.frag" />
+    <None Include="res\shaders\solidColor.vert" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
