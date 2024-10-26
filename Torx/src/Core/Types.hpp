@@ -21,3 +21,23 @@ const ComponentType MAX_COMPONENTS = 32;
 // the correspond to.
 using Signature = std::bitset<MAX_COMPONENTS>;
 
+// ------------------- Input -----------------------
+
+enum InputKey {
+	NONE,
+	W,
+	A,
+	S,
+	D,
+	F, 
+	Q,
+	V,
+	SHIFT_W,
+	SHIFT_A,
+	SHIFT_S,
+	SHIFT_D,
+	SPACE,
+	LEFT_CONTROL,
+	ESC,
+};
+

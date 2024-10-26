@@ -62,8 +62,8 @@
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>vendor/GLFW/lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>glfw3.lib;opengl32.lib;$(CoreLibraryDependencies);%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>vendor/GLFW/lib;vendor/assimp/lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>glfw3.lib;opengl32.lib;assimp-vc143-mtd.lib;$(CoreLibraryDependencies);%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -74,41 +74,55 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>vendor/GLFW/include;vendor/glad/include;vendor/glm/include;vendor/stb_image;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>vendor/GLFW/include;vendor/glad/include;vendor/glm/include;vendor/stb_image;vendor/assimp/include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>vendor/GLFW/lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>glfw3.lib;opengl32.lib;$(CoreLibraryDependencies);%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>vendor/GLFW/lib;vendor/assimp/lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>glfw3.lib;opengl32.lib;assimp-vc143-mt.lib;$(CoreLibraryDependencies);%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="src\Rendering\mesh.cpp" />
+    <ClCompile Include="src\Rendering\model.cpp" />
+    <ClCompile Include="src\Util\Camera.cpp" />
     <ClCompile Include="src\Application.cpp" />
-    <ClCompile Include="src\util\Window.cpp" />
-    <ClCompile Include="src\Rendering\Renderer.cpp" />
-    <ClCompile Include="src\util\Shader.cpp" />
+    <ClCompile Include="src\Core\InputManager.cpp" />
+    <ClCompile Include="src\Util\Window.cpp" />
+    <ClCompile Include="src\Util\Shader.cpp" />
     <ClCompile Include="vendor\glad\src\glad.c" />
     <ClCompile Include="vendor\stb_image\stb_img_implementation.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="src\Rendering\mesh.h" />
+    <ClInclude Include="src\Rendering\model.h" />
+    <ClInclude Include="src\Util\Camera.h" />
     <ClInclude Include="src\Components\Transform.hpp" />
     <ClInclude Include="src\Core\ComponentArray.hpp" />
     <ClInclude Include="src\Core\ComponentManager.hpp" />
     <ClInclude Include="src\Core\Coordinator.hpp" />
     <ClInclude Include="src\Core\EntityManager.hpp" />
+    <ClInclude Include="src\Core\InputManager.h" />
     <ClInclude Include="src\Core\System.hpp" />
     <ClInclude Include="src\Core\SystemManager.hpp" />
     <ClInclude Include="src\Core\Types.hpp" />
-    <ClInclude Include="src\util\Window.h" />
-    <ClInclude Include="src\Rendering\Renderer.h" />
-    <ClInclude Include="src\util\Shader.h" />
+    <ClInclude Include="src\Util\Window.h" />
+    <ClInclude Include="src\Util\Shader.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="res\shaders\solidColor.frag" />
     <None Include="res\shaders\solidColor.vert" />
+    <None Include="res\shaders\testShader.frag" />
+    <None Include="res\shaders\testShader.vert" />
+    <None Include="vendor\dlls\assimp-vc143-mt.dll" />
+    <None Include="vendor\dlls\assimp-vc143-mtd.dll" />
+  </ItemGroup>
+  <ItemGroup>
+    <Library Include="vendor\assimp\lib\assimp-vc143-mt.lib" />
+    <Library Include="vendor\assimp\lib\assimp-vc143-mtd.lib" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

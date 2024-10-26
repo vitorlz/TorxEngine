@@ -24,24 +24,30 @@
     <ClCompile Include="vendor\stb_image\stb_img_implementation.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\util\Shader.cpp">
+    <ClCompile Include="src\Util\Shader.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\Rendering\Renderer.cpp">
+    <ClCompile Include="src\Util\Window.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\util\Window.cpp">
+    <ClCompile Include="src\Core\InputManager.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Util\Camera.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Rendering\mesh.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Rendering\model.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="src\util\Shader.h">
+    <ClInclude Include="src\Util\Shader.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\Rendering\Renderer.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\util\Window.h">
+    <ClInclude Include="src\Util\Window.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\Core\Types.hpp">
@@ -68,9 +74,29 @@
     <ClInclude Include="src\Core\Coordinator.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="src\Core\InputManager.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Util\Camera.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Rendering\mesh.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Rendering\model.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="res\shaders\solidColor.frag" />
     <None Include="res\shaders\solidColor.vert" />
+    <None Include="res\shaders\testShader.vert" />
+    <None Include="res\shaders\testShader.frag" />
+    <None Include="vendor\dlls\assimp-vc143-mt.dll" />
+    <None Include="vendor\dlls\assimp-vc143-mtd.dll" />
+  </ItemGroup>
+  <ItemGroup>
+    <Library Include="vendor\assimp\lib\assimp-vc143-mt.lib" />
+    <Library Include="vendor\assimp\lib\assimp-vc143-mtd.lib" />
   </ItemGroup>
 </Project>

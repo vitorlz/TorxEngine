@@ -6,17 +6,28 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
-#include "util/Shader.h"
-#include "util/Window.h"
+#include "Util/Shader.h"
+#include "Util/Window.h"
+#include "Core/InputManager.h"
+#include "Util/Camera.h"
+#include "Rendering/model.h"
+
 
 #include <iostream>
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
-void processInput(GLFWwindow* window);
+void mouse_callback(GLFWwindow* window, double xpos, double ypos);
 
 // settings
 const unsigned int SCR_WIDTH = 800;
 const unsigned int SCR_HEIGHT = 600;
+
+Camera camera(glm::vec3(0.0f, 0.0f, 3.0f));
+float lastX{ 400 };
+float lastY{ 300 };
+bool firstMouse = true;
+bool menu = false;
+bool firstMouseUpdateAfterMenu = true;
 
 int main()
 {
@@ -25,13 +36,16 @@ int main()
    
     Window window(SCR_WIDTH, SCR_HEIGHT, "Torx");
 
+    glfwSetCursorPosCallback(window.GetWindow(), mouse_callback);
+
+
     // configure global opengl state
     // -----------------------------
     glEnable(GL_DEPTH_TEST);
 
     // build and compile our shader zprogram
     // ------------------------------------
-    Shader ourShader("res/shaders/solidColor.vert", "res/shaders/solidColor.frag");
+    Shader ourShader("res/shaders/testShader.vert", "res/shaders/testShader.frag");
 
     // set up vertex data (and buffer(s)) and configure vertex attributes
     // ------------------------------------------------------------------
@@ -165,66 +179,81 @@ int main()
     ourShader.setInt("texture1", 0);
     ourShader.setInt("texture2", 1);
 
-
+    float deltaTime{};
+    float lastFrame{};
     // render loop
     // -----------
+
+    Model backpack("res/models/backpack/backpack.obj");
+
     while (!glfwWindowShouldClose(window.GetWindow()))
     {
+
+        // calculate deltatime
+        float currentFrame = glfwGetTime();
+        deltaTime = currentFrame - lastFrame;
+        lastFrame = currentFrame;
+
         // input
         // -----
         window.ProcessInputs();
-
+        camera.ProcessKeyboard(deltaTime);
+ 
         // render
         // ------
         glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); // also clear the depth buffer now!
-
-        // bind textures on corresponding texture units
-        glActiveTexture(GL_TEXTURE0);
-        glBindTexture(GL_TEXTURE_2D, texture1);
-        glActiveTexture(GL_TEXTURE1);
-        glBindTexture(GL_TEXTURE_2D, texture2);
+        glEnable(GL_DEPTH_TEST);
 
         // activate shader
         ourShader.use();
 
         // create transformations
-        glm::mat4 view = glm::mat4(1.0f); // make sure to initialize matrix to identity matrix first
+        
+        glm::mat4 model = glm::mat4(1.0f);
+        glm::mat4 view = camera.GetViewMatrix(); // make sure to initialize matrix to identity matrix first
         glm::mat4 projection = glm::mat4(1.0f);
         projection = glm::perspective(glm::radians(45.0f), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
-        view = glm::translate(view, glm::vec3(0.0f, 0.0f, -3.0f));
         // pass transformation matrices to the shader
         ourShader.setMat4("projection", projection); // note: currently we set the projection matrix each frame, but since the projection matrix rarely changes it's often best practice to set it outside the main loop only once.
         ourShader.setMat4("view", view);
+        ourShader.setMat4("model", model);
 
         // render boxes
-        glBindVertexArray(VAO);
-        for (unsigned int i = 0; i < 10; i++)
-        {
-            // calculate the model matrix for each object and pass it to shader before drawing
-            glm::mat4 model = glm::mat4(1.0f);
-            model = glm::translate(model, cubePositions[i]);
-            float angle = 20.0f * i;
-            model = glm::rotate(model, glm::radians(angle), glm::vec3(1.0f, 0.3f, 0.5f));
-            ourShader.setMat4("model", model);
-
-            glDrawArrays(GL_TRIANGLES, 0, 36);
-        }
+      
+        backpack.Draw(ourShader);
+        
 
         // glfw: swap buffers and poll IO events (keys pressed/released, mouse moved etc.)
         // -------------------------------------------------------------------------------
         window.Update();
     }
 
-    // optional: de-allocate all resources once they've outlived their purpose:
-    // ------------------------------------------------------------------------
-    glDeleteVertexArrays(1, &VAO);
-    glDeleteBuffers(1, &VBO);
-
-    // glfw: terminate, clearing all previously allocated GLFW resources.
-    // ------------------------------------------------------------------
-    glfwTerminate();
+    
+    window.Terminate();
     return 0;
+}
+
+void mouse_callback(GLFWwindow* window, double xpos, double ypos) {
+
+    if (!menu)
+    {
+        if (firstMouse || firstMouseUpdateAfterMenu) {
+            lastX = xpos;
+            lastY = ypos;
+            firstMouse = false;
+            firstMouseUpdateAfterMenu = false;
+        }
+
+        float xoffset = xpos - lastX;
+        float yoffset = lastY - ypos; // reversed since y-coordinates range from bottom to top
+        lastX = xpos;
+        lastY = ypos;
+
+        camera.ProcessMouseMovement(xoffset, yoffset, true);
+
+    }
+
 }
 
 

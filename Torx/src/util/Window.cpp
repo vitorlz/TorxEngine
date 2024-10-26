@@ -1,4 +1,5 @@
 #include "Window.h"
+#include "../Core/InputManager.h"
 
 Window::Window(int width, int height, const char* windowTitle) 
 	:mWidth(width), mHeight(height)
@@ -18,6 +19,7 @@ Window::Window(int width, int height, const char* windowTitle)
 	glfwMakeContextCurrent(mWindow);
 	gladLoadGLLoader((GLADloadproc)glfwGetProcAddress);
 	glfwSwapInterval(1);
+	glfwSetInputMode(mWindow, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 }
 
 GLFWwindow* Window::GetWindow() const{
@@ -27,13 +29,17 @@ GLFWwindow* Window::GetWindow() const{
 void Window::Update() const {
 	glfwSwapBuffers(mWindow);
 	glfwPollEvents();
+	if (InputManager::GetKey(ESC)) {
+		glfwSetWindowShouldClose(mWindow, true);
+	}
+	InputManager::ResetKeys();
 }
 
 void Window::EnableVsync() const {
 	glfwSwapInterval(1);
 }
 void Window::DisableVsync() const {
-	glfwSwapInterval(1);
+	glfwSwapInterval(0);
 }
 
 void Window::Terminate() const {
@@ -42,8 +48,29 @@ void Window::Terminate() const {
 }
 
 
-void Window::ProcessInputs() const {
+void Window::ProcessInputs() {
 	if (glfwGetKey(mWindow, GLFW_KEY_ESCAPE) == GLFW_PRESS)
-		glfwSetWindowShouldClose(mWindow, true);
+		InputManager::AddKey(ESC);
+	if (glfwGetKey(mWindow, GLFW_KEY_W) == GLFW_PRESS)
+		InputManager::AddKey(W);
+	if (glfwGetKey(mWindow, GLFW_KEY_S) == GLFW_PRESS)
+		InputManager::AddKey(S);
+	if (glfwGetKey(mWindow, GLFW_KEY_A) == GLFW_PRESS)
+		InputManager::AddKey(A);
+	if (glfwGetKey(mWindow, GLFW_KEY_D) == GLFW_PRESS)
+		InputManager::AddKey(D);
+	if (glfwGetKey(mWindow, GLFW_KEY_V) == GLFW_PRESS)
+		InputManager::AddKey(V);
+	if (glfwGetKey(mWindow, GLFW_KEY_SPACE) == GLFW_PRESS)
+		InputManager::AddKey(SPACE);
+	if (glfwGetKey(mWindow, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS)
+		InputManager::AddKey(LEFT_CONTROL);
+	if (glfwGetKey(mWindow, GLFW_KEY_W) == GLFW_PRESS && glfwGetKey(mWindow, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS)
+		InputManager::AddKey(SHIFT_W);
+	if (glfwGetKey(mWindow, GLFW_KEY_S) == GLFW_PRESS && glfwGetKey(mWindow, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS)
+		InputManager::AddKey(SHIFT_S);
+	if (glfwGetKey(mWindow, GLFW_KEY_A) == GLFW_PRESS && glfwGetKey(mWindow, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS)
+		InputManager::AddKey(SHIFT_A);
+	if (glfwGetKey(mWindow, GLFW_KEY_D) == GLFW_PRESS && glfwGetKey(mWindow, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS)
+		InputManager::AddKey(SHIFT_D);	
 }
-

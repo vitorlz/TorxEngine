@@ -10,7 +10,7 @@ struct Window {
 	void EnableVsync() const;
 	void DisableVsync() const;
 	void Update() const;
-	void ProcessInputs() const;
+	void ProcessInputs();
 	void Terminate() const;
 
 private:
