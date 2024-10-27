@@ -1,11 +1,8 @@
-#include "../vendor/imgui/imgui.h"
-#include "../vendor/imgui/imgui_impl_glfw.h"
-#include "../vendor/imgui/imgui_impl_opengl3.h"
-
-
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 #include <stb_image.h>
+
+#include "UI/UI.h"
 
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
@@ -16,8 +13,6 @@
 #include "Core/InputManager.h"
 #include "Util/Camera.h"
 #include "Rendering/model.h"
-
-
 
 #include <iostream>
 
@@ -193,13 +188,9 @@ int main()
 
     Model backpack("res/models/backpack/backpack.obj");
 
-    IMGUI_CHECKVERSION();
-    ImGui::CreateContext();
-    ImGuiIO& io = ImGui::GetIO(); (void)io;
-    ImGui::StyleColorsDark();
-    ImGui_ImplGlfw_InitForOpenGL(window.GetWindow(), true);
-    ImGui_ImplOpenGL3_Init("#version 460");
+    UI gui;
 
+    gui.Init(window.GetWindow());
 
     while (!glfwWindowShouldClose(window.GetWindow()))
     {
@@ -220,9 +211,7 @@ int main()
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); // also clear the depth buffer now!
         glEnable(GL_DEPTH_TEST);
 
-        ImGui_ImplOpenGL3_NewFrame();
-        ImGui_ImplGlfw_NewFrame();
-        ImGui::NewFrame();
+        gui.NewFrame();
 
         // activate shader
         ourShader.use();
@@ -243,14 +232,7 @@ int main()
         backpack.Draw(ourShader);
         
 
-        ImGui::Begin("Menu");
-        ImGui::Text("Hello world");
-        ImGui::Shortcut(ImGuiKey_Tab, ImGuiInputFlags_None);
-       
-        ImGui::End();
-
-        ImGui::Render();
-        ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+        gui.Update();
 
         // glfw: swap buffers and poll IO events (keys pressed/released, mouse moved etc.)
         // -------------------------------------------------------------------------------
@@ -258,16 +240,14 @@ int main()
     }
 
 
-    ImGui_ImplOpenGL3_Shutdown();
-    ImGui_ImplGlfw_Shutdown();
-    ImGui::DestroyContext();
+    gui.Terminate();
     
     window.Terminate();
     return 0;
 }
 
-void mouse_callback(GLFWwindow* window, double xpos, double ypos) {
-
+void mouse_callback(GLFWwindow* window, double xpos, double ypos) 
+{
     if (!menu)
     {
         if (firstMouse || firstMouseUpdateAfterMenu) {
@@ -283,13 +263,12 @@ void mouse_callback(GLFWwindow* window, double xpos, double ypos) {
         lastY = ypos;
 
         camera.ProcessMouseMovement(xoffset, yoffset, true);
-
     }
-
 }
 
-void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods) {
-    if (key == GLFW_KEY_TAB && action == GLFW_PRESS) {
+void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods) 
+{
+    if (InputManager::GetKey(TAB)) {
         menu = !menu;
         firstMouseUpdateAfterMenu = true;
         if (!menu)
