@@ -31,6 +31,7 @@ std::unordered_map<InputKey, bool> InputManager::keyMap{
 	{SHIFT_S, false},
 	{SHIFT_D, false},
 	{SPACE, false},
+	{TAB, false},
 	{LEFT_CONTROL, false},
 	{ESC, false},
 };

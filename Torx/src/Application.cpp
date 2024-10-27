@@ -1,3 +1,8 @@
+#include "../vendor/imgui/imgui.h"
+#include "../vendor/imgui/imgui_impl_glfw.h"
+#include "../vendor/imgui/imgui_impl_opengl3.h"
+
+
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 #include <stb_image.h>
@@ -13,10 +18,12 @@
 #include "Rendering/model.h"
 
 
+
 #include <iostream>
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void mouse_callback(GLFWwindow* window, double xpos, double ypos);
+void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods);
 
 // settings
 const unsigned int SCR_WIDTH = 800;
@@ -37,13 +44,13 @@ int main()
     Window window(SCR_WIDTH, SCR_HEIGHT, "Torx");
 
     glfwSetCursorPosCallback(window.GetWindow(), mouse_callback);
-
+    glfwSetKeyCallback(window.GetWindow(), key_callback);
 
     // configure global opengl state
     // -----------------------------
     glEnable(GL_DEPTH_TEST);
 
-    // build and compile our shader zprogram
+    // build and compile our shader program
     // ------------------------------------
     Shader ourShader("res/shaders/testShader.vert", "res/shaders/testShader.frag");
 
@@ -186,6 +193,14 @@ int main()
 
     Model backpack("res/models/backpack/backpack.obj");
 
+    IMGUI_CHECKVERSION();
+    ImGui::CreateContext();
+    ImGuiIO& io = ImGui::GetIO(); (void)io;
+    ImGui::StyleColorsDark();
+    ImGui_ImplGlfw_InitForOpenGL(window.GetWindow(), true);
+    ImGui_ImplOpenGL3_Init("#version 460");
+
+
     while (!glfwWindowShouldClose(window.GetWindow()))
     {
 
@@ -204,6 +219,10 @@ int main()
         glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); // also clear the depth buffer now!
         glEnable(GL_DEPTH_TEST);
+
+        ImGui_ImplOpenGL3_NewFrame();
+        ImGui_ImplGlfw_NewFrame();
+        ImGui::NewFrame();
 
         // activate shader
         ourShader.use();
@@ -224,11 +243,24 @@ int main()
         backpack.Draw(ourShader);
         
 
+        ImGui::Begin("Menu");
+        ImGui::Text("Hello world");
+        ImGui::Shortcut(ImGuiKey_Tab, ImGuiInputFlags_None);
+       
+        ImGui::End();
+
+        ImGui::Render();
+        ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+
         // glfw: swap buffers and poll IO events (keys pressed/released, mouse moved etc.)
         // -------------------------------------------------------------------------------
         window.Update();
     }
 
+
+    ImGui_ImplOpenGL3_Shutdown();
+    ImGui_ImplGlfw_Shutdown();
+    ImGui::DestroyContext();
     
     window.Terminate();
     return 0;
@@ -256,6 +288,20 @@ void mouse_callback(GLFWwindow* window, double xpos, double ypos) {
 
 }
 
+void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods) {
+    if (key == GLFW_KEY_TAB && action == GLFW_PRESS) {
+        menu = !menu;
+        firstMouseUpdateAfterMenu = true;
+        if (!menu)
+        {
+            glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+        }
+        else
+        {
+            glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+        }
+    }
+}
 
 // glfw: whenever the window size changed (by OS or user resize) this callback function executes
 // ---------------------------------------------------------------------------------------------

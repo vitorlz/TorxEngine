@@ -37,6 +37,7 @@ enum InputKey {
 	SHIFT_S,
 	SHIFT_D,
 	SPACE,
+	TAB,
 	LEFT_CONTROL,
 	ESC,
 };

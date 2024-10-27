@@ -20,6 +20,7 @@ Window::Window(int width, int height, const char* windowTitle)
 	gladLoadGLLoader((GLADloadproc)glfwGetProcAddress);
 	glfwSwapInterval(1);
 	glfwSetInputMode(mWindow, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+	menu = false;
 }
 
 GLFWwindow* Window::GetWindow() const{
@@ -73,4 +74,6 @@ void Window::ProcessInputs() {
 		InputManager::AddKey(SHIFT_A);
 	if (glfwGetKey(mWindow, GLFW_KEY_D) == GLFW_PRESS && glfwGetKey(mWindow, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS)
 		InputManager::AddKey(SHIFT_D);	
+	if (glfwGetKey(mWindow, GLFW_KEY_TAB) == GLFW_PRESS)
+		InputManager::AddKey(TAB);
 }
