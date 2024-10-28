@@ -40,7 +40,7 @@ public:
 		mComponentManager->RegisterComponent<T>();
 	}
 
-	template<typename T> void AddComponent(Entity entity, T Component)
+	template<typename T> void AddComponent(Entity entity, T component)
 	{
 		mComponentManager->AddComponent<T>(entity, component);
 

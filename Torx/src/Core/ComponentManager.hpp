@@ -24,6 +24,7 @@ public:
 
 		// Add this component type to the component type map. The mNextComponentType will be which bit in the signature this type of component
 		// will correspond to
+		
 		mComponentTypes.insert({ typeName, mNextComponentType });
 
 		// Create a ComponentArray pointer and add it to the component arrays map
@@ -81,13 +82,13 @@ private:
 	// CGravity will have another key and so on. This ComponentType is simply a u_int8_t that we defined in Types.hpp. The value stored with
 	// the key will be the unique ID of the component that will correspond to the component's bit in the bitset (the signature). 
 
-	std::unordered_map<const char*, ComponentType> mComponentTypes{};
+	std::unordered_map<std::string, ComponentType> mComponentTypes{};
 
 	// We store the component arrays as pointers to the base class. 
 	std::unordered_map<const char*, std::shared_ptr<IComponentArray>> mComponentArrays{};
 
 	// The component type (unique ID / bit) to be assigned to the next component. Starts at 0.
-	ComponentType mNextComponentType{};
+	ComponentType mNextComponentType{0};
 
 	// Get the statically casted pointer to the ComponentArray of type T.
 	template<typename T> std::shared_ptr<ComponentArray<T>> GetComponentArray() 

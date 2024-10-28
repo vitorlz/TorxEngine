@@ -14,9 +14,9 @@ struct Window {
 	void Update() const;
 	void ProcessInputs();
 	void Terminate() const;
+	static int screenWidth;
+	static int screenHeight;
 
 private:
 	GLFWwindow* mWindow;
-	int mWidth;
-	int mHeight;
 };

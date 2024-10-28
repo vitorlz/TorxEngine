@@ -4,6 +4,10 @@
 #include <iostream>
 #include "shader.h"
 
+Shader::Shader()
+{
+}
+
 Shader::Shader(const char* vertexPath, const char* fragmentPath)
 	: ID(0)
 {

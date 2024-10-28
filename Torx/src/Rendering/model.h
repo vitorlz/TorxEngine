@@ -10,9 +10,10 @@ class Model {
 public:
 	Model(const char* path);
 	void Draw(Shader& shader);
+
+	std::vector<Mesh> meshes;
 private:
 	// model data
-	std::vector<Mesh> meshes;
 	std::string directory;
 
 	void loadModel(std::string path);
@@ -22,5 +23,4 @@ private:
 	std::vector<Texture> loadMaterialTextures(aiMaterial* mat, aiTextureType type, std::string typeName);
 };
 
-unsigned int TextureFromFile(const char* path, const std::string& directory, const bool gammaCorrection);
-unsigned int TextureFromFile(const char* path, const bool gammaCorrection);
+unsigned int TextureFromFile(const char* path, const std::string& directory, const bool srgb);

@@ -1,6 +1,7 @@
 #include "model.h"
 #include "stb_image.h"
 #include <filesystem>
+#include "../Util/TextureLoader.h"
 
 std::vector<Texture> textures_loaded;
 
@@ -178,6 +179,8 @@ std::vector<Texture> Model::loadMaterialTextures(aiMaterial* mat, aiTextureType 
 			// THIS FUNCTION ONLY WORKS IF THE TEXTURES ARE STORED IN THE SAME DIRECTORY AS THE MODEL ITSELF
 			// SOME MODELS STORE TEXTURES IN ABSOLUTE PATHS, WHICH WE NEED TO EDIT TO LOCAL IF WE WANT IT TO WORK
 
+
+
 			if (typeName == "texture_diffuse")
 			{
 				texture.id = TextureFromFile(str.C_Str(), directory, true);
@@ -203,99 +206,7 @@ unsigned int TextureFromFile(const char* path, const std::string& directory, con
 	std::string filename = std::string(path);
 	filename = directory + '/' + filename;
 
-	unsigned int textureID;
-	glGenTextures(1, &textureID);
-
-	int width, height, nrComponents;
-	unsigned char* data = stbi_load(filename.c_str(), &width, &height, &nrComponents, 0);
-	if (data) {
-
-		std::cout << filename.c_str() << ": " << nrComponents << std::endl;
-		GLenum storeFormat;
-		GLenum dataFormat;
-
-		if (nrComponents == 1) {
-			dataFormat = GL_RED;
-			storeFormat = GL_RED;
-		}
-		else if (nrComponents == 3) {
-			dataFormat = GL_RGB;
-			storeFormat = srgb ? GL_SRGB : GL_RGB; // here we are assuming that the texture is already gamma corrected and we are transforming it back to
-												   // a linear space because we want to apply gamma correction ourselves in the shaders as the last step
-												   // so that we can do our intermediate color/light calculations in a linear space.
-		}
-		else if (nrComponents == 4) {
-			dataFormat = GL_RGBA;
-			storeFormat = srgb ? GL_SRGB_ALPHA : GL_RGBA;
-		}
-
-		glBindTexture(GL_TEXTURE_2D, textureID);
-		glTexImage2D(GL_TEXTURE_2D, 0, storeFormat, width, height, 0, dataFormat, GL_UNSIGNED_BYTE, data);
-		glGenerateMipmap(GL_TEXTURE_2D);
-
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-
-		stbi_image_free(data);
-	}
-	else {
-		std::cout << "Texture failed to load at path: " << path << std::endl;
-		stbi_image_free(data);
-	}
-
-	return textureID;
-}
-
-
-unsigned int TextureFromFile(const char* path, const bool srgb) {
-	std::string filename = std::string(path);
-
-	unsigned int textureID;
-	glGenTextures(1, &textureID);
-
-	int width, height, nrComponents;
-	unsigned char* data = stbi_load(filename.c_str(), &width, &height, &nrComponents, 0);
-	if (data) {
-
-		std::cout << filename.c_str() << ": " << nrComponents << std::endl;
-
-		GLenum storeFormat;
-		GLenum dataFormat;
-
-		if (nrComponents == 1) {
-			dataFormat = GL_RED;
-			storeFormat = GL_RED;
-		}
-		else if (nrComponents == 3) {
-			dataFormat = GL_RGB;
-			storeFormat = srgb ? GL_SRGB : GL_RGB;
-		}
-		else if (nrComponents == 4) {
-			dataFormat = GL_RGBA;
-			storeFormat = srgb ? GL_SRGB_ALPHA : GL_RGBA;
-		}
-
-		glBindTexture(GL_TEXTURE_2D, textureID);
-		glTexImage2D(GL_TEXTURE_2D, 0, storeFormat, width, height, 0, dataFormat, GL_UNSIGNED_BYTE, data);
-		glGenerateMipmap(GL_TEXTURE_2D);
-
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-
-
-
-		stbi_image_free(data);
-	}
-	else {
-		std::cout << "Texture failed to load at path: " << path << std::endl;
-		stbi_image_free(data);
-	}
-
-	return textureID;
+	return TextureLoader::LoadTexture(filename.c_str(), srgb);
 }
 
 glm::mat4 Model::convertToGLMMatrix(const aiMatrix4x4& matrix) {

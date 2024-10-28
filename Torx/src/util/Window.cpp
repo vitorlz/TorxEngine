@@ -1,15 +1,21 @@
 #include "Window.h"
 #include "../Core/InputManager.h"
 
+int Window::screenWidth;
+int Window::screenHeight;
+
 Window::Window(int width, int height, const char* windowTitle) 
-	:mWidth(width), mHeight(height)
 {
+
+	Window::screenWidth = width;
+	Window::screenHeight = height;
+
 	glfwInit();
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 6);
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
-	mWindow = glfwCreateWindow(mWidth, mHeight, windowTitle, NULL, NULL);
+	mWindow = glfwCreateWindow(screenWidth, screenHeight, windowTitle, NULL, NULL);
 	if (mWindow == NULL)
 	{
 		std::cout << "Failed to create GLFW window" << std::endl;

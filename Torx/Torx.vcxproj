@@ -57,7 +57,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>vendor/GLFW/include;vendor/glad/include;vendor/glm/include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>vendor/GLFW/include;vendor/glad/include;vendor/glm/include;vendor/stb_image;vendor/assimp/include;imgui;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp20</LanguageStandard>
     </ClCompile>
     <Link>
@@ -90,10 +90,13 @@
   <ItemGroup>
     <ClCompile Include="src\Rendering\mesh.cpp" />
     <ClCompile Include="src\Rendering\model.cpp" />
+    <ClCompile Include="src\Systems\RenderSystem.cpp" />
     <ClCompile Include="src\UI\UI.cpp" />
     <ClCompile Include="src\Util\Camera.cpp" />
     <ClCompile Include="src\Application.cpp" />
     <ClCompile Include="src\Core\InputManager.cpp" />
+    <ClCompile Include="src\Util\ShaderManager.cpp" />
+    <ClCompile Include="src\Util\TextureLoader.cpp" />
     <ClCompile Include="src\Util\Window.cpp" />
     <ClCompile Include="src\Util\Shader.cpp" />
     <ClCompile Include="vendor\glad\src\glad.c" />
@@ -107,11 +110,13 @@
     <ClCompile Include="vendor\stb_image\stb_img_implementation.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="src\Components\CMesh.h" />
     <ClInclude Include="src\Rendering\mesh.h" />
     <ClInclude Include="src\Rendering\model.h" />
+    <ClInclude Include="src\Systems\RenderSystem.h" />
     <ClInclude Include="src\UI\UI.h" />
     <ClInclude Include="src\Util\Camera.h" />
-    <ClInclude Include="src\Components\Transform.hpp" />
+    <ClInclude Include="src\Components\CTransform.h" />
     <ClInclude Include="src\Core\ComponentArray.hpp" />
     <ClInclude Include="src\Core\ComponentManager.hpp" />
     <ClInclude Include="src\Core\Coordinator.hpp" />
@@ -120,6 +125,8 @@
     <ClInclude Include="src\Core\System.hpp" />
     <ClInclude Include="src\Core\SystemManager.hpp" />
     <ClInclude Include="src\Core\Types.hpp" />
+    <ClInclude Include="src\Util\ShaderManager.h" />
+    <ClInclude Include="src\Util\TextureLoader.h" />
     <ClInclude Include="src\Util\Window.h" />
     <ClInclude Include="src\Util\Shader.h" />
     <ClInclude Include="vendor\imgui\imconfig.h" />
