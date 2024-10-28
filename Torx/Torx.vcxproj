@@ -88,8 +88,9 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="src\Rendering\mesh.cpp" />
-    <ClCompile Include="src\Rendering\model.cpp" />
+    <ClCompile Include="src\AssetLoading\mesh.cpp" />
+    <ClCompile Include="src\AssetLoading\model.cpp" />
+    <ClCompile Include="src\AssetLoading\AssetManager.cpp" />
     <ClCompile Include="src\Systems\RenderSystem.cpp" />
     <ClCompile Include="src\UI\UI.cpp" />
     <ClCompile Include="src\Util\Camera.cpp" />
@@ -110,9 +111,10 @@
     <ClCompile Include="vendor\stb_image\stb_img_implementation.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="src\AssetLoading\AssetManager.h" />
     <ClInclude Include="src\Components\CMesh.h" />
-    <ClInclude Include="src\Rendering\mesh.h" />
-    <ClInclude Include="src\Rendering\model.h" />
+    <ClInclude Include="src\AssetLoading\mesh.h" />
+    <ClInclude Include="src\AssetLoading\model.h" />
     <ClInclude Include="src\Systems\RenderSystem.h" />
     <ClInclude Include="src\UI\UI.h" />
     <ClInclude Include="src\Util\Camera.h" />

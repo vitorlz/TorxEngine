@@ -8,6 +8,7 @@
 
 class Model {
 public:
+	Model();
 	Model(const char* path);
 	void Draw(Shader& shader);
 

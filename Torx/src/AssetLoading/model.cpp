@@ -5,6 +5,8 @@
 
 std::vector<Texture> textures_loaded;
 
+Model::Model() {}
+
 Model::Model(const char* path) {
 	Model::loadModel(path);
 }
@@ -178,8 +180,6 @@ std::vector<Texture> Model::loadMaterialTextures(aiMaterial* mat, aiTextureType 
 			Texture texture;
 			// THIS FUNCTION ONLY WORKS IF THE TEXTURES ARE STORED IN THE SAME DIRECTORY AS THE MODEL ITSELF
 			// SOME MODELS STORE TEXTURES IN ABSOLUTE PATHS, WHICH WE NEED TO EDIT TO LOCAL IF WE WANT IT TO WORK
-
-
 
 			if (typeName == "texture_diffuse")
 			{

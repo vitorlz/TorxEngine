@@ -28,6 +28,8 @@ void RenderSystem::Update(float deltaTime, Camera& camera)
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); // also clear the depth buffer now!
     glEnable(GL_DEPTH_TEST);
 
+    glEnable(GL_DEPTH_TEST);
+
     // ------------------------- First Pass -----------------------------------
 
     ShaderManager::GetShaderProgram("ourShader").use();

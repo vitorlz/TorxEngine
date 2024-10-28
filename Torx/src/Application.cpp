@@ -12,9 +12,9 @@
 #include "Util/Window.h"
 #include "Core/InputManager.h"
 #include "Util/Camera.h"
-#include "Rendering/model.h"
 #include "Core/Coordinator.hpp"
 #include "Util/ShaderManager.h"
+#include "AssetLoading/AssetManager.h"
 
 
 #include "Components/CTransform.h"
@@ -29,8 +29,8 @@ void mouse_callback(GLFWwindow* window, double xpos, double ypos);
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods);
 
 // settings
-const unsigned int SCR_WIDTH = 800;
-const unsigned int SCR_HEIGHT = 600;
+const unsigned int SCR_WIDTH = 1280;
+const unsigned int SCR_HEIGHT = 800;
 
 Camera camera(glm::vec3(0.0f, 0.0f, 3.0f));
 float lastX{ 400 };
@@ -44,20 +44,14 @@ Coordinator ecs;
 int main()
 {
     ecs.Init();
+
     // glfw: initialize and configure
     // ------------------------------
-   
+
     Window window(SCR_WIDTH, SCR_HEIGHT, "Torx");
 
     glfwSetCursorPosCallback(window.GetWindow(), mouse_callback);
     glfwSetKeyCallback(window.GetWindow(), key_callback);
-
-    // configure global opengl state
-    // -----------------------------
-    glEnable(GL_DEPTH_TEST);
-
-    // build and compile our shader program
-    // -----------------------------------
 
     float deltaTime{};
     float lastFrame{};
@@ -66,8 +60,7 @@ int main()
 
     // should prob write a model manager
 
-    stbi_set_flip_vertically_on_load(true);
-    Model backpack("res/models/backpack/backpack.obj");
+    AssetManager::LoadModels();
 
     ecs.RegisterComponent<CTransform>();
     ecs.RegisterComponent<CMesh>();
@@ -94,9 +87,8 @@ int main()
     ecs.AddComponent<CMesh>(
         backpackEntity,
         CMesh{
-            .meshes = backpack.meshes
+            .meshes = AssetManager::GetModel("backpack").meshes
         });
-
 
     UI gui;
 
@@ -119,9 +111,7 @@ int main()
 
         gui.NewFrame();
  
- 
         renderSystem->Update(deltaTime, camera);
-
 
         gui.Update();
         window.Update();
