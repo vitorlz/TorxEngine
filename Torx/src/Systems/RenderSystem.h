@@ -16,4 +16,6 @@ public:
 private:
 	//std::unordered_map<const char*, Shader> mShaders;
 	Camera mCamera;
+	unsigned int mCubemapID;
+	unsigned int mCubeVAO;
 };

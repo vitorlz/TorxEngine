@@ -175,6 +175,8 @@
     <None Include="res\shaders\testShader.frag" />
     <None Include="vendor\dlls\assimp-vc143-mt.dll" />
     <None Include="vendor\dlls\assimp-vc143-mtd.dll" />
+    <None Include="res\shaders\cubemap.vert" />
+    <None Include="res\shaders\cubemap.frag" />
   </ItemGroup>
   <ItemGroup>
     <Library Include="vendor\assimp\lib\assimp-vc143-mt.lib" />

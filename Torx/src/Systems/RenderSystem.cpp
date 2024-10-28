@@ -6,18 +6,24 @@
 #include "../Components/CTransform.h"
 #include "../Components/CMesh.h"
 #include "../Util/ShaderManager.h"
+#include "../Util/TextureLoader.h"
+#include "../AssetLoading/AssetManager.h"
 
 
 extern Coordinator ecs;
 
 void RenderSystem::Init() 
 {
-    
-    // ----- Set Main Camera ------------
-    
-    // ----- Set Shaders ----------------
-    //Shader ourShader("res/shaders/testShader.vert", "res/shaders/testShader.frag");
-    //mShaders["ourShader"] = ourShader;
+    mCubemapID = TextureLoader::LoadCubeMap(
+        "res/textures/cubemaps/right.jpg",
+        "res/textures/cubemaps/left.jpg",
+        "res/textures/cubemaps/top.jpg",
+        "res/textures/cubemaps/bottom.jpg",
+        "res/textures/cubemaps/front.jpg",
+        "res/textures/cubemaps/back.jpg"
+    );
+
+    mCubeVAO = AssetManager::CreateCubeVao();
 }
 
 void RenderSystem::Update(float deltaTime, Camera& camera)
@@ -28,18 +34,21 @@ void RenderSystem::Update(float deltaTime, Camera& camera)
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); // also clear the depth buffer now!
     glEnable(GL_DEPTH_TEST);
 
-    glEnable(GL_DEPTH_TEST);
-
     // ------------------------- First Pass -----------------------------------
 
     ShaderManager::GetShaderProgram("ourShader").use();
+
+    glm::mat4 view = camera.GetViewMatrix();
+    glm::mat4 projection = glm::mat4(1.0f);
+    projection = glm::perspective(
+        glm::radians(45.0f), (float)Window::screenWidth / (float)Window::screenHeight, 0.1f, 100.0f);
+
+    glEnable(GL_CULL_FACE);
 
     for (const auto& entity : mEntities) 
     {
         auto const& transform = ecs.GetComponent<CTransform>(entity);
         auto const& mesh = ecs.GetComponent<CMesh>(entity);
-
-
 
         glm::mat4 model = glm::mat4(1.0f);
         model = glm::translate(model, transform.position);
@@ -48,13 +57,6 @@ void RenderSystem::Update(float deltaTime, Camera& camera)
         model = glm::rotate(model, glm::radians(transform.rotation.y), glm::vec3(0.0f, 1.0, 0.0));
         model = glm::rotate(model, glm::radians(transform.rotation.z), glm::vec3(0.0f, 0.0, 1.0));
         
-        
-        glm::mat4 view = camera.GetViewMatrix(); // make sure to initialize matrix to identity matrix first
-       
-        glm::mat4 projection = glm::mat4(1.0f);
-        projection = glm::perspective(
-            glm::radians(45.0f), (float)Window::screenWidth / (float)Window::screenHeight, 0.1f, 100.0f);
-        // pass transformation matrices to the shader
         ShaderManager::GetShaderProgram("ourShader").setMat4("projection", projection); // note: currently we set the projection matrix each frame, but since the projection matrix rarely changes it's often best practice to set it outside the main loop only once.
         ShaderManager::GetShaderProgram("ourShader").setMat4("view", view);
         ShaderManager::GetShaderProgram("ourShader").setMat4("model", model);
@@ -62,6 +64,25 @@ void RenderSystem::Update(float deltaTime, Camera& camera)
         for (Mesh mesh : mesh.meshes) {
             mesh.Draw(ShaderManager::GetShaderProgram("ourShader"));
         }
-
     }
+
+    // ---------------------------- SKYBOX PASS ---------------------------------------
+
+    glDisable(GL_CULL_FACE);
+
+    glDepthFunc(GL_LEQUAL);
+
+    Shader skyboxShader = ShaderManager::GetShaderProgram("cubemapShader");
+
+    skyboxShader.use();
+
+    view = glm::mat4(glm::mat3(camera.GetViewMatrix()));
+
+    skyboxShader.setMat4("projection", projection);
+    skyboxShader.setMat4("view", view);
+    glBindVertexArray(mCubeVAO);
+    glBindTexture(GL_TEXTURE_CUBE_MAP, mCubemapID);
+    glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
+
+    glDepthFunc(GL_LESS);
 }

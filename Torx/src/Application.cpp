@@ -50,6 +50,8 @@ int main()
 
     Window window(SCR_WIDTH, SCR_HEIGHT, "Torx");
 
+    window.DisableVsync();
+
     glfwSetCursorPosCallback(window.GetWindow(), mouse_callback);
     glfwSetKeyCallback(window.GetWindow(), key_callback);
 
