@@ -5,6 +5,7 @@
 #include "../Core/Coordinator.hpp"
 #include "../Components/CTransform.h"
 #include "../Components/CMesh.h"
+#include "../Components/CLight.h"
 #include "../Util/ShaderManager.h"
 #include "../Util/TextureLoader.h"
 #include "../AssetLoading/AssetManager.h"
@@ -36,9 +37,9 @@ void RenderSystem::Update(float deltaTime, Camera& camera)
 
     // ------------------------- First Pass -----------------------------------
 
-    Shader ourShader = ShaderManager::GetShaderProgram("ourShader");
+    Shader lightingShader = ShaderManager::GetShaderProgram("lightingShader");
 
-    ourShader.use();
+    lightingShader.use();
 
     glm::mat4 view = camera.GetViewMatrix();
     glm::mat4 projection = glm::mat4(1.0f);
@@ -49,8 +50,8 @@ void RenderSystem::Update(float deltaTime, Camera& camera)
 
     for (const auto& entity : mEntities) 
     {
-        auto const& transform = ecs.GetComponent<CTransform>(entity);
-        auto const& mesh = ecs.GetComponent<CMesh>(entity);
+        const auto& transform = ecs.GetComponent<CTransform>(entity);
+        const auto& mesh = ecs.GetComponent<CMesh>(entity);
 
         glm::mat4 model = glm::mat4(1.0f);
         model = glm::translate(model, transform.position);
@@ -58,15 +59,34 @@ void RenderSystem::Update(float deltaTime, Camera& camera)
         model = glm::rotate(model, glm::radians(transform.rotation.x), glm::vec3(1.0f, 0.0, 0.0));
         model = glm::rotate(model, glm::radians(transform.rotation.y), glm::vec3(0.0f, 1.0, 0.0));
         model = glm::rotate(model, glm::radians(transform.rotation.z), glm::vec3(0.0f, 0.0, 1.0));
+
+        if (ecs.HasComponent<CLight>(entity)) {
+
+            Shader solidColorShader = ShaderManager::GetShaderProgram("solidColorShader");
+            solidColorShader.use();
+
+            solidColorShader.setMat4("projection", projection); // note: currently we set the projection matrix each frame, but since the projection matrix rarely changes it's often best practice to set it outside the main loop only once.
+            solidColorShader.setMat4("view", view);
+            solidColorShader.setMat4("model", model);
+            solidColorShader.setVec3("color", ecs.GetComponent<CLight>(entity).diffuse * 1.5f);
+
+            for (Mesh mesh : mesh.meshes) {
+                mesh.Draw(solidColorShader);
+            }
+
+            continue;
+        }
         
-        ourShader.setMat4("projection", projection); // note: currently we set the projection matrix each frame, but since the projection matrix rarely changes it's often best practice to set it outside the main loop only once.
-        ourShader.setMat4("view", view);
-        ourShader.setMat4("model", model);
+        lightingShader.setMat4("projection", projection); // note: currently we set the projection matrix each frame, but since the projection matrix rarely changes it's often best practice to set it outside the main loop only once.
+        lightingShader.setMat4("view", view);
+        lightingShader.setMat4("model", model);
+        lightingShader.setVec3("cameraPos", camera.Position);
 
         for (Mesh mesh : mesh.meshes) {
-            mesh.Draw(ourShader);
+            mesh.Draw(lightingShader);
         }
     }
+    
 
     // ---------------------------- SKYBOX PASS ---------------------------------------
 

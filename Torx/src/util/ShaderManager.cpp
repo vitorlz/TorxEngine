@@ -10,11 +10,15 @@ void ShaderManager::LoadShaders()
 
 	std::shared_ptr<Shader> ourShader =  std::make_shared<Shader>("res/shaders/testShader.vert", "res/shaders/testShader.frag");
 	std::shared_ptr<Shader> cubemapShader = std::make_shared<Shader>("res/shaders/cubemap.vert", "res/shaders/cubemap.frag");
+	std::shared_ptr<Shader> lightingShader = std::make_shared<Shader>("res/shaders/lighting.vert", "res/shaders/lighting.frag");
+	std::shared_ptr<Shader> solidColorShader = std::make_shared<Shader>("res/shaders/solidColor.vert", "res/shaders/solidColor.frag");
 
 	shaderPrograms.clear();
 
 	shaderPrograms.insert({ "ourShader", ourShader });
 	shaderPrograms.insert({ "cubemapShader", cubemapShader });
+	shaderPrograms.insert({ "lightingShader", lightingShader });
+	shaderPrograms.insert({ "solidColorShader", solidColorShader });
 }
 
 Shader& ShaderManager::GetShaderProgram(std::string name) 

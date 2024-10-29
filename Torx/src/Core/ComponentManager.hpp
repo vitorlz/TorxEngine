@@ -76,7 +76,6 @@ public:
 		}
 	}
 
-
 private:
 	// map unique key (a type string pointer that is different for each type) to a component type. For example CTransform will have a key,
 	// CGravity will have another key and so on. This ComponentType is simply a u_int8_t that we defined in Types.hpp. The value stored with

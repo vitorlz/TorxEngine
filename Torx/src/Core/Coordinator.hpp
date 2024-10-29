@@ -90,6 +90,14 @@ public:
 		mSystemManager->SetSignature<T>(signature);
 	}
 
+	template<typename T> bool HasComponent(Entity entity)
+	{
+
+		Signature entitySignature = mEntityManager->GetSignature(entity);
+
+		return entitySignature.test(GetComponentType<T>());
+	}
+
 private:
 	std::unique_ptr<ComponentManager> mComponentManager;
 	std::unique_ptr<EntityManager> mEntityManager;

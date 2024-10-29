@@ -16,11 +16,12 @@
 #include "Util/ShaderManager.h"
 #include "AssetLoading/AssetManager.h"
 
-
 #include "Components/CTransform.h"
 #include "Components/CMesh.h"
+#include "Components/CLight.h"
 
 #include "Systems/RenderSystem.h"
+#include "Systems/LightSystem.h"
 
 #include <iostream>
 
@@ -56,15 +57,27 @@ int main()
 
     ecs.RegisterComponent<CTransform>();
     ecs.RegisterComponent<CMesh>();
+    ecs.RegisterComponent<CLight>();
 
     auto renderSystem = ecs.RegisterSystem<RenderSystem>();
     {
         Signature signature;
         signature.set(ecs.GetComponentType<CTransform>());
         signature.set(ecs.GetComponentType<CMesh>());
+        ecs.SetSystemSignature<RenderSystem>(signature);
+    }
+
+    auto lightSystem = ecs.RegisterSystem<LightSystem>();
+    {
+        Signature signature;
+        signature.set(ecs.GetComponentType<CTransform>());
+        signature.set(ecs.GetComponentType<CLight>());
+        ecs.SetSystemSignature<LightSystem>(signature);
     }
 
     renderSystem->Init();
+    
+    lightSystem->Init();
 
     Entity backpackEntity = ecs.CreateEntity();
     
@@ -80,6 +93,66 @@ int main()
         backpackEntity,
         CMesh{
             .meshes = AssetManager::GetModel("backpack").meshes
+        });
+
+    Entity testLight = ecs.CreateEntity();
+
+    ecs.AddComponent<CTransform>(
+        testLight,
+        CTransform{
+            .position = glm::vec3(0.0f, 0.0f, 3.0f),
+            .rotation = glm::vec3(0.0f),
+            .scale = glm::vec3(0.2f, 0.2f, 0.2f)
+        });
+
+    ecs.AddComponent<CLight>(
+        testLight,
+        CLight{
+            .directionalLight = false,
+            .pointLight = true,
+            .spotLight = false,
+            .ambient = glm::vec3(0.05f, 0.05f, 0.05f),
+            .diffuse = glm::vec3(0.8f, 0.8f, 0.8f),
+            .specular = glm::vec3(1.0f, 1.0f, 1.0f),
+            .quadratic = 0.1f
+        });
+
+    ecs.AddComponent<CMesh>(
+        testLight,
+        CMesh{
+            .meshes = AssetManager::GetModel("debugCube").meshes
+        });
+
+
+
+
+
+    Entity testLight2 = ecs.CreateEntity();
+
+    ecs.AddComponent<CTransform>(
+        testLight2,
+        CTransform{
+            .position = glm::vec3(1.0f, 0.0f, 3.0f),
+            .rotation = glm::vec3(0.0f),
+            .scale = glm::vec3(0.2f, 0.2f, 0.2f)
+        });
+
+    ecs.AddComponent<CLight>(
+        testLight2,
+        CLight{
+            .directionalLight = false,
+            .pointLight = true,
+            .spotLight = false,
+            .ambient = glm::vec3(0.05f, 0.05f, 0.05f),
+            .diffuse = glm::vec3(0.8f, 0.8f, 0.8f),
+            .specular = glm::vec3(1.0f, 1.0f, 1.0f),
+            .quadratic = 0.1f
+        });
+
+    ecs.AddComponent<CMesh>(
+        testLight2,
+        CMesh{
+            .meshes = AssetManager::GetModel("debugCube").meshes
         });
 
     UI gui;
@@ -102,13 +175,14 @@ int main()
         camera.ProcessKeyboard(deltaTime);
 
         gui.NewFrame();
+
+        lightSystem->Update(deltaTime);
  
         renderSystem->Update(deltaTime, camera);
 
         gui.Update();
         window.Update();
     }
-
 
     gui.Terminate();
     
