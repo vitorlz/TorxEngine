@@ -38,6 +38,7 @@ vec4 materialEmission;
 in vec2 TexCoords;
 in vec3 FragPos;
 in vec3 Normal;
+in mat3 TBN;
 
 uniform vec3 cameraPos;
 
@@ -46,15 +47,26 @@ vec4 CalcPointLight(Light light, vec3 normal, vec3 fragPos, vec3 viewDir);
 void main() {
 	
 	vec3 viewDir = normalize(cameraPos - FragPos);
-	vec3 norm = normalize(Normal);
+	vec3 norm;
+
+	//norm = normalize(Normal);
+
+	norm = texture(material.texture_normal1, TexCoords).rgb;
+	norm = norm * 2.0 - 1.0;
+	norm = normalize(TBN * norm);
 
 	materialDiffuse  = texture(material.texture_diffuse1, TexCoords);
-	materialSpecular = texture(material.texture_specular1, TexCoords);				
+
+	if (materialDiffuse.a < 0.5) {
+		discard;
+	}
+
+	materialSpecular = texture(material.texture_diffuse1, TexCoords);				
 	materialEmission = texture(material.texture_emission1, TexCoords);
 
 	vec4 result;
 
-	// phase 2: Point lights
+	// ------ Point lights ---------
 	for(int i = 0; i < lights.length(); i++) {
 		result += CalcPointLight(lights[i], norm, FragPos, viewDir);
 	}
@@ -64,10 +76,7 @@ void main() {
 	vec3 color = pow(result.rgb, vec3(1/gamma));
 
    
-    FragColor = vec4(color, 1.0); //lights[0].ambient;
-
-	
-	//vec4(color, 1.0); //vec4(lightsSSBO.lights[0].diffuse, 1.0);
+    FragColor = vec4(color, 1.0);
 
 }
 

@@ -14,6 +14,7 @@ uniform mat4 projection;
 out vec3 FragPos;
 out vec3 Normal;
 out vec2 TexCoords;
+out mat3 TBN;
 
 void main()
 {
@@ -25,4 +26,14 @@ void main()
     FragPos = vec3(model * vec4(aPos, 1.0));
     Normal = normalMatrix * aNormal;
 
+    vec3 T = normalize(vec3(model * vec4(aTangent, 0.0)));
+	vec3 N = normalize(vec3(model * vec4(aNormal, 0.0)));
+	// re-orthogonalize T with respect to N
+	T = normalize(T - dot(T, N) * N);
+	// then retrieve perpendicular vector B with the cross product of T and N
+	vec3 B = cross(N, T);
+
+     if (dot(cross(N, T), B) < 0.0)
+		T = T * -1.0;
+    TBN = mat3(T, B, N);
 }

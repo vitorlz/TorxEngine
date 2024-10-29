@@ -63,9 +63,11 @@ void AssetManager::LoadModels()
 	Model backpack("res/models/backpack/backpack.obj");
 	stbi_set_flip_vertically_on_load(false);
     Model debugCube("res/models/debugCube/scene.gltf");
+    Model sponza("res/models/sponza-atrium/Sponza.gltf");
 
 	mModels.insert({ "backpack", backpack });
     mModels.insert({ "debugCube", debugCube });
+    mModels.insert({ "sponza", sponza });
 }
 
 Model& AssetManager::GetModel(std::string name)

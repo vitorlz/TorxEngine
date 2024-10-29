@@ -152,6 +152,7 @@ Mesh Model::processMesh(aiMesh* mesh, const aiScene* scene, glm::mat4 globalTran
 		std::vector<Texture> emissionMaps = loadMaterialTextures(material, aiTextureType_EMISSIVE, "texture_emission");
 		textures.insert(textures.end(), emissionMaps.begin(), emissionMaps.end());
 
+		// Change texture type to NORMALS when not loading the backpack
 		std::vector<Texture> normalMaps = loadMaterialTextures(material, aiTextureType_NORMALS, "texture_normal");
 		textures.insert(textures.end(), normalMaps.begin(), normalMaps.end());
 	}

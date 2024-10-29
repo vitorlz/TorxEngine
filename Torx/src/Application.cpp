@@ -79,20 +79,20 @@ int main()
     
     lightSystem->Init();
 
-    Entity backpackEntity = ecs.CreateEntity();
+    Entity sponzaEntity = ecs.CreateEntity();
     
     ecs.AddComponent<CTransform>(
-        backpackEntity, 
+        sponzaEntity, 
         CTransform{
             .position = glm::vec3(0.0f, 0.0f, 0.0f),
-            .rotation = glm::vec3(0.0f, 0.0f, 0.0f),
+            .rotation = glm::vec3(0.0f, 90.0f, 0.0f),
             .scale = glm::vec3(1.0f, 1.0f, 1.0f)
         });
 
     ecs.AddComponent<CMesh>(
-        backpackEntity,
+        sponzaEntity,
         CMesh{
-            .meshes = AssetManager::GetModel("backpack").meshes
+            .meshes = AssetManager::GetModel("sponza").meshes
         });
 
     Entity testLight = ecs.CreateEntity();
@@ -100,7 +100,7 @@ int main()
     ecs.AddComponent<CTransform>(
         testLight,
         CTransform{
-            .position = glm::vec3(0.0f, 0.0f, 3.0f),
+            .position = glm::vec3(2.0f, 5.0f, 2.0f),
             .rotation = glm::vec3(0.0f),
             .scale = glm::vec3(0.2f, 0.2f, 0.2f)
         });
@@ -111,10 +111,10 @@ int main()
             .directionalLight = false,
             .pointLight = true,
             .spotLight = false,
-            .ambient = glm::vec3(0.05f, 0.05f, 0.05f),
+            .ambient = glm::vec3(0.0f),
             .diffuse = glm::vec3(0.8f, 0.8f, 0.8f),
             .specular = glm::vec3(1.0f, 1.0f, 1.0f),
-            .quadratic = 0.1f
+            .quadratic = 0.2f
         });
 
     ecs.AddComponent<CMesh>(
@@ -123,16 +123,12 @@ int main()
             .meshes = AssetManager::GetModel("debugCube").meshes
         });
 
-
-
-
-
     Entity testLight2 = ecs.CreateEntity();
 
     ecs.AddComponent<CTransform>(
         testLight2,
         CTransform{
-            .position = glm::vec3(1.0f, 0.0f, 3.0f),
+            .position = glm::vec3(0.0f, 2.0f, -2.0f),
             .rotation = glm::vec3(0.0f),
             .scale = glm::vec3(0.2f, 0.2f, 0.2f)
         });
@@ -143,10 +139,10 @@ int main()
             .directionalLight = false,
             .pointLight = true,
             .spotLight = false,
-            .ambient = glm::vec3(0.05f, 0.05f, 0.05f),
+            .ambient = glm::vec3(0.0f),
             .diffuse = glm::vec3(0.8f, 0.8f, 0.8f),
             .specular = glm::vec3(1.0f, 1.0f, 1.0f),
-            .quadratic = 0.1f
+            .quadratic = 0.2f
         });
 
     ecs.AddComponent<CMesh>(
