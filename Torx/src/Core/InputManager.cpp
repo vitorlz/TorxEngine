@@ -26,6 +26,7 @@ std::unordered_map<InputKey, bool> InputManager::keyMap{
 	{F, false},
 	{Q, false},
 	{V, false},
+	{K , false},
 	{SHIFT_W, false},
 	{SHIFT_A, false},
 	{SHIFT_S, false},

@@ -160,6 +160,11 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
             glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
         }
     }
+
+    if (InputManager::GetKey(K)) 
+    {
+        ShaderManager::ReloadShaders();
+    }
 }
 
 // glfw: whenever the window size changed (by OS or user resize) this callback function executes

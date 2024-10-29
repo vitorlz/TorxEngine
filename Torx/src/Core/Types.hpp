@@ -32,6 +32,7 @@ enum InputKey {
 	F, 
 	Q,
 	V,
+	K,
 	SHIFT_W,
 	SHIFT_A,
 	SHIFT_S,

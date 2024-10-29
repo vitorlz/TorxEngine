@@ -68,6 +68,8 @@ void Window::ProcessInputs() {
 		InputManager::AddKey(D);
 	if (glfwGetKey(mWindow, GLFW_KEY_V) == GLFW_PRESS)
 		InputManager::AddKey(V);
+	if (glfwGetKey(mWindow, GLFW_KEY_K) == GLFW_PRESS)
+		InputManager::AddKey(K);
 	if (glfwGetKey(mWindow, GLFW_KEY_SPACE) == GLFW_PRESS)
 		InputManager::AddKey(SPACE);
 	if (glfwGetKey(mWindow, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS)

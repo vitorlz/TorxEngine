@@ -36,7 +36,9 @@ void RenderSystem::Update(float deltaTime, Camera& camera)
 
     // ------------------------- First Pass -----------------------------------
 
-    ShaderManager::GetShaderProgram("ourShader").use();
+    Shader ourShader = ShaderManager::GetShaderProgram("ourShader");
+
+    ourShader.use();
 
     glm::mat4 view = camera.GetViewMatrix();
     glm::mat4 projection = glm::mat4(1.0f);
@@ -57,12 +59,12 @@ void RenderSystem::Update(float deltaTime, Camera& camera)
         model = glm::rotate(model, glm::radians(transform.rotation.y), glm::vec3(0.0f, 1.0, 0.0));
         model = glm::rotate(model, glm::radians(transform.rotation.z), glm::vec3(0.0f, 0.0, 1.0));
         
-        ShaderManager::GetShaderProgram("ourShader").setMat4("projection", projection); // note: currently we set the projection matrix each frame, but since the projection matrix rarely changes it's often best practice to set it outside the main loop only once.
-        ShaderManager::GetShaderProgram("ourShader").setMat4("view", view);
-        ShaderManager::GetShaderProgram("ourShader").setMat4("model", model);
+        ourShader.setMat4("projection", projection); // note: currently we set the projection matrix each frame, but since the projection matrix rarely changes it's often best practice to set it outside the main loop only once.
+        ourShader.setMat4("view", view);
+        ourShader.setMat4("model", model);
 
         for (Mesh mesh : mesh.meshes) {
-            mesh.Draw(ShaderManager::GetShaderProgram("ourShader"));
+            mesh.Draw(ourShader);
         }
     }
 
