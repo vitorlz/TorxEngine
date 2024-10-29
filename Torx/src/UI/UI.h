@@ -8,4 +8,6 @@ public:
 	void NewFrame();
 	void Update();
 	void Terminate();
+	static bool isOpen;
+	static bool firstMouseUpdateAfterMenu;
 };

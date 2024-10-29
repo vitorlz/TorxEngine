@@ -3,6 +3,8 @@
 #include "../vendor/imgui/imgui_impl_glfw.h"
 #include "../vendor/imgui/imgui_impl_opengl3.h"
 
+bool UI::isOpen{ false };
+bool UI::firstMouseUpdateAfterMenu{ false };
 
 void UI::Init(GLFWwindow* window) 
 {

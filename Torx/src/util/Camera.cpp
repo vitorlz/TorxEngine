@@ -3,6 +3,7 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include "Camera.h"
+#include "../UI/UI.h"
 #include "../Core/InputManager.h"
 
 // Default camera values
@@ -92,9 +93,28 @@ void Camera::ProcessKeyboard(float deltaTime)
 
 }
 
+float lastX{ 400 };
+float lastY{ 300 };
+bool firstMouse = true;
+bool firstMouseUpdateAfterMenu = true;
+
+
 // processes input received from a mouse input system. Expects the offset value in both the x and y direction.
-void Camera::ProcessMouseMovement(float xoffset, float yoffset, GLboolean constrainPitch)
+void Camera::ProcessMouseMovement(float xpos, float ypos, GLboolean constrainPitch)
 {
+
+    if (firstMouse || UI::firstMouseUpdateAfterMenu) {
+        lastX = xpos;
+        lastY = ypos;
+        firstMouse = false;
+        UI::firstMouseUpdateAfterMenu = false;
+    }
+
+    float xoffset = xpos - lastX;
+    float yoffset = lastY - ypos; // reversed since y-coordinates range from bottom to top
+    lastX = xpos;
+    lastY = ypos;
+
     xoffset *= MouseSensitivity;
     yoffset *= MouseSensitivity;
 

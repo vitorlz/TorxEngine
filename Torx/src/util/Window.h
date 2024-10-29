@@ -2,9 +2,9 @@
 #include <GLFW/glfw3.h>
 #include <iostream>
 
-struct Window {
+struct Window 
+{
 	
-	bool menu;
 
 	Window(int width, int height, const char* windowTitle);
 

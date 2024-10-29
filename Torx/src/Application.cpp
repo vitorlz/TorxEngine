@@ -24,21 +24,12 @@
 
 #include <iostream>
 
-void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void mouse_callback(GLFWwindow* window, double xpos, double ypos);
-void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods);
-
 // settings
 const unsigned int SCR_WIDTH = 1280;
 const unsigned int SCR_HEIGHT = 800;
 
 Camera camera(glm::vec3(0.0f, 0.0f, 3.0f));
-float lastX{ 400 };
-float lastY{ 300 };
-bool firstMouse = true;
-bool menu = false;
-bool firstMouseUpdateAfterMenu = true;
-
 Coordinator ecs;
 
 int main()
@@ -53,7 +44,6 @@ int main()
     window.DisableVsync();
 
     glfwSetCursorPosCallback(window.GetWindow(), mouse_callback);
-    glfwSetKeyCallback(window.GetWindow(), key_callback);
 
     float deltaTime{};
     float lastFrame{};
@@ -128,50 +118,11 @@ int main()
 
 void mouse_callback(GLFWwindow* window, double xpos, double ypos) 
 {
-    if (!menu)
+    if (UI::isOpen)
     {
-        if (firstMouse || firstMouseUpdateAfterMenu) {
-            lastX = xpos;
-            lastY = ypos;
-            firstMouse = false;
-            firstMouseUpdateAfterMenu = false;
-        }
-
-        float xoffset = xpos - lastX;
-        float yoffset = lastY - ypos; // reversed since y-coordinates range from bottom to top
-        lastX = xpos;
-        lastY = ypos;
-
-        camera.ProcessMouseMovement(xoffset, yoffset, true);
+        return;
     }
+    
+    camera.ProcessMouseMovement(xpos, ypos);
 }
 
-void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods) 
-{
-    if (InputManager::GetKey(TAB)) {
-        menu = !menu;
-        firstMouseUpdateAfterMenu = true;
-        if (!menu)
-        {
-            glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
-        }
-        else
-        {
-            glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
-        }
-    }
-
-    if (InputManager::GetKey(K)) 
-    {
-        ShaderManager::ReloadShaders();
-    }
-}
-
-// glfw: whenever the window size changed (by OS or user resize) this callback function executes
-// ---------------------------------------------------------------------------------------------
-void framebuffer_size_callback(GLFWwindow* window, int width, int height)
-{
-    // make sure the viewport matches the new window dimensions; note that width and 
-    // height will be significantly larger than specified on retina displays.
-    glViewport(0, 0, width, height);
-}

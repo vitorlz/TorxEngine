@@ -1,8 +1,13 @@
 #include "Window.h"
 #include "../Core/InputManager.h"
+#include "../Util/ShaderManager.h"
+#include "../UI/UI.h"
 
 int Window::screenWidth;
 int Window::screenHeight;
+
+void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods);
+void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 
 Window::Window(int width, int height, const char* windowTitle) 
 {
@@ -26,7 +31,9 @@ Window::Window(int width, int height, const char* windowTitle)
 	gladLoadGLLoader((GLADloadproc)glfwGetProcAddress);
 	glfwSwapInterval(1);
 	glfwSetInputMode(mWindow, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
-	menu = false;
+	
+	glfwSetFramebufferSizeCallback(mWindow, framebuffer_size_callback);
+	glfwSetKeyCallback(mWindow, key_callback);
 }
 
 GLFWwindow* Window::GetWindow() const{
@@ -84,4 +91,34 @@ void Window::ProcessInputs() {
 		InputManager::AddKey(SHIFT_D);	
 	if (glfwGetKey(mWindow, GLFW_KEY_TAB) == GLFW_PRESS)
 		InputManager::AddKey(TAB);
+}
+
+void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods)
+{
+	if (InputManager::GetKey(TAB)) {
+		UI::isOpen = !UI::isOpen;
+		UI::firstMouseUpdateAfterMenu = true;
+		if (!UI::isOpen)
+		{
+			glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+		}
+		else
+		{
+			glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+		}
+	}
+
+	if (InputManager::GetKey(K))
+	{
+		ShaderManager::ReloadShaders();
+	}
+}
+
+// glfw: whenever the window size changed (by OS or user resize) this callback function executes
+// ---------------------------------------------------------------------------------------------
+void framebuffer_size_callback(GLFWwindow* window, int width, int height)
+{
+	// make sure the viewport matches the new window dimensions; note that width and 
+	// height will be significantly larger than specified on retina displays.
+	glViewport(0, 0, width, height);
 }
