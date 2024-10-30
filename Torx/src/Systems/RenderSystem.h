@@ -5,6 +5,7 @@
 #include <unordered_map>
 #include "../Util/Camera.h"
 #include "iostream"
+#include "../Util/Shader.h"
 
 
 class RenderSystem : public System
@@ -18,4 +19,12 @@ private:
 	Camera mCamera;
 	unsigned int mCubemapID;
 	unsigned int mCubeVAO;
+	unsigned int mScreenQuadVAO;
+	unsigned int mMsFBO;
+	unsigned int mBlittingFBO;
+	unsigned int mScreenQuadTexture;
+	Shader mSolidColorShader;
+	Shader mLightingShader;
+	Shader mSkyBoxShader;
+	Shader mPostProcessingShader;
 };

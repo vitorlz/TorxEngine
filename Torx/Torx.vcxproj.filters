@@ -81,6 +81,9 @@
     <ClCompile Include="src\Systems\LightSystem.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="src\Rendering\RenderingUtil.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\Util\Shader.h">
@@ -176,6 +179,12 @@
     <ClInclude Include="src\Systems\LightSystem.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="src\Rendering\RenderingUtil.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Core\Common.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="res\shaders\solidColor.frag" />
@@ -188,6 +197,8 @@
     <None Include="res\shaders\cubemap.frag" />
     <None Include="res\shaders\lighting.vert" />
     <None Include="res\shaders\lighting.frag" />
+    <None Include="res\shaders\postProcessing.vert" />
+    <None Include="res\shaders\postProcessing.frag" />
   </ItemGroup>
   <ItemGroup>
     <Library Include="vendor\assimp\lib\assimp-vc143-mt.lib" />

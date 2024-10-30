@@ -8,6 +8,7 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
+#include "Core/Common.hpp"
 #include "Util/Shader.h"
 #include "Util/Window.h"
 #include "Core/InputManager.h"
@@ -26,9 +27,8 @@
 #include <iostream>
 
 void mouse_callback(GLFWwindow* window, double xpos, double ypos);
+void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
 // settings
-const unsigned int SCR_WIDTH = 1280;
-const unsigned int SCR_HEIGHT = 800;
 
 Camera camera(glm::vec3(0.0f, 0.0f, 3.0f));
 Coordinator ecs;
@@ -37,23 +37,18 @@ int main()
 {
     ecs.Init();
 
-    // glfw: initialize and configure
-    // ------------------------------
-
-    Window window(SCR_WIDTH, SCR_HEIGHT, "Torx");
+    Window window(Common::SCR_WIDTH, Common::SCR_HEIGHT, "Torx");
 
     window.DisableVsync();
 
     glfwSetCursorPosCallback(window.GetWindow(), mouse_callback);
+    glfwSetScrollCallback(window.GetWindow(), scroll_callback);
 
     float deltaTime{};
     float lastFrame{};
-    // render loop
-    // -----------
-
-    // should prob write a model manager
 
     AssetManager::LoadModels();
+    ShaderManager::LoadShaders();
 
     ecs.RegisterComponent<CTransform>();
     ecs.RegisterComponent<CMesh>();
@@ -95,84 +90,72 @@ int main()
             .meshes = AssetManager::GetModel("sponza").meshes
         });
 
-    Entity testLight = ecs.CreateEntity();
+   Entity pointLight = ecs.CreateEntity();
 
     ecs.AddComponent<CTransform>(
-        testLight,
+        pointLight,
         CTransform{
-            .position = glm::vec3(2.0f, 5.0f, 2.0f),
+            .position = glm::vec3(0.0f, 4.0f, 0.0f),
             .rotation = glm::vec3(0.0f),
             .scale = glm::vec3(0.2f, 0.2f, 0.2f)
         });
 
     ecs.AddComponent<CLight>(
-        testLight,
+        pointLight,
         CLight{
-            .directionalLight = false,
-            .pointLight = true,
-            .spotLight = false,
+            .type = POINT,
             .ambient = glm::vec3(0.0f),
-            .diffuse = glm::vec3(0.8f, 0.8f, 0.8f),
+            .diffuse = glm::vec3(0.5f, 0.5f, 0.5f),
             .specular = glm::vec3(1.0f, 1.0f, 1.0f),
-            .quadratic = 0.2f
+            .quadratic = 0.3f
         });
 
     ecs.AddComponent<CMesh>(
-        testLight,
+        pointLight,
         CMesh{
             .meshes = AssetManager::GetModel("debugCube").meshes
         });
 
-    Entity testLight2 = ecs.CreateEntity();
+    Entity flashlight = ecs.CreateEntity();
 
     ecs.AddComponent<CTransform>(
-        testLight2,
+        flashlight,
         CTransform{
-            .position = glm::vec3(0.0f, 2.0f, -2.0f),
+            .position = camera.Position,
             .rotation = glm::vec3(0.0f),
             .scale = glm::vec3(0.2f, 0.2f, 0.2f)
         });
 
     ecs.AddComponent<CLight>(
-        testLight2,
+        flashlight,
         CLight{
-            .directionalLight = false,
-            .pointLight = true,
-            .spotLight = false,
+            .type = FLASHLIGHT,
             .ambient = glm::vec3(0.0f),
-            .diffuse = glm::vec3(0.8f, 0.8f, 0.8f),
+            .diffuse = glm::vec3(0.2f, 0.2f, 0.2f),
             .specular = glm::vec3(1.0f, 1.0f, 1.0f),
-            .quadratic = 0.2f
-        });
-
-    ecs.AddComponent<CMesh>(
-        testLight2,
-        CMesh{
-            .meshes = AssetManager::GetModel("debugCube").meshes
+            .quadratic = 0.032f,
+            .direction = camera.Front,
+            .innerCutoff = 12.5f,
+            .outerCutoff = 17.5f
         });
 
     UI gui;
 
     gui.Init(window.GetWindow());
 
-    ShaderManager::LoadShaders();
-
     while (!glfwWindowShouldClose(window.GetWindow()))
     {
 
-        // calculate deltatime
         float currentFrame = glfwGetTime();
         deltaTime = currentFrame - lastFrame;
         lastFrame = currentFrame;
 
-        // input
-        // -----
         window.ProcessInputs();
         camera.ProcessKeyboard(deltaTime);
 
         gui.NewFrame();
 
-        lightSystem->Update(deltaTime);
+        lightSystem->Update(deltaTime, camera);
  
         renderSystem->Update(deltaTime, camera);
 
@@ -194,5 +177,10 @@ void mouse_callback(GLFWwindow* window, double xpos, double ypos)
     }
     
     camera.ProcessMouseMovement(xpos, ypos);
+}
+
+void scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
+{
+    camera.ProcessMouseScroll(yoffset);
 }
 

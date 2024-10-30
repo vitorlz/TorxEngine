@@ -77,5 +77,7 @@ void Mesh::Draw(Shader &shader) {
 	// draw mesh
 	glBindVertexArray(VAO);
 	glDrawElements(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, 0);
-	glad_glBindVertexArray(0);
+	glBindVertexArray(0);
+
+	
 }

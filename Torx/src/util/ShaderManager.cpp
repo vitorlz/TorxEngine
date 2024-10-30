@@ -12,6 +12,7 @@ void ShaderManager::LoadShaders()
 	std::shared_ptr<Shader> cubemapShader = std::make_shared<Shader>("res/shaders/cubemap.vert", "res/shaders/cubemap.frag");
 	std::shared_ptr<Shader> lightingShader = std::make_shared<Shader>("res/shaders/lighting.vert", "res/shaders/lighting.frag");
 	std::shared_ptr<Shader> solidColorShader = std::make_shared<Shader>("res/shaders/solidColor.vert", "res/shaders/solidColor.frag");
+	std::shared_ptr<Shader> postProcessingShader = std::make_shared<Shader>("res/shaders/postProcessing.vert", "res/shaders/postProcessing.frag");
 
 	shaderPrograms.clear();
 
@@ -19,6 +20,7 @@ void ShaderManager::LoadShaders()
 	shaderPrograms.insert({ "cubemapShader", cubemapShader });
 	shaderPrograms.insert({ "lightingShader", lightingShader });
 	shaderPrograms.insert({ "solidColorShader", solidColorShader });
+	shaderPrograms.insert({ "postProcessingShader", postProcessingShader });
 }
 
 Shader& ShaderManager::GetShaderProgram(std::string name) 

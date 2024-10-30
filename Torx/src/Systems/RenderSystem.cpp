@@ -8,7 +8,7 @@
 #include "../Components/CLight.h"
 #include "../Util/ShaderManager.h"
 #include "../Util/TextureLoader.h"
-#include "../AssetLoading/AssetManager.h"
+#include "../Rendering/RenderingUtil.h"
 
 
 extern Coordinator ecs;
@@ -24,27 +24,33 @@ void RenderSystem::Init()
         "res/textures/cubemaps/back.jpg"
     );
 
-    mCubeVAO = AssetManager::CreateCubeVao();
+    mCubeVAO = RenderingUtil::CreateCubeVAO();
+    mMsFBO = RenderingUtil::CreateMSAAFBO();
+    mBlittingFBO = RenderingUtil::CreateBlittingFBO();
+    mScreenQuadVAO = RenderingUtil::CreateScreenQuadVAO();
+    mLightingShader = ShaderManager::GetShaderProgram("lightingShader");
+    mSolidColorShader = ShaderManager::GetShaderProgram("solidColorShader");
+    mSkyBoxShader = ShaderManager::GetShaderProgram("cubemapShader");
+    mPostProcessingShader = ShaderManager::GetShaderProgram("postProcessingShader");
+    mScreenQuadTexture = RenderingUtil::GetScreenQuadTexture();
 }
 
 void RenderSystem::Update(float deltaTime, Camera& camera)
 {
-    // render
-    // ------
+
+    // ------------------------- LIGHTING PASS -----------------------------------
+
+    glBindFramebuffer(GL_FRAMEBUFFER, mMsFBO);
     glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); // also clear the depth buffer now!
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glEnable(GL_DEPTH_TEST);
 
-    // ------------------------- First Pass -----------------------------------
-
-    Shader lightingShader = ShaderManager::GetShaderProgram("lightingShader");
-
-    lightingShader.use();
+    mLightingShader.use();
 
     glm::mat4 view = camera.GetViewMatrix();
     glm::mat4 projection = glm::mat4(1.0f);
     projection = glm::perspective(
-        glm::radians(45.0f), (float)Window::screenWidth / (float)Window::screenHeight, 0.1f, 100.0f);
+        glm::radians(camera.Zoom), (float)Window::screenWidth / (float)Window::screenHeight, 0.1f, 100.0f);
 
     glEnable(GL_CULL_FACE);
 
@@ -60,51 +66,103 @@ void RenderSystem::Update(float deltaTime, Camera& camera)
         model = glm::rotate(model, glm::radians(transform.rotation.y), glm::vec3(0.0f, 1.0, 0.0));
         model = glm::rotate(model, glm::radians(transform.rotation.z), glm::vec3(0.0f, 0.0, 1.0));
 
+        glm::mat3 normalMatrix = glm::transpose(glm::inverse(model));
+
         if (ecs.HasComponent<CLight>(entity)) {
 
-            Shader solidColorShader = ShaderManager::GetShaderProgram("solidColorShader");
-            solidColorShader.use();
+            mSolidColorShader.use();
 
-            solidColorShader.setMat4("projection", projection); // note: currently we set the projection matrix each frame, but since the projection matrix rarely changes it's often best practice to set it outside the main loop only once.
-            solidColorShader.setMat4("view", view);
-            solidColorShader.setMat4("model", model);
-            solidColorShader.setVec3("color", ecs.GetComponent<CLight>(entity).diffuse * 1.5f);
+            mSolidColorShader.setMat4("projection", projection); // note: currently we set the projection matrix each frame, but since the projection matrix rarely changes it's often best practice to set it outside the main loop only once.
+            mSolidColorShader.setMat4("view", view);
+            mSolidColorShader.setMat4("model", model);
+            mSolidColorShader.setVec3("color", ecs.GetComponent<CLight>(entity).diffuse * 1.5f);
 
             for (Mesh mesh : mesh.meshes) {
-                mesh.Draw(solidColorShader);
+                mesh.Draw(mSolidColorShader);
             }
 
             continue;
         }
         
-        lightingShader.setMat4("projection", projection); // note: currently we set the projection matrix each frame, but since the projection matrix rarely changes it's often best practice to set it outside the main loop only once.
-        lightingShader.setMat4("view", view);
-        lightingShader.setMat4("model", model);
-        lightingShader.setVec3("cameraPos", camera.Position);
+        mLightingShader.setMat4("projection", projection); // note: currently we set the projection matrix each frame, but since the projection matrix rarely changes it's often best practice to set it outside the main loop only once.
+        mLightingShader.setMat4("view", view);
+        mLightingShader.setMat4("model", model);
+        mLightingShader.setMat3("normalMatrix", normalMatrix);
+
+
+        mLightingShader.setVec3("cameraPos", camera.Position);
+        mLightingShader.setVec3("cameraFront", camera.Front);
 
         for (Mesh mesh : mesh.meshes) {
-            mesh.Draw(lightingShader);
+            mesh.Draw(mLightingShader);
         }
+
     }
     
-
     // ---------------------------- SKYBOX PASS ---------------------------------------
 
     glDisable(GL_CULL_FACE);
 
     glDepthFunc(GL_LEQUAL);
 
-    Shader skyboxShader = ShaderManager::GetShaderProgram("cubemapShader");
-
-    skyboxShader.use();
+    mSkyBoxShader.use();
 
     view = glm::mat4(glm::mat3(camera.GetViewMatrix()));
 
-    skyboxShader.setMat4("projection", projection);
-    skyboxShader.setMat4("view", view);
+    mSkyBoxShader.setMat4("projection", projection);
+    mSkyBoxShader.setMat4("view", view);
     glBindVertexArray(mCubeVAO);
     glBindTexture(GL_TEXTURE_CUBE_MAP, mCubemapID);
     glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
 
     glDepthFunc(GL_LESS);
+
+    // ---------------------------------- BLITTING ---------------------------------------
+
+    // Set up to blit from the first color buffer
+    glBindFramebuffer(GL_READ_FRAMEBUFFER, mMsFBO);
+   // glReadBuffer(GL_COLOR_ATTACHMENT0);  // Read from the first color attachment
+
+    glBindFramebuffer(GL_DRAW_FRAMEBUFFER, mBlittingFBO);
+    //glDrawBuffer(GL_COLOR_ATTACHMENT0);  // Draw to the first color attachment
+
+    glBlitFramebuffer(0, 0, Window::screenWidth, Window::screenHeight, 0, 0, Window::screenWidth, Window::screenHeight, GL_COLOR_BUFFER_BIT, GL_NEAREST);
+
+    // Condition to do bloom
+
+    if (false) {
+        // Now blit from the second color buffer
+        glReadBuffer(GL_COLOR_ATTACHMENT1);  // Read from the second color attachment
+
+        glDrawBuffer(GL_COLOR_ATTACHMENT1);  // Draw to the second color attachment
+
+        glBlitFramebuffer(0, 0, Window::screenWidth, Window::screenHeight, 0, 0, Window::screenWidth, Window::screenHeight, GL_COLOR_BUFFER_BIT, GL_NEAREST);
+    }
+
+    // ------------------------------ POST PROCESSING PASS ---------------------
+
+    glDisable(GL_CULL_FACE);
+
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
+    glClear(GL_COLOR_BUFFER_BIT);
+
+    mPostProcessingShader.use();
+    mPostProcessingShader.setFloat("exposure", 2.0f);
+    mPostProcessingShader.setBool("reinhard", false);
+    mPostProcessingShader.setBool("uncharted2", false);
+    mPostProcessingShader.setBool("ACES", true);
+   
+    glBindVertexArray(mScreenQuadVAO);
+    glDisable(GL_DEPTH_TEST);
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, mScreenQuadTexture);
+
+  /*  if (bloom) {
+        glActiveTexture(GL_TEXTURE1);
+        glBindTexture(GL_TEXTURE_2D, pingpongBuffers[(kernelSize * 2) % 2 ? !horizontal : horizontal]);
+    }*/
+
+    mPostProcessingShader.setInt("screenQuadTexture", 0);
+    glDrawArrays(GL_TRIANGLES, 0, 6);
 }

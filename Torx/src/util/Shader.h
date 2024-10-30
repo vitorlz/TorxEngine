@@ -32,4 +32,5 @@ public:
 	void setVec4(const std::string& name, glm::vec4 value) const;
 	void setVec4(const std::string& name, float value1, float value2, float value3, float value4) const;
 	void setMat4(const std::string& name, const glm::mat4& mat) const;
+	void setMat3(const std::string& name, const glm::mat3& mat) const;
 };
