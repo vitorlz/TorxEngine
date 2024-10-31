@@ -4,7 +4,7 @@
 #include "../Components/CLight.h"
 #include "glad/glad.h"
 #include "iostream"
-#include "../Core/Common.hpp"
+#include "../Core/Common.h"
 #include <unordered_map>
 
 extern Coordinator ecs;

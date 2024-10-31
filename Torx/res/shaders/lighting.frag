@@ -48,6 +48,8 @@ in mat3 TBN;
 
 uniform vec3 cameraPos;
 uniform vec3 cameraFront;
+uniform bool showNormals;
+uniform bool worldPosDebug;
 
 vec4 CalcPointLight(Light light, vec3 normal, vec3 fragPos, vec3 viewDir);
 vec4 CalcDirLight(Light light, vec3 normal, vec3 viewDir);
@@ -91,9 +93,13 @@ void main() {
 			result += CalcSpotLight(lights[i], norm, FragPos, viewDir);
 	}
 
-    FragColor = result;
+	if(showNormals) 
+		FragColor = vec4(norm, 1.0);
+	else if (worldPosDebug) 
+		FragColor = vec4(FragPos, 1.0);
+	else 
+		FragColor = result;	
 }
-
 
 vec4 CalcPointLight(Light light, vec3 normal, vec3 fragPos, vec3 viewDir) {
 
@@ -152,7 +158,6 @@ vec4 CalcSpotLight(Light light, vec3 normal, vec3 fragPos, vec3 viewDir) {
 	//float shadow = spotShadowCalculation(FragPosLightSpaceSpot, FragPosWorld, normal, light.shadowCameraPos);
 	// for more realistic spotlight you should probably calculate diffuse, specular, etc... accounting for the angle of the light and not only the light position. (I think)
 	//	if you only move your mouse without changing the position of the camera, the specular highlights don't change now. I think they should change.(maybe im wrong)
-
 	vec3 lightDir = normalize(light.position.xyz - fragPos);
 
 	// diffuse shading

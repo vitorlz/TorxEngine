@@ -2,6 +2,7 @@
 #include "../vendor/imgui/imgui.h"
 #include "../vendor/imgui/imgui_impl_glfw.h"
 #include "../vendor/imgui/imgui_impl_opengl3.h"
+#include "../Core/Common.h"
 #include "../Core/Coordinator.hpp"
 #include "../Components/CLight.h"
 #include "../Components/CMesh.h"
@@ -31,7 +32,6 @@ void UI::NewFrame()
 
 void UI::Update() 
 {
-
     ImGui::Begin("Menu");
     ImGui::Shortcut(ImGuiKey_Tab, ImGuiInputFlags_None);
     
@@ -114,7 +114,43 @@ void UI::Update()
 
     if (ImGui::TreeNode("Debug"))
     {
+        ImGui::Checkbox("Show normals", &Common::normalsDebug);
+        ImGui::Checkbox("Show World Position", &Common::worldPosDebug);
+        ImGui::Checkbox("Wireframe mode", &Common::wireframeDebug);
         
+        ImGui::TreePop();
+    }
+
+    if (ImGui::TreeNode("Tone Mapping"))
+    {
+        const char* items[] = { "ACES Filmic", "Reinhard Simple", "Uncharted 2"};
+        static int item_selected_idx = 0; 
+
+        const char* combo_preview_value = items[item_selected_idx];
+
+        if (ImGui::BeginCombo("combo 1", combo_preview_value))
+        {
+            for (int n = 0; n < IM_ARRAYSIZE(items); n++)
+            {
+                ImGui::PushID(n);
+                const bool is_selected = (item_selected_idx == n);
+                if (ImGui::Selectable(items[n], is_selected)) 
+                {
+                    item_selected_idx = n;
+                   
+                    Common::aces = ("ACES Filmic" == items[n]);
+                    Common::reinhard = ("Reinhard" == items[n]);
+                    Common::uncharted = ("Uncharted 2" == items[n]);
+                }
+                if (is_selected)
+                    ImGui::SetItemDefaultFocus();
+
+                ImGui::PopID();
+            }
+            ImGui::EndCombo();
+        }
+
+        ImGui::SliderFloat("Exposure", &Common::exposure, 0.0f, 20.0f, "%.5f");
         ImGui::TreePop();
     }
 

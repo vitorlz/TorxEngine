@@ -8,7 +8,7 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
-#include "Core/Common.hpp"
+#include "Core/Common.h"
 #include "Util/Shader.h"
 #include "Util/Window.h"
 #include "Core/InputManager.h"

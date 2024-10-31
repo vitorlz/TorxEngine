@@ -91,6 +91,7 @@
     <ClCompile Include="src\AssetLoading\mesh.cpp" />
     <ClCompile Include="src\AssetLoading\model.cpp" />
     <ClCompile Include="src\AssetLoading\AssetManager.cpp" />
+    <ClCompile Include="src\Core\Common.cpp" />
     <ClCompile Include="src\Rendering\RenderingUtil.cpp" />
     <ClCompile Include="src\Systems\LightSystem.cpp" />
     <ClCompile Include="src\Systems\RenderSystem.cpp" />
@@ -118,7 +119,7 @@
     <ClInclude Include="src\Components\CMesh.h" />
     <ClInclude Include="src\AssetLoading\mesh.h" />
     <ClInclude Include="src\AssetLoading\model.h" />
-    <ClInclude Include="src\Core\Common.hpp" />
+    <ClInclude Include="src\Core\Common.h" />
     <ClInclude Include="src\Rendering\RenderingUtil.h" />
     <ClInclude Include="src\Systems\LightSystem.h" />
     <ClInclude Include="src\Systems\RenderSystem.h" />

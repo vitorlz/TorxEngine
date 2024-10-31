@@ -1,6 +1,6 @@
 #include "RenderingUtil.h"
 #include "glad/glad.h"
-#include "../Core/Common.hpp"
+#include "../Core/Common.h"
 #include "iostream"
 
 unsigned int RenderingUtil::mScreenQuadTexture;

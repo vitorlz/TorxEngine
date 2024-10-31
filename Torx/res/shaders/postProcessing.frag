@@ -13,6 +13,7 @@ uniform bool uncharted2;
 uniform bool ACES;
 uniform float exposure;
 uniform bool bloom;
+uniform bool worldPosDebug;
 
 // testing some tone mapping algorithms
 
@@ -66,9 +67,9 @@ void main()
 		color += bloomColor;
 	}
 
-	bool normals = false;
+	
 
-	if (!normals) {
+	if (!showNormals && !worldPosDebug) {
 		
 		if(reinhard)
 		{

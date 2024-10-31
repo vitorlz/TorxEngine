@@ -2,6 +2,7 @@
 #include "glad/glad.h"
 #include "glm/glm.hpp"
 #include "../Util/Window.h"
+#include "../Core/Common.h"
 #include "../Core/Coordinator.hpp"
 #include "../Components/CTransform.h"
 #include "../Components/CMesh.h"
@@ -38,7 +39,18 @@ void RenderSystem::Init()
 void RenderSystem::Update(float deltaTime, Camera& camera)
 {
 
+   
+
     // ------------------------- LIGHTING PASS -----------------------------------
+
+    if (Common::wireframeDebug)
+    {
+        glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+    }
+    else
+    {
+        glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+    }
 
     glBindFramebuffer(GL_FRAMEBUFFER, mMsFBO);
     glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
@@ -92,6 +104,8 @@ void RenderSystem::Update(float deltaTime, Camera& camera)
         mLightingShader.setMat4("view", view);
         mLightingShader.setMat4("model", model);
         mLightingShader.setMat3("normalMatrix", normalMatrix);
+        mLightingShader.setBool("showNormals", Common::normalsDebug);
+        mLightingShader.setBool("worldPosDebug", Common::worldPosDebug);
 
 
         mLightingShader.setVec3("cameraPos", camera.Position);
@@ -103,6 +117,10 @@ void RenderSystem::Update(float deltaTime, Camera& camera)
     }
     
     // ---------------------------- SKYBOX PASS ---------------------------------------
+
+    if (Common::wireframeDebug) {
+        glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+    }
 
     glDisable(GL_CULL_FACE);
 
@@ -151,10 +169,12 @@ void RenderSystem::Update(float deltaTime, Camera& camera)
     glClear(GL_COLOR_BUFFER_BIT);
 
     mPostProcessingShader.use();
-    mPostProcessingShader.setFloat("exposure", 2.0f);
-    mPostProcessingShader.setBool("reinhard", false);
-    mPostProcessingShader.setBool("uncharted2", false);
-    mPostProcessingShader.setBool("ACES", true);
+    mPostProcessingShader.setBool("showNormals", Common::normalsDebug);
+    mPostProcessingShader.setBool("worldPosDebug", Common::worldPosDebug);
+    mPostProcessingShader.setFloat("exposure", Common::exposure);
+    mPostProcessingShader.setBool("reinhard", Common::reinhard);
+    mPostProcessingShader.setBool("uncharted2", Common::uncharted);
+    mPostProcessingShader.setBool("ACES", Common::aces);
    
     glBindVertexArray(mScreenQuadVAO);
     glDisable(GL_DEPTH_TEST);
