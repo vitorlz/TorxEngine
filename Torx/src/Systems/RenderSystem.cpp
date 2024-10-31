@@ -44,6 +44,7 @@ void RenderSystem::Update(float deltaTime, Camera& camera)
     glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glEnable(GL_DEPTH_TEST);
+    glViewport(0, 0, Window::screenWidth, Window::screenHeight);
 
     mLightingShader.use();
 
@@ -56,7 +57,7 @@ void RenderSystem::Update(float deltaTime, Camera& camera)
 
     for (const auto& entity : mEntities) 
     {
-        const auto& transform = ecs.GetComponent<CTransform>(entity);
+        auto& transform = ecs.GetComponent<CTransform>(entity);
         const auto& mesh = ecs.GetComponent<CMesh>(entity);
 
         glm::mat4 model = glm::mat4(1.0f);
@@ -70,8 +71,15 @@ void RenderSystem::Update(float deltaTime, Camera& camera)
 
         if (ecs.HasComponent<CLight>(entity)) {
 
-            mSolidColorShader.use();
+            auto& light = ecs.GetComponent<CLight>(entity);
 
+            mSolidColorShader.use(); 
+            
+            //transform.position.y = 3 + sin(glfwGetTime() / 2);
+            //light.diffuse = glm::vec3(sin(glfwGetTime()) + 1);
+           //light.quadratic = 0.032f * sin(glfwGetTime() / 2 + 1.0);
+
+            model = glm::translate(model, transform.position);
             mSolidColorShader.setMat4("projection", projection); // note: currently we set the projection matrix each frame, but since the projection matrix rarely changes it's often best practice to set it outside the main loop only once.
             mSolidColorShader.setMat4("view", view);
             mSolidColorShader.setMat4("model", model);

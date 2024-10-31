@@ -25,7 +25,11 @@ struct Light
 };
 
 std::vector<Light> lights;
-std::unordered_map<Entity, int> EntityToLightMap;
+std::unordered_map<Entity, Light> EntityToLightMap;
+std::unordered_map<Entity, int> EntityToLightIndexMap;
+
+
+Light lightData;
 
 void LightSystem::Init() 
 {
@@ -37,79 +41,66 @@ void LightSystem::Init()
 	glNamedBufferStorage(mSsbo, sizeof(Light) * mMaxLights, (const void*) nullptr, GL_DYNAMIC_STORAGE_BIT);
 	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, mSsbo);
 
-	lights.reserve(30);
-}
+	// First initialize the light system by putting the initial light data in the ssbo. We also keep a map from entities to lights and from entity to light index
+	// so that we can update the light data of each entity in the update function. We do this to prevent copying data into light instances every single frame
+	// for every entity. We create the light data instances during initialization, copy data into them, and fetch the light data of each respective entity in the update function. 
+	// Turns out that copying data into instances like that is extremely expensive and was eating almost 30% of my FPS.
 
-void LightSystem::Update(float deltaTime, Camera& camera)
-{
-
-	//std::cout << "Camera position" << camera.Position.x << " " << camera.Position.y << " " << camera.Position.z << "\n";
-
-	Light lightData;
-
-	lights.clear();
-
-	for (const auto& entity : mEntities) 
+	for (const auto& entity : mEntities)
 	{
-
-		// if number of lights did not change only update position
-		if (mEntities.size() <= mLightIndex)
-		{
-		//	/*const auto& transform = ecs.GetComponent<CTransform>(entity);
-		//	Light currentLight = lights[EntityToLightMap[entity]];
-
-		//	if ()
-		//	currentLight.position = glm::vec4(transform.position, 1.0);*/
-
-			return;
-		}
-
 		const auto& transform = ecs.GetComponent<CTransform>(entity);
 		const auto& light = ecs.GetComponent<CLight>(entity);
 
-		if (light.type == DIRECTIONAL)
+		if (mEntities.size() > mLightIndex)
 		{
-			lightData.type = glm::vec4(0.0f);
-			lightData.position = glm::vec4(transform.position, 1.0f);
+			mLightIndex++;
 		}
-		else if (light.type == POINT)
-		{
-			std::cout << "what \n";
-			lightData.type = glm::vec4(1.0f);
-			lightData.position = glm::vec4(transform.position, 1.0f);
-		}
-		else if (light.type == SPOT)
-		{
 
-			lightData.type = glm::vec4(2.0f);
+		std::cout << "light type: " << light.type << "\n";
+
+		if (light.type == SPOT)
+		{
 			lightData.direction = glm::vec4(light.direction, 1.0f);
 			lightData.innerCutoff = glm::vec4(glm::cos(glm::radians(light.innerCutoff)));
 			lightData.outerCutoff = glm::vec4(glm::cos(glm::radians(light.outerCutoff)));
-			lightData.position = glm::vec4(transform.position, 1.0f);
-
-		}
-		else if (light.type == FLASHLIGHT)
-		{
-			lightData.type = glm::vec4(2.0f);
-			lightData.position = glm::vec4(camera.Position, 1.0f);
-
-			std::cout << "Light data position" << lightData.position.x << " " << lightData.position.y << " " << lightData.position.z << "\n";
-			lightData.direction = glm::vec4(camera.Front, 1.0f);
-			lightData.innerCutoff = glm::vec4(glm::cos(glm::radians(light.innerCutoff)));
-			lightData.outerCutoff = glm::vec4(glm::cos(glm::radians(light.outerCutoff)));
 		}
 
-		
+		lightData.type = glm::vec4((float)light.type);
+		lightData.position = glm::vec4(transform.position, 1.0f);
 		lightData.ambient = glm::vec4(light.ambient, 1.0f);
 		lightData.diffuse = glm::vec4(light.diffuse, 1.0f);
 		lightData.specular = glm::vec4(light.specular, 1.0f);
 		lightData.quadratic = glm::vec4(light.quadratic);
 
-		lights.push_back(lightData);
+		EntityToLightMap[entity] = lightData;
+		EntityToLightIndexMap[entity] = mLightIndex - 1;
 
-		EntityToLightMap[entity] = mLightIndex;
-		mLightIndex++;
+		glNamedBufferSubData(mSsbo, EntityToLightIndexMap[entity] * sizeof(Light), sizeof(Light), (const void*)&lightData);
 	}
+}
 
-	glNamedBufferSubData(mSsbo, 0, sizeof(Light) * lights.size(), (const void*) lights.data());
+void LightSystem::Update(float deltaTime, Camera& camera)
+{
+	// Here we fetch the light data for each entity and update it.
+
+	for (const auto& entity : mEntities) 
+	{
+		const auto& transform = ecs.GetComponent<CTransform>(entity);
+		const auto& light = ecs.GetComponent<CLight>(entity);
+
+		EntityToLightMap[entity].position = glm::vec4(transform.position, 1.0f);
+
+		if (light.type == SPOT)
+		{
+			EntityToLightMap[entity].position = glm::vec4(camera.Position, 1.0f);
+			EntityToLightMap[entity].direction = glm::vec4(camera.Front, 1.0f);
+		}
+
+		EntityToLightMap[entity].ambient = glm::vec4(light.ambient, 1.0f);
+		EntityToLightMap[entity].diffuse = glm::vec4(light.diffuse, 1.0f);
+		EntityToLightMap[entity].specular = glm::vec4(light.specular, 1.0f);
+		EntityToLightMap[entity].quadratic = glm::vec4(light.quadratic);
+
+		glNamedBufferSubData(mSsbo, EntityToLightIndexMap[entity] * sizeof(Light), sizeof(Light), (const void*)&EntityToLightMap[entity]);
+	}
 }

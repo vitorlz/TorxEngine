@@ -129,7 +129,7 @@ int main()
     ecs.AddComponent<CLight>(
         flashlight,
         CLight{
-            .type = FLASHLIGHT,
+            .type = SPOT,
             .ambient = glm::vec3(0.0f),
             .diffuse = glm::vec3(0.2f, 0.2f, 0.2f),
             .specular = glm::vec3(1.0f, 1.0f, 1.0f),
@@ -142,6 +142,8 @@ int main()
     UI gui;
 
     gui.Init(window.GetWindow());
+
+    lightSystem->Init();
 
     while (!glfwWindowShouldClose(window.GetWindow()))
     {

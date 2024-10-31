@@ -5,10 +5,10 @@
 
 enum LightType
 {
-	POINT,
-	DIRECTIONAL,
-	SPOT,
-	FLASHLIGHT
+	DIRECTIONAL = 0,
+	POINT = 1,
+	SPOT = 2,
+	FLASHLIGHT= 3
 };
 
 struct CLight
