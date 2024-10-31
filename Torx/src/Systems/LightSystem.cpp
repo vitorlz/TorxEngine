@@ -94,6 +94,9 @@ void LightSystem::Update(float deltaTime, Camera& camera)
 		{
 			EntityToLightMap[entity].position = glm::vec4(camera.Position, 1.0f);
 			EntityToLightMap[entity].direction = glm::vec4(camera.Front, 1.0f);
+			EntityToLightMap[entity].innerCutoff = glm::vec4(glm::cos(glm::radians(light.innerCutoff)));
+			EntityToLightMap[entity].outerCutoff = glm::vec4(glm::cos(glm::radians(light.outerCutoff)));
+
 		}
 
 		EntityToLightMap[entity].ambient = glm::vec4(light.ambient, 1.0f);

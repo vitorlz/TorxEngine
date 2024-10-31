@@ -25,6 +25,7 @@ public:
 		// Take an ID from the front of the queue
 		Entity id = mAvailableEntities.front();
 		mAvailableEntities.pop();
+		mLivingEntityIDs.push_back(id);
 		++mLivingEntityCount;
 
 		return id;
@@ -41,6 +42,16 @@ public:
 
 		// put the destroyed ID at the back of the queue
 		mAvailableEntities.push(entity);
+
+		unsigned int i = 0;
+		for (Entity livingEntityID : mLivingEntityIDs)
+		{
+			if (livingEntityID == entity)
+				mLivingEntityIDs.erase(mLivingEntityIDs.begin() + i);
+			
+			i++;
+		}
+
 		--mLivingEntityCount;
 	}
 
@@ -60,9 +71,16 @@ public:
 		return mSignatures[entity];
 	}
 
+	std::vector<Entity> GetLivingEntities()
+	{
+		return mLivingEntityIDs;
+	}
+
 private:
 	// Queue of unused entity IDs
 	std::queue<Entity> mAvailableEntities{};
+
+	std::vector<Entity> mLivingEntityIDs;
 
 	// Array of signatures where the index corresponds to the entity ID. 
 	std::array<Signature, MAX_ENTITIES> mSignatures{};

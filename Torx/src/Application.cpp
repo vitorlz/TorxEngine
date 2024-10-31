@@ -80,8 +80,8 @@ int main()
         sponzaEntity, 
         CTransform{
             .position = glm::vec3(0.0f, 0.0f, 0.0f),
+            .scale = glm::vec3(1.0f, 1.0f, 1.0f),
             .rotation = glm::vec3(0.0f, 90.0f, 0.0f),
-            .scale = glm::vec3(1.0f, 1.0f, 1.0f)
         });
 
     ecs.AddComponent<CMesh>(
@@ -96,8 +96,8 @@ int main()
         pointLight,
         CTransform{
             .position = glm::vec3(0.0f, 4.0f, 0.0f),
+            .scale = glm::vec3(0.2f, 0.2f, 0.2f),
             .rotation = glm::vec3(0.0f),
-            .scale = glm::vec3(0.2f, 0.2f, 0.2f)
         });
 
     ecs.AddComponent<CLight>(
@@ -122,8 +122,8 @@ int main()
         flashlight,
         CTransform{
             .position = camera.Position,
-            .rotation = glm::vec3(0.0f),
-            .scale = glm::vec3(0.2f, 0.2f, 0.2f)
+            .scale = glm::vec3(0.2f, 0.2f, 0.2f),
+            .rotation = glm::vec3(0.0f)
         });
 
     ecs.AddComponent<CLight>(

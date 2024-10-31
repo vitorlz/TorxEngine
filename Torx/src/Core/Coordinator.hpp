@@ -98,6 +98,11 @@ public:
 		return entitySignature.test(GetComponentType<T>());
 	}
 
+	std::vector<Entity> GetLivingEntities() 
+	{
+		return mEntityManager->GetLivingEntities();
+	}
+
 private:
 	std::unique_ptr<ComponentManager> mComponentManager;
 	std::unique_ptr<EntityManager> mEntityManager;

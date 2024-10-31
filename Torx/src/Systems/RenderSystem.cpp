@@ -62,10 +62,11 @@ void RenderSystem::Update(float deltaTime, Camera& camera)
 
         glm::mat4 model = glm::mat4(1.0f);
         model = glm::translate(model, transform.position);
-        model = glm::scale(model, transform.scale);
+     
         model = glm::rotate(model, glm::radians(transform.rotation.x), glm::vec3(1.0f, 0.0, 0.0));
         model = glm::rotate(model, glm::radians(transform.rotation.y), glm::vec3(0.0f, 1.0, 0.0));
         model = glm::rotate(model, glm::radians(transform.rotation.z), glm::vec3(0.0f, 0.0, 1.0));
+        model = glm::scale(model, transform.scale);
 
         glm::mat3 normalMatrix = glm::transpose(glm::inverse(model));
 
@@ -74,12 +75,7 @@ void RenderSystem::Update(float deltaTime, Camera& camera)
             auto& light = ecs.GetComponent<CLight>(entity);
 
             mSolidColorShader.use(); 
-            
-            //transform.position.y = 3 + sin(glfwGetTime() / 2);
-            //light.diffuse = glm::vec3(sin(glfwGetTime()) + 1);
-           //light.quadratic = 0.032f * sin(glfwGetTime() / 2 + 1.0);
-
-            model = glm::translate(model, transform.position);
+           
             mSolidColorShader.setMat4("projection", projection); // note: currently we set the projection matrix each frame, but since the projection matrix rarely changes it's often best practice to set it outside the main loop only once.
             mSolidColorShader.setMat4("view", view);
             mSolidColorShader.setMat4("model", model);
@@ -104,7 +100,6 @@ void RenderSystem::Update(float deltaTime, Camera& camera)
         for (Mesh mesh : mesh.meshes) {
             mesh.Draw(mLightingShader);
         }
-
     }
     
     // ---------------------------- SKYBOX PASS ---------------------------------------
