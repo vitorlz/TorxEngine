@@ -4,12 +4,14 @@
 #include "../vendor/imgui/imgui_impl_opengl3.h"
 #include "../Core/Common.h"
 #include "../Core/Coordinator.hpp"
+#include "../AssetLoading/AssetManager.h"
 #include "../Components/CLight.h"
 #include "../Components/CMesh.h"
 #include "../Components/CTransform.h"
 
 bool UI::isOpen{ false };
 bool UI::firstMouseUpdateAfterMenu{ false };
+
 
 extern Coordinator ecs;
 
@@ -37,7 +39,6 @@ void UI::Update()
     
     if (ImGui::TreeNode("Entities"))
     {
-
         std::vector<Entity> livingEntities = ecs.GetLivingEntities();
 
         for (int i = 0; i < livingEntities.size(); i++)
@@ -99,6 +100,54 @@ void UI::Update()
                         ImGui::TextColored(ImVec4(1.0f, 1.0f, 0.0f, 1.0f), "Has mesh component");
                     }
                 }
+                
+                const char* items[] = { "Transform", "Light", "Mesh" };
+                // this variable is global, that is why it selects on all entities
+                static int item_selected_idx = 0;
+
+                const char* combo_preview_value = items[item_selected_idx];
+                if (ImGui::BeginCombo(std::to_string(livingEntities[i]).c_str(), combo_preview_value))
+                {
+                    for (int n = 0; n < IM_ARRAYSIZE(items); n++)
+                    {
+                        const bool is_selected = (item_selected_idx == n);
+                        if (ImGui::Selectable(items[n], is_selected))
+                        {
+                            item_selected_idx = n;
+                        }
+                        if (is_selected)
+                            ImGui::SetItemDefaultFocus();
+                    }
+                    ImGui::EndCombo();
+
+                }   
+           
+                ImGui::SameLine();
+                if (ImGui::Button("Add Component"))
+                {
+                    if ("Transform" == items[item_selected_idx] && !ecs.HasComponent<CTransform>(livingEntities[i]))
+                    {
+                        ecs.AddComponent<CTransform>(
+                            livingEntities[i],
+                            CTransform{
+                                .position = glm::vec3(0.0f, 0.0f, 0.0f),
+                                .scale = glm::vec3(1.0f, 1.0f, 1.0f),
+                                .rotation = glm::vec3(0.0f),
+                            });
+                    }
+                    else if ("Light" == items[item_selected_idx] && !ecs.HasComponent<CLight>(livingEntities[i]))
+                    {
+                        ecs.AddComponent<CLight>(
+                            livingEntities[i],
+                            CLight{
+                                .type = POINT,
+                                .ambient = glm::vec3(0.0f),
+                                .diffuse = glm::vec3(0.5f, 0.5f, 0.5f),
+                                .specular = glm::vec3(1.0f, 1.0f, 1.0f),
+                                .quadratic = 0.3f
+                            });
+                    }
+                }
 
                 if (ImGui::Button("Destroy Entity"))
                 {   
@@ -109,6 +158,7 @@ void UI::Update()
             }
             ImGui::PopID();
         }
+        
         ImGui::TreePop();
     }
 

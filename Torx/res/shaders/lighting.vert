@@ -4,7 +4,7 @@ layout (location = 0) in vec3 aPos;
 layout (location = 1) in vec3 aNormal;
 layout (location = 2) in vec2 aTexCoords;
 layout (location = 3) in vec3 aTangent;
-layout (location = 4) in vec3 aBitTangent;
+layout (location = 4) in vec3 aBiTangent;
 
 uniform mat4 model;
 uniform mat4 view;
@@ -30,7 +30,7 @@ void main()
 	// then retrieve perpendicular vector B with the cross product of T and N
 	vec3 B = normalize(cross(N, T));
 
-    vec3 BHandness = normalize(aBitTangent);
+    vec3 BHandness = normalize(aBiTangent);
             
     // Flip bitangent if mirrorred  (not 100% fixed)
     if (dot(B, BHandness) < 0.0) 

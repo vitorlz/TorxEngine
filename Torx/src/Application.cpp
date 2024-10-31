@@ -90,7 +90,7 @@ int main()
             .meshes = AssetManager::GetModel("sponza").meshes
         });
 
-   Entity pointLight = ecs.CreateEntity();
+    Entity pointLight = ecs.CreateEntity();
 
     ecs.AddComponent<CTransform>(
         pointLight,
@@ -134,12 +134,6 @@ int main()
             .diffuse = glm::vec3(0.5f, 0.5f, 0.5f),
             .specular = glm::vec3(1.0f, 1.0f, 1.0f),
             .quadratic = 0.3f
-        });
-
-    ecs.AddComponent<CMesh>(
-        pointLight2,
-        CMesh{
-            .meshes = AssetManager::GetModel("debugCube").meshes
         });
 
     Entity flashlight = ecs.CreateEntity();

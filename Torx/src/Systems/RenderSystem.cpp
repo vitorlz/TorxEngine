@@ -82,23 +82,23 @@ void RenderSystem::Update(float deltaTime, Camera& camera)
 
         glm::mat3 normalMatrix = glm::transpose(glm::inverse(model));
 
-        if (ecs.HasComponent<CLight>(entity)) {
+        //if (ecs.HasComponent<CLight>(entity)) {
 
-            auto& light = ecs.GetComponent<CLight>(entity);
+        //    auto& light = ecs.GetComponent<CLight>(entity);
 
-            mSolidColorShader.use(); 
-           
-            mSolidColorShader.setMat4("projection", projection); // note: currently we set the projection matrix each frame, but since the projection matrix rarely changes it's often best practice to set it outside the main loop only once.
-            mSolidColorShader.setMat4("view", view);
-            mSolidColorShader.setMat4("model", model);
-            mSolidColorShader.setVec3("color", ecs.GetComponent<CLight>(entity).diffuse * 1.5f);
+        //    mSolidColorShader.use(); 
+        //   
+        //    mSolidColorShader.setMat4("projection", projection); // note: currently we set the projection matrix each frame, but since the projection matrix rarely changes it's often best practice to set it outside the main loop only once.
+        //    mSolidColorShader.setMat4("view", view);
+        //    mSolidColorShader.setMat4("model", model);
+        //    mSolidColorShader.setVec3("color", ecs.GetComponent<CLight>(entity).diffuse * 1.5f);
 
-            for (Mesh mesh : mesh.meshes) {
-                mesh.Draw(mSolidColorShader);
-            }
+        //    for (Mesh mesh : mesh.meshes) {
+        //        mesh.Draw(mSolidColorShader);
+        //    }
 
-            continue;
-        }
+        //    continue;
+        //}
         
         mLightingShader.setMat4("projection", projection); // note: currently we set the projection matrix each frame, but since the projection matrix rarely changes it's often best practice to set it outside the main loop only once.
         mLightingShader.setMat4("view", view);

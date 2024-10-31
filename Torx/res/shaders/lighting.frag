@@ -70,6 +70,7 @@ void main() {
 		discard;
 	}
 
+	// we are using diffuse texture as specular because of the sponza model
 	materialSpecular = texture(material.texture_diffuse1, TexCoords);				
 	materialEmission = texture(material.texture_emission1, TexCoords);
 

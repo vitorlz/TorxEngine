@@ -109,7 +109,7 @@ void LightSystem::Update(float deltaTime, Camera& camera)
 		glNamedBufferSubData(mSsbo, EntityToLightIndexMap[entity] * sizeof(Light), sizeof(Light), (const void*)&EntityToLightMap[entity]);
 	}
 
-	// check if any lights were deleted to update ssbo. 
+	// check if any lights were deleted to update ssbo. If no lights were added or deleted, the number of entities will be equal to the lightIndex.
 	if (mEntities.size() < mLightIndex)
 	{
 		Entity entityDeleted{};
@@ -138,5 +138,53 @@ void LightSystem::Update(float deltaTime, Camera& camera)
 		std::cout << "Light index after deletion: " << mLightIndex << "\n";
 		std::cout << "Entities after deletion: " << mEntities.size() << "\n";
 
+	}
+
+	// check if any lights were added and update ssbo
+
+	if (mEntities.size() > mLightIndex)
+	{
+		std::cout << "Entities before addition: " << mEntities.size() << "\n";
+
+		std::cout << "Light index before addition: " << mLightIndex << "\n";
+
+		mLightIndex++;
+
+		std::cout << "Light index after addition: " << mLightIndex << "\n";
+		std::cout << "Entities after addition: " << mEntities.size() << "\n";
+
+		Entity entityAdded{};
+		for (const auto& entity : mEntities)
+		{
+			if (!EntityToLightIndexMap.contains(entity))
+			{
+				entityAdded = entity;
+				std::cout << "Entity Added:" << entityAdded << "\n";
+			}
+		}
+
+		const auto& transform = ecs.GetComponent<CTransform>(entityAdded);
+		const auto& light = ecs.GetComponent<CLight>(entityAdded);
+
+		std::cout << "light type: " << light.type << "\n";
+
+		if (light.type == SPOT)
+		{
+			lightData.direction = glm::vec4(light.direction, 1.0f);
+			lightData.innerCutoff = glm::vec4(glm::cos(glm::radians(light.innerCutoff)));
+			lightData.outerCutoff = glm::vec4(glm::cos(glm::radians(light.outerCutoff)));
+		}
+
+		lightData.type = glm::vec4((float)light.type);
+		lightData.position = glm::vec4(transform.position, 1.0f);
+		lightData.ambient = glm::vec4(light.ambient, 1.0f);
+		lightData.diffuse = glm::vec4(light.diffuse, 1.0f);
+		lightData.specular = glm::vec4(light.specular, 1.0f);
+		lightData.quadratic = glm::vec4(light.quadratic);
+
+		EntityToLightMap[entityAdded] = lightData;
+		EntityToLightIndexMap[entityAdded] = mLightIndex - 1;
+
+		glNamedBufferSubData(mSsbo, EntityToLightIndexMap[entityAdded] * sizeof(Light), sizeof(Light), (const void*)&lightData);
 	}
 }

@@ -2,7 +2,6 @@
 
 
 // -------- SCREEN SETTINGS -----------------------------------
-
 const unsigned int Common::SCR_WIDTH = 1280;
 const unsigned int Common::SCR_HEIGHT = 800;
 
