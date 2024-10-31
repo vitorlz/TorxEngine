@@ -161,7 +161,7 @@ void RenderSystem::Update(float deltaTime, Camera& camera)
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, mScreenQuadTexture);
 
-  /*  if (bloom) {
+    /*  if (bloom) {
         glActiveTexture(GL_TEXTURE1);
         glBindTexture(GL_TEXTURE_2D, pingpongBuffers[(kernelSize * 2) % 2 ? !horizontal : horizontal]);
     }*/

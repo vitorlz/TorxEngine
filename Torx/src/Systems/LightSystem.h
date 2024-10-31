@@ -9,9 +9,8 @@ public:
 	void Init();
 
 	void Update(float deltaTime, Camera& camera);
-
-private:
 	unsigned int mSsbo;
+private:
 	int mMaxLights;
 	int mLightIndex;
 };

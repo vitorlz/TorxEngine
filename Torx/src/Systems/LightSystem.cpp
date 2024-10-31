@@ -54,6 +54,8 @@ void LightSystem::Init()
 		if (mEntities.size() > mLightIndex)
 		{
 			mLightIndex++;
+
+			std::cout << "light index initialization" << mLightIndex << "\n";
 		}
 
 		std::cout << "light type: " << light.type << "\n";
@@ -105,5 +107,36 @@ void LightSystem::Update(float deltaTime, Camera& camera)
 		EntityToLightMap[entity].quadratic = glm::vec4(light.quadratic);
 
 		glNamedBufferSubData(mSsbo, EntityToLightIndexMap[entity] * sizeof(Light), sizeof(Light), (const void*)&EntityToLightMap[entity]);
+	}
+
+	// check if any lights were deleted to update ssbo. 
+	if (mEntities.size() < mLightIndex)
+	{
+		Entity entityDeleted{};
+
+		for (const auto& pair : EntityToLightIndexMap)
+		{
+			if (!mEntities.contains(pair.first))
+			{
+				entityDeleted = pair.first;
+				std::cout << "Entity deleted :" << entityDeleted << "\n";
+			}
+		}
+
+		Light emptyLight;
+
+		glNamedBufferSubData(mSsbo, EntityToLightIndexMap[entityDeleted] * sizeof(Light), sizeof(Light), (const void*)&emptyLight);
+
+		std::cout << "Light destroyed" << "\n";
+		std::cout << "Light index before deletion: " << mLightIndex << "\n";
+		std::cout << "Entities before deletion: " << mEntities.size() << "\n";
+
+		EntityToLightIndexMap.erase(EntityToLightIndexMap.find(entityDeleted));
+		EntityToLightMap.erase(EntityToLightMap.find(entityDeleted));
+		mLightIndex--;
+
+		std::cout << "Light index after deletion: " << mLightIndex << "\n";
+		std::cout << "Entities after deletion: " << mEntities.size() << "\n";
+
 	}
 }

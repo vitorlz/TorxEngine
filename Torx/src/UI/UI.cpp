@@ -86,11 +86,25 @@ void UI::Update()
                     {
                         CTransform& transform = ecs.GetComponent<CTransform>(livingEntities[i]);
                         
-                        ImGui::SliderFloat3("Position", &transform.position.x, 0.0f, 20.0f, "%.3f"); 
-                        ImGui::SliderFloat3("Scale", &transform.scale.x, 0.0f, 10.0f, "%.3f"); 
-                        ImGui::SliderFloat3("Rotation", &transform.rotation.x, 0.0f, 360.0f, "%.3f"); 
+                        ImGui::SliderFloat3("Position", &transform.position.x, -20.0f, 20.0f, "%.3f");
+                        ImGui::SliderFloat3("Scale", &transform.scale.x, -10.0f, 10.0f, "%.3f");
+                        ImGui::SliderFloat3("Rotation", &transform.rotation.x, -360.0f, 360.0f, "%.3f");
                     }
                 }
+
+                if (ecs.HasComponent<CMesh>(livingEntities[i]))
+                {
+                    if (ImGui::CollapsingHeader("Mesh Component", ImGuiTreeNodeFlags_None))
+                    {
+                        ImGui::TextColored(ImVec4(1.0f, 1.0f, 0.0f, 1.0f), "Has mesh component");
+                    }
+                }
+
+                if (ImGui::Button("Destroy Entity"))
+                {   
+                    ecs.DestroyEntity(livingEntities[i]);
+                }
+
                 ImGui::TreePop();
             }
             ImGui::PopID();
