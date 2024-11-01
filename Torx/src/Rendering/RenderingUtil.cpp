@@ -289,8 +289,6 @@ unsigned int RenderingUtil::CreatePointLightShadowMapFBO(unsigned int shadowWidt
     glReadBuffer(GL_NONE);
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
-    //mPointLightShadowMap = pointLightShadowMap;
-
     return pointLightShadowMapFBO;
 }
 

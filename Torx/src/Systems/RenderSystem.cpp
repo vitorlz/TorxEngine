@@ -65,7 +65,6 @@ void RenderSystem::Update(float deltaTime, Camera& camera)
         {
             // we can later make an array of light pos and render the scene below for each light pos to get multiple shadow maps
             lightPos = transform.position;
-
         }
     }
 
@@ -120,7 +119,6 @@ void RenderSystem::Update(float deltaTime, Camera& camera)
 
         model3d.model.Draw(mPointShadowMapShader);
     }
-   
 
     // ------------------------- LIGHTING PASS -----------------------------------
 
@@ -196,7 +194,6 @@ void RenderSystem::Update(float deltaTime, Camera& camera)
         mLightingShader.setMat3("normalMatrix", normalMatrix);
         mLightingShader.setBool("showNormals", Common::normalsDebug);
         mLightingShader.setBool("worldPosDebug", Common::worldPosDebug);
-
 
         mLightingShader.setVec3("cameraPos", camera.Position);
         mLightingShader.setVec3("cameraFront", camera.Front);

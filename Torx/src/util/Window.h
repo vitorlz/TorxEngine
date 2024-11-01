@@ -4,8 +4,6 @@
 
 struct Window 
 {
-	
-
 	Window(int width, int height, const char* windowTitle);
 
 	GLFWwindow* GetWindow() const;
