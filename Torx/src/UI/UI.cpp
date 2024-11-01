@@ -6,7 +6,7 @@
 #include "../Core/Coordinator.hpp"
 #include "../AssetLoading/AssetManager.h"
 #include "../Components/CLight.h"
-#include "../Components/CMesh.h"
+#include "../Components/CModel.h"
 #include "../Components/CTransform.h"
 
 bool UI::isOpen{ false };
@@ -93,15 +93,15 @@ void UI::Update()
                     }
                 }
 
-                if (ecs.HasComponent<CMesh>(livingEntities[i]))
+                if (ecs.HasComponent<CModel>(livingEntities[i]))
                 {
-                    if (ImGui::CollapsingHeader("Mesh Component", ImGuiTreeNodeFlags_None))
+                    if (ImGui::CollapsingHeader("Model Component", ImGuiTreeNodeFlags_None))
                     {
-                        ImGui::TextColored(ImVec4(1.0f, 1.0f, 0.0f, 1.0f), "Has mesh component");
+                        ImGui::TextColored(ImVec4(1.0f, 1.0f, 0.0f, 1.0f), "Has model component");
                     }
                 }
                 
-                const char* items[] = { "Transform", "Light", "Mesh" };
+                const char* items[] = { "Transform", "Light", "Model" };
                 // this variable is global, that is why it selects on all entities
                 static int item_selected_idx = 0;
 

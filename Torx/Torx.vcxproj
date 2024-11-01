@@ -116,9 +116,9 @@
   <ItemGroup>
     <ClInclude Include="src\AssetLoading\AssetManager.h" />
     <ClInclude Include="src\Components\CLight.h" />
-    <ClInclude Include="src\Components\CMesh.h" />
     <ClInclude Include="src\AssetLoading\mesh.h" />
     <ClInclude Include="src\AssetLoading\model.h" />
+    <ClInclude Include="src\Components\CModel.h" />
     <ClInclude Include="src\Core\Common.h" />
     <ClInclude Include="src\Rendering\RenderingUtil.h" />
     <ClInclude Include="src\Systems\LightSystem.h" />

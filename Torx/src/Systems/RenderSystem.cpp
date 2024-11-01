@@ -8,8 +8,8 @@
 #include "../Core/Common.h"
 #include "../Core/Coordinator.hpp"
 #include "../Components/CTransform.h"
-#include "../Components/CMesh.h"
 #include "../Components/CLight.h"
+#include "../Components/CModel.h"
 #include "../Util/ShaderManager.h"
 #include "../Util/TextureLoader.h"
 #include "../Rendering/RenderingUtil.h"
@@ -60,7 +60,6 @@ void RenderSystem::Update(float deltaTime, Camera& camera)
     for (const auto& entity : mEntities)
     {
         auto& transform = ecs.GetComponent<CTransform>(entity);
-        const auto& mesh = ecs.GetComponent<CMesh>(entity);
         
         if (ecs.HasComponent<CLight>(entity))
         {
@@ -105,7 +104,7 @@ void RenderSystem::Update(float deltaTime, Camera& camera)
     for (const auto& entity : mEntities)
     {
         auto& transform = ecs.GetComponent<CTransform>(entity);
-        const auto& mesh = ecs.GetComponent<CMesh>(entity);
+        auto& model3d = ecs.GetComponent<CModel>(entity);
 
         glm::mat4 model = glm::mat4(1.0f);
         model = glm::translate(model, transform.position);
@@ -119,9 +118,7 @@ void RenderSystem::Update(float deltaTime, Camera& camera)
         mPointShadowMapShader.setMat4("model", model);
 
 
-        for (Mesh mesh : mesh.meshes) {
-            mesh.Draw(mPointShadowMapShader);
-        }
+        model3d.model.Draw(mPointShadowMapShader);
     }
    
 
@@ -157,7 +154,7 @@ void RenderSystem::Update(float deltaTime, Camera& camera)
     for (const auto& entity : mEntities) 
     {
         auto& transform = ecs.GetComponent<CTransform>(entity);
-        const auto& mesh = ecs.GetComponent<CMesh>(entity);
+        auto& model3d = ecs.GetComponent<CModel>(entity);
 
         glm::mat4 model = glm::mat4(1.0f);
         model = glm::translate(model, transform.position);
@@ -180,18 +177,16 @@ void RenderSystem::Update(float deltaTime, Camera& camera)
             mSolidColorShader.setMat4("model", model);
             mSolidColorShader.setVec3("color", ecs.GetComponent<CLight>(entity).diffuse * 1.5f);
 
-            for (Mesh mesh : mesh.meshes) {
-                mesh.Draw(mSolidColorShader);
-            }
-
-            continue;
+            model3d.model.Draw(mSolidColorShader);
         }
 
         mLightingShader.use();
         
-        mLightingShader.setInt("pointShadowMap", 5);
-        glActiveTexture(GL_TEXTURE5);
+        
+        glActiveTexture(GL_TEXTURE2);
         glBindTexture(GL_TEXTURE_CUBE_MAP, mPointLightShadowMap);
+
+        mLightingShader.setInt("pointShadowMap", 2);
        
         mLightingShader.setFloat("point_far_plane", pointFar);
 
@@ -206,9 +201,7 @@ void RenderSystem::Update(float deltaTime, Camera& camera)
         mLightingShader.setVec3("cameraPos", camera.Position);
         mLightingShader.setVec3("cameraFront", camera.Front);
 
-        for (Mesh mesh : mesh.meshes) {
-            mesh.Draw(mLightingShader);
-        }
+        model3d.model.Draw(mLightingShader);
     }
     
     // ---------------------------- SKYBOX PASS ---------------------------------------
@@ -220,8 +213,6 @@ void RenderSystem::Update(float deltaTime, Camera& camera)
     glDisable(GL_CULL_FACE);
 
     glDepthFunc(GL_LEQUAL);
-
-
 
     mSkyBoxShader.use();
 
@@ -236,7 +227,7 @@ void RenderSystem::Update(float deltaTime, Camera& camera)
     glBindVertexArray(mCubeVAO);
     mSkyBoxShader.setInt("skybox", 1);
     glActiveTexture(GL_TEXTURE1);
-    glBindTexture(GL_TEXTURE_CUBE_MAP, mPointLightShadowMap);
+    glBindTexture(GL_TEXTURE_CUBE_MAP, mCubemapID);
     glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
 
     glDepthFunc(GL_LESS);

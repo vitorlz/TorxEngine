@@ -18,8 +18,8 @@
 #include "AssetLoading/AssetManager.h"
 
 #include "Components/CTransform.h"
-#include "Components/CMesh.h"
 #include "Components/CLight.h"
+#include "Components/CModel.h"
 
 #include "Systems/RenderSystem.h"
 #include "Systems/LightSystem.h"
@@ -51,14 +51,14 @@ int main()
     ShaderManager::LoadShaders();
 
     ecs.RegisterComponent<CTransform>();
-    ecs.RegisterComponent<CMesh>();
+    ecs.RegisterComponent<CModel>();
     ecs.RegisterComponent<CLight>();
 
     auto renderSystem = ecs.RegisterSystem<RenderSystem>();
     {
         Signature signature;
         signature.set(ecs.GetComponentType<CTransform>());
-        signature.set(ecs.GetComponentType<CMesh>());
+        signature.set(ecs.GetComponentType<CModel>());
         ecs.SetSystemSignature<RenderSystem>(signature);
     }
 
@@ -84,10 +84,10 @@ int main()
             .rotation = glm::vec3(0.0f, 90.0f, 0.0f),
         });
 
-    ecs.AddComponent<CMesh>(
+    ecs.AddComponent<CModel>(
         sponzaEntity,
-        CMesh{
-            .meshes = AssetManager::GetModel("sponza").meshes
+        CModel{
+            .model = AssetManager::GetModel("sponza")
         });
 
     Entity pointLight = ecs.CreateEntity();
@@ -110,10 +110,9 @@ int main()
             .quadratic = 0.3f
         });
 
-    ecs.AddComponent<CMesh>(
-        pointLight,
-        CMesh{
-            .meshes = AssetManager::GetModel("debugCube").meshes
+    ecs.AddComponent<CModel>(pointLight,
+        CModel{
+            .model = AssetManager::GetModel("debugCube")
         });
 
    /* Entity flashlight = ecs.CreateEntity();
