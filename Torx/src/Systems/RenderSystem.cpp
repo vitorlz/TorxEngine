@@ -189,8 +189,8 @@ void RenderSystem::Update(float deltaTime, Camera& camera)
 
         mLightingShader.use();
         
-       // mLightingShader.setInt("pointShadowMap", 5);
-       // glActiveTexture(GL_TEXTURE5);
+        mLightingShader.setInt("pointShadowMap", 5);
+        glActiveTexture(GL_TEXTURE5);
         glBindTexture(GL_TEXTURE_CUBE_MAP, mPointLightShadowMap);
        
         mLightingShader.setFloat("point_far_plane", pointFar);
@@ -234,9 +234,9 @@ void RenderSystem::Update(float deltaTime, Camera& camera)
     mSkyBoxShader.setMat4("projection", projection);
     mSkyBoxShader.setMat4("view", view);
     glBindVertexArray(mCubeVAO);
-    //mSkyBoxShader.setInt("skybox", 2);
-   
-    glBindTexture(GL_TEXTURE_CUBE_MAP, mCubemapID);
+    mSkyBoxShader.setInt("skybox", 1);
+    glActiveTexture(GL_TEXTURE1);
+    glBindTexture(GL_TEXTURE_CUBE_MAP, mPointLightShadowMap);
     glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
 
     glDepthFunc(GL_LESS);

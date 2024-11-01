@@ -264,9 +264,9 @@ unsigned int RenderingUtil::CreatePointLightShadowMapFBO(unsigned int shadowWidt
     unsigned int pointLightShadowMapFBO;
     glGenFramebuffers(1, &pointLightShadowMapFBO);
 
-    unsigned int mPointLightShadowMap;
-    glGenTextures(1, &mPointLightShadowMap);
-    glBindTexture(GL_TEXTURE_CUBE_MAP, mPointLightShadowMap);
+    unsigned int pointLightShadowMap;
+    glGenTextures(1, &pointLightShadowMap);
+    glBindTexture(GL_TEXTURE_CUBE_MAP, pointLightShadowMap);
 
     // CUBE MAPS REQUIRE THE SAME WIDTH AND HEIGHT FOR THE TEXTURE IMAGE SIZE OF EACH FACE OF THE CUBE. SO SHADOW_WIDTH AND SHADOW_HEIGHT HAVE TO BE THE SAME
 
@@ -282,14 +282,17 @@ unsigned int RenderingUtil::CreatePointLightShadowMapFBO(unsigned int shadowWidt
     glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
     //glBindTexture(GL_TEXTURE_CUBE_MAP, mPointLightShadowMap);
 
+    // if I uncomment below I cant see the texture anymore in the skybox
     //glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
 
     glBindFramebuffer(GL_FRAMEBUFFER, pointLightShadowMapFBO);
     // Note that we can use glFramebufferTexture to attach an entire cubemap to the framebuffer.
-    glFramebufferTexture(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, mPointLightShadowMap, 0);
+    glFramebufferTexture(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, pointLightShadowMap, 0);
     glDrawBuffer(GL_NONE);
     glReadBuffer(GL_NONE);
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+    mPointLightShadowMap = pointLightShadowMap;
 
     return pointLightShadowMapFBO;
 }

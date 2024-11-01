@@ -211,5 +211,5 @@ float PointShadowCalculation(vec3 fragPos, Light light)
     float bias = 0.05; 
     float shadow = currentDepth -  bias > closestDepth ? 1.0 : 0.0;
 
-    return 0;
+    return shadow;
 }
