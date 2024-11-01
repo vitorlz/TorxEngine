@@ -23,8 +23,11 @@ private:
 	unsigned int mMsFBO;
 	unsigned int mBlittingFBO;
 	unsigned int mScreenQuadTexture;
+	unsigned int mPointLightShadowMapFBO;
+	unsigned int mPointLightShadowMap;
 	Shader mSolidColorShader;
 	Shader mLightingShader;
 	Shader mSkyBoxShader;
 	Shader mPostProcessingShader;
+	Shader mPointShadowMapShader;
 };

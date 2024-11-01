@@ -51,9 +51,15 @@ uniform vec3 cameraFront;
 uniform bool showNormals;
 uniform bool worldPosDebug;
 
+// probably make this an array for multiple shadow maps
+uniform samplerCube pointShadowMap;
+uniform float point_far_plane;
+
+
 vec4 CalcPointLight(Light light, vec3 normal, vec3 fragPos, vec3 viewDir);
 vec4 CalcDirLight(Light light, vec3 normal, vec3 viewDir);
 vec4 CalcSpotLight(Light light, vec3 normal, vec3 fragPos, vec3 viewDir);
+float PointShadowCalculation(vec3 fragPos, Light light);
 
 void main() {
 	
@@ -98,8 +104,10 @@ void main() {
 		FragColor = vec4(norm, 1.0);
 	else if (worldPosDebug) 
 		FragColor = vec4(FragPos, 1.0);
-	else 
+	else {
 		FragColor = result;	
+	}
+			
 }
 
 vec4 CalcPointLight(Light light, vec3 normal, vec3 fragPos, vec3 viewDir) {
@@ -109,7 +117,7 @@ vec4 CalcPointLight(Light light, vec3 normal, vec3 fragPos, vec3 viewDir) {
 
 	vec3 lightDir = normalize(light.position.xyz - fragPos);
 
-	//float shadow = PointShadowCalculation(fragPos, light);
+	float shadow = PointShadowCalculation(fragPos, light);
 
 	// diffuse shading
 	float diff = max(dot(lightDir, normal), 0.0);
@@ -123,8 +131,8 @@ vec4 CalcPointLight(Light light, vec3 normal, vec3 fragPos, vec3 viewDir) {
 	float attenuation = 1.0 / ( 1.0 + light.quadratic.x * (distance * distance)); 
 
 	vec4 ambient = light.ambient * materialDiffuse;
-	vec4 diffuse = light.diffuse * diff * materialDiffuse; //* (1.0 - shadow);
-	vec4 specular = light.specular * spec * materialSpecular;// * clamp((1.0 - shadow * 2), 0.0, 1.0);
+	vec4 diffuse = light.diffuse * diff * materialDiffuse * (1.0 - shadow);
+	vec4 specular = light.specular * spec * materialSpecular * clamp((1.0 - shadow), 0.0, 1.0);
 
 	ambient *= attenuation;
 	diffuse *= attenuation;
@@ -148,7 +156,7 @@ vec4 CalcDirLight(Light light, vec3 normal, vec3 viewDir){
 	float spec = pow(max(dot(normal, halfwayDir), 0.0), 32.0f);
 	
 	vec4 ambient = light.ambient * materialDiffuse;
-	vec4 diffuse = light.diffuse * diff * materialDiffuse; //* (1.0 - clamp(shadow, 0.0, 1.0));
+	vec4 diffuse = light.diffuse * diff * materialDiffuse;//* (1.0 - clamp(shadow, 0.0, 1.0));
 	vec4 specular = light.specular * spec * materialSpecular;// * clamp((1.0 - shadow * 2), 0.0, 1.0);
 
 	return (ambient + diffuse + specular);
@@ -187,4 +195,21 @@ vec4 CalcSpotLight(Light light, vec3 normal, vec3 fragPos, vec3 viewDir) {
 	specular *= intensity * attenuation;
 
 	return (ambient + diffuse + specular);
+}
+
+float PointShadowCalculation(vec3 fragPos, Light light) 
+{
+ // get vector between fragment position and light position
+    vec3 fragToLight = fragPos - light.position.xyz;
+    // use the light to fragment vector to sample from the depth map    
+    float closestDepth = texture(pointShadowMap, fragToLight).r;
+    // it is currently in linear range between [0,1]. Re-transform back to original value
+    closestDepth *= point_far_plane;
+    // now get current linear depth as the length between the fragment and light position
+    float currentDepth = length(fragToLight);
+    // now test for shadows
+    float bias = 0.05; 
+    float shadow = currentDepth -  bias > closestDepth ? 1.0 : 0.0;
+
+    return 0;
 }

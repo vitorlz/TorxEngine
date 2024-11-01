@@ -13,6 +13,7 @@ void ShaderManager::LoadShaders()
 	std::shared_ptr<Shader> lightingShader = std::make_shared<Shader>("res/shaders/lighting.vert", "res/shaders/lighting.frag");
 	std::shared_ptr<Shader> solidColorShader = std::make_shared<Shader>("res/shaders/solidColor.vert", "res/shaders/solidColor.frag");
 	std::shared_ptr<Shader> postProcessingShader = std::make_shared<Shader>("res/shaders/postProcessing.vert", "res/shaders/postProcessing.frag");
+	std::shared_ptr<Shader> pointShadowMapShader = std::make_shared<Shader>("res/shaders/pointShadowMap.vert", "res/shaders/pointShadowMap.frag", "res/shaders/pointShadowMap.geom");
 
 	shaderPrograms.clear();
 
@@ -21,6 +22,7 @@ void ShaderManager::LoadShaders()
 	shaderPrograms.insert({ "lightingShader", lightingShader });
 	shaderPrograms.insert({ "solidColorShader", solidColorShader });
 	shaderPrograms.insert({ "postProcessingShader", postProcessingShader });
+	shaderPrograms.insert({ "pointShadowMapShader", pointShadowMapShader });
 }
 
 Shader& ShaderManager::GetShaderProgram(std::string name) 
