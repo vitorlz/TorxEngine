@@ -22,12 +22,13 @@ struct Light
 	glm::vec4 direction;
 	glm::vec4 innerCutoff;
 	glm::vec4 outerCutoff;
+
+	glm::vec4 shadowCaster;
 };
 
 std::vector<Light> lights;
 std::unordered_map<Entity, Light> EntityToLightMap;
 std::unordered_map<Entity, int> EntityToLightIndexMap;
-
 
 Light lightData;
 
@@ -73,6 +74,7 @@ void LightSystem::Init()
 		lightData.diffuse = glm::vec4(light.diffuse, 1.0f);
 		lightData.specular = glm::vec4(light.specular, 1.0f);
 		lightData.radius = glm::vec4(light.radius);
+		lightData.shadowCaster = glm::vec4(light.shadowCaster);
 
 		EntityToLightMap[entity] = lightData;
 		EntityToLightIndexMap[entity] = mLightIndex - 1;
@@ -84,29 +86,38 @@ void LightSystem::Init()
 void LightSystem::Update(float deltaTime, Camera& camera)
 {
 	// Here we fetch the light data for each entity and update it.
+	// We need this to send the updated light data to the ssbo. 
 
 	for (const auto& entity : mEntities) 
 	{
-		const auto& transform = ecs.GetComponent<CTransform>(entity);
-		const auto& light = ecs.GetComponent<CLight>(entity);
+		
+		auto& light = ecs.GetComponent<CLight>(entity);
 
-		EntityToLightMap[entity].position = glm::vec4(transform.position, 1.0f);
+		if (light.isDirty) 
+		{	
+			const auto& transform = ecs.GetComponent<CTransform>(entity);
+			
+			std::cout << "light is dirty \n";
+			EntityToLightMap[entity].position = glm::vec4(transform.position, 1.0f);
 
-		if (light.type == SPOT)
-		{
-			EntityToLightMap[entity].position = glm::vec4(camera.Position, 1.0f);
-			EntityToLightMap[entity].direction = glm::vec4(camera.Front, 1.0f);
-			EntityToLightMap[entity].innerCutoff = glm::vec4(glm::cos(glm::radians(light.innerCutoff)));
-			EntityToLightMap[entity].outerCutoff = glm::vec4(glm::cos(glm::radians(light.outerCutoff)));
+			if (light.type == SPOT)
+			{
+				EntityToLightMap[entity].position = glm::vec4(camera.Position, 1.0f);
+				EntityToLightMap[entity].direction = glm::vec4(camera.Front, 1.0f);
+				EntityToLightMap[entity].innerCutoff = glm::vec4(glm::cos(glm::radians(light.innerCutoff)));
+				EntityToLightMap[entity].outerCutoff = glm::vec4(glm::cos(glm::radians(light.outerCutoff)));
+			}
 
+			EntityToLightMap[entity].ambient = glm::vec4(light.ambient, 1.0f);
+			EntityToLightMap[entity].diffuse = glm::vec4(light.diffuse, 1.0f);
+			EntityToLightMap[entity].specular = glm::vec4(light.specular, 1.0f);
+			EntityToLightMap[entity].radius = glm::vec4(light.radius);
+			EntityToLightMap[entity].shadowCaster = glm::vec4(light.shadowCaster);
+
+			glNamedBufferSubData(mSsbo, EntityToLightIndexMap[entity] * sizeof(Light), sizeof(Light), (const void*)&EntityToLightMap[entity]);
+
+			light.isDirty = false;
 		}
-
-		EntityToLightMap[entity].ambient = glm::vec4(light.ambient, 1.0f);
-		EntityToLightMap[entity].diffuse = glm::vec4(light.diffuse, 1.0f);
-		EntityToLightMap[entity].specular = glm::vec4(light.specular, 1.0f);
-		EntityToLightMap[entity].radius = glm::vec4(light.radius);
-
-		glNamedBufferSubData(mSsbo, EntityToLightIndexMap[entity] * sizeof(Light), sizeof(Light), (const void*)&EntityToLightMap[entity]);
 	}
 
 	// check if any lights were deleted to update ssbo. If no lights were added or deleted, the number of entities will be equal to the lightIndex.

@@ -29,6 +29,8 @@ struct Light
 	vec4 direction;
 	vec4 innerCutoff;
 	vec4 outerCutoff;
+
+	vec4 shadowCaster;
 };
 
 layout(binding = 0, std430) buffer LightsSSBO 
@@ -118,7 +120,12 @@ vec4 CalcPointLight(Light light, vec3 normal, vec3 fragPos, vec3 viewDir, int li
 
 	vec3 lightDir = normalize(light.position.xyz - fragPos);
 
-	float shadow = PointShadowCalculation(fragPos, light, lightIndex);
+	float shadow = 0;
+
+	if (light.shadowCaster.x == 1) {
+		shadow = PointShadowCalculation(fragPos, light, lightIndex);
+	}
+	
 
 	// diffuse shading
 	float diff = max(dot(lightDir, normal), 0.0);

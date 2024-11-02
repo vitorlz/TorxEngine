@@ -107,7 +107,8 @@ int main()
             .ambient = glm::vec3(0.0f),
             .diffuse = glm::vec3(0.5f, 0.5f, 0.5f),
             .specular = glm::vec3(1.0f, 1.0f, 1.0f),
-            .radius = 9.0f
+            .radius = 9.0f,
+            .shadowCaster = true,
         });
 
     ecs.AddComponent<CModel>(pointLight,
@@ -132,7 +133,8 @@ int main()
             .ambient = glm::vec3(0.0f),
             .diffuse = glm::vec3(0.5f, 0.5f, 0.5f),
             .specular = glm::vec3(1.0f, 1.0f, 1.0f),
-            .radius = 9.0f
+            .radius = 9.0f,
+            .shadowCaster = true,
         });
 
     ecs.AddComponent<CModel>(pointLight2,
@@ -158,7 +160,8 @@ int main()
             .ambient = glm::vec3(0.0f),
             .diffuse = glm::vec3(0.5f, 0.5f, 0.5f),
             .specular = glm::vec3(1.0f, 1.0f, 1.0f),
-            .radius = 9.0f
+            .radius = 9.0f,
+            .shadowCaster = true,
         });
 
     ecs.AddComponent<CModel>(pointLight3,
@@ -211,9 +214,9 @@ int main()
 
         gui.NewFrame();
 
-        lightSystem->Update(deltaTime, camera);
- 
         renderSystem->Update(deltaTime, camera);
+
+        lightSystem->Update(deltaTime, camera);
 
         gui.Update();
         window.Update();

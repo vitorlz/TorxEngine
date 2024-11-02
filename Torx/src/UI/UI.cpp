@@ -70,19 +70,20 @@ void UI::Update()
                             ImGui::InputFloat3("Direction", &light.direction.x);
                             ImGui::SliderFloat("Inner Cutoff", &light.innerCutoff, 0.1f, light.outerCutoff, "angle = %.1f");
                             ImGui::SliderFloat("Outer Cutoff", &light.outerCutoff, light.innerCutoff, 90.0f, "angle = %.1f");
-                      
-
                         }
 
                         ImGui::ColorEdit3("Ambient", &light.ambient.x);
                         ImGui::ColorEdit3("Diffuse", &light.diffuse.x);
                         ImGui::ColorEdit3("Specular", &light.specular.x);
                         ImGui::SliderFloat("Radius", &light.radius, 0.001f, 30.0f, "%.5f");
+                        ImGui::Checkbox("Cast Shadows", (bool*)&light.shadowCaster);
+
+                        light.isDirty = true;
                     }
                 }
 
                 if (ecs.HasComponent<CTransform>(livingEntities[i]))
-                {
+                {                
                     if (ImGui::CollapsingHeader("Transform Component", ImGuiTreeNodeFlags_None))
                     {
                         CTransform& transform = ecs.GetComponent<CTransform>(livingEntities[i]);
@@ -90,6 +91,12 @@ void UI::Update()
                         ImGui::SliderFloat3("Position", &transform.position.x, -20.0f, 20.0f, "%.3f");
                         ImGui::SliderFloat3("Scale", &transform.scale.x, -10.0f, 10.0f, "%.3f");
                         ImGui::SliderFloat3("Rotation", &transform.rotation.x, -360.0f, 360.0f, "%.3f");
+
+                        if (ecs.HasComponent<CLight>(livingEntities[i]))
+                        {
+                            CLight& light = ecs.GetComponent<CLight>(livingEntities[i]);
+                            light.isDirty = true;
+                        }
                     }
                 }
 
@@ -144,7 +151,8 @@ void UI::Update()
                                 .ambient = glm::vec3(0.0f),
                                 .diffuse = glm::vec3(0.5f, 0.5f, 0.5f),
                                 .specular = glm::vec3(1.0f, 1.0f, 1.0f),
-                                .radius = 2.0f
+                                .radius = 9.0f,
+                                .shadowCaster = true,
                             });
                     }
                 }

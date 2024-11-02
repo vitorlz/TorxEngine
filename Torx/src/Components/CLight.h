@@ -23,6 +23,8 @@ struct CLight
 	glm::vec3 direction;
 	float innerCutoff;
 	float outerCutoff;
+	int shadowCaster{ 0 };
+	int isDirty{ 1 };
 };
 
 
