@@ -77,7 +77,7 @@ void UI::Update()
                         ImGui::ColorEdit3("Ambient", &light.ambient.x);
                         ImGui::ColorEdit3("Diffuse", &light.diffuse.x);
                         ImGui::ColorEdit3("Specular", &light.specular.x);
-                        ImGui::SliderFloat("Quadratic Attenuation", &light.quadratic, 0.001f, 1.0f, "%.5f");               
+                        ImGui::SliderFloat("Radius", &light.radius, 0.001f, 30.0f, "%.5f");
                     }
                 }
 
@@ -144,7 +144,7 @@ void UI::Update()
                                 .ambient = glm::vec3(0.0f),
                                 .diffuse = glm::vec3(0.5f, 0.5f, 0.5f),
                                 .specular = glm::vec3(1.0f, 1.0f, 1.0f),
-                                .quadratic = 0.3f
+                                .radius = 2.0f
                             });
                     }
                 }

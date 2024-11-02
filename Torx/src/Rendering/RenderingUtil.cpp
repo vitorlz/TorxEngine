@@ -265,28 +265,35 @@ unsigned int RenderingUtil::CreatePointLightShadowMapFBO(unsigned int shadowWidt
     glGenFramebuffers(1, &pointLightShadowMapFBO);
 
     glGenTextures(1, &mPointLightShadowMap);
-    glBindTexture(GL_TEXTURE_CUBE_MAP, mPointLightShadowMap);
+    glBindTexture(GL_TEXTURE_CUBE_MAP_ARRAY, mPointLightShadowMap);
 
     // CUBE MAPS REQUIRE THE SAME WIDTH AND HEIGHT FOR THE TEXTURE IMAGE SIZE OF EACH FACE OF THE CUBE. SO SHADOW_WIDTH AND SHADOW_HEIGHT HAVE TO BE THE SAME
 
-    for (unsigned int i = 0; i < 6; i++) {
-        glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_DEPTH_COMPONENT, shadowWidth, shadowHeight,
-            0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
-    }
-
-    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+   
+    glTexImage3D(GL_TEXTURE_CUBE_MAP_ARRAY, 0, GL_DEPTH_COMPONENT, shadowWidth, shadowHeight, 2 * 12, 0, GL_DEPTH_COMPONENT, GL_FLOAT, nullptr);
     
-    glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
+
+    glTexParameteri(GL_TEXTURE_CUBE_MAP_ARRAY, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_CUBE_MAP_ARRAY, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_CUBE_MAP_ARRAY, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_CUBE_MAP_ARRAY, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_CUBE_MAP_ARRAY, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+    
+    glBindTexture(GL_TEXTURE_CUBE_MAP_ARRAY, 0);
 
     glBindFramebuffer(GL_FRAMEBUFFER, pointLightShadowMapFBO);
     // Note that we can use glFramebufferTexture to attach an entire cubemap to the framebuffer.
     glFramebufferTexture(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, mPointLightShadowMap, 0);
     glDrawBuffer(GL_NONE);
     glReadBuffer(GL_NONE);
+
+    const int status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
+    if (status != GL_FRAMEBUFFER_COMPLETE)
+    {
+        std::cout << "ERROR::FRAMEBUFFER:: Framebuffer is not complete!\n";
+        throw 0;
+    }
+
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
     return pointLightShadowMapFBO;

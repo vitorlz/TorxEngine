@@ -45,17 +45,17 @@ void RenderSystem::Init()
 
 
 
-
 void RenderSystem::Update(float deltaTime, Camera& camera)
 {
-
+    int i = 0;
     // ------------------------- OMNIDIRECTIONAL SHADOW PASS -----------------------------------
 
     glEnable(GL_DEPTH_TEST);
-    glm::vec3 lightPos;
+    glm::vec3 lightPos[5]; 
     glm::mat4 shadowProj;
     std::vector<glm::mat4> shadowTransforms;
 
+    
     // get light position (in the future that is going to be an array)
     for (const auto& entity : mEntities)
     {
@@ -64,26 +64,14 @@ void RenderSystem::Update(float deltaTime, Camera& camera)
         if (ecs.HasComponent<CLight>(entity))
         {
             // we can later make an array of light pos and render the scene below for each light pos to get multiple shadow maps
-            lightPos = transform.position;
+            lightPos[i] = transform.position;
+            i++;
         }
     }
 
     float pointNear = 1.0f;
-    float pointFar = 25.0f;
+    float pointFar = 9.0f;
     shadowProj = glm::perspective(glm::radians(90.0f), ((float)1024) / ((float)1024), pointNear, pointFar);
-
-    shadowTransforms.push_back(shadowProj *
-        glm::lookAt(lightPos, lightPos + glm::vec3(1.0, 0.0, 0.0), glm::vec3(0.0, -1.0, 0.0)));
-    shadowTransforms.push_back(shadowProj *
-        glm::lookAt(lightPos, lightPos + glm::vec3(-1.0, 0.0, 0.0), glm::vec3(0.0, -1.0, 0.0)));
-    shadowTransforms.push_back(shadowProj *
-        glm::lookAt(lightPos, lightPos + glm::vec3(0.0, 1.0, 0.0), glm::vec3(0.0, 0.0, 1.0)));
-    shadowTransforms.push_back(shadowProj *
-        glm::lookAt(lightPos, lightPos + glm::vec3(0.0, -1.0, 0.0), glm::vec3(0.0, 0.0, -1.0)));
-    shadowTransforms.push_back(shadowProj *
-        glm::lookAt(lightPos, lightPos + glm::vec3(0.0, 0.0, 1.0), glm::vec3(0.0, -1.0, 0.0)));
-    shadowTransforms.push_back(shadowProj *
-        glm::lookAt(lightPos, lightPos + glm::vec3(0.0, 0.0, -1.0), glm::vec3(0.0, -1.0, 0.0)));
 
     glViewport(0, 0, ((float)1024), ((float)1024));
     glBindFramebuffer(GL_FRAMEBUFFER, mPointLightShadowMapFBO);
@@ -91,34 +79,63 @@ void RenderSystem::Update(float deltaTime, Camera& camera)
     glClear(GL_DEPTH_BUFFER_BIT);
 
     mPointShadowMapShader.use();
+    
+    
+    for (int i = 0; i < 2; i++) 
+    {
+
+        shadowTransforms.push_back(shadowProj *
+            glm::lookAt(lightPos[i], lightPos[i] + glm::vec3(1.0, 0.0, 0.0), glm::vec3(0.0, -1.0, 0.0)));
+        shadowTransforms.push_back(shadowProj *
+            glm::lookAt(lightPos[i], lightPos[i] + glm::vec3(-1.0, 0.0, 0.0), glm::vec3(0.0, -1.0, 0.0)));
+        shadowTransforms.push_back(shadowProj *
+            glm::lookAt(lightPos[i], lightPos[i] + glm::vec3(0.0, 1.0, 0.0), glm::vec3(0.0, 0.0, 1.0)));
+        shadowTransforms.push_back(shadowProj *
+            glm::lookAt(lightPos[i], lightPos[i] + glm::vec3(0.0, -1.0, 0.0), glm::vec3(0.0, 0.0, -1.0)));
+        shadowTransforms.push_back(shadowProj *
+            glm::lookAt(lightPos[i], lightPos[i] + glm::vec3(0.0, 0.0, 1.0), glm::vec3(0.0, -1.0, 0.0)));
+        shadowTransforms.push_back(shadowProj *
+            glm::lookAt(lightPos[i], lightPos[i] + glm::vec3(0.0, 0.0, -1.0), glm::vec3(0.0, -1.0, 0.0)));
+    }
+
+    for (int i = 0; i < 2; i++) 
+    {
+       
+        for (unsigned int i = 0; i < 12; ++i) {
+
+            mPointShadowMapShader.setMat4("shadowMatrices[" + std::to_string(i) + "]", shadowTransforms[i]);
+        }
+
+        mPointShadowMapShader.setFloat("far_plane", pointFar);
+        mPointShadowMapShader.setVec3("lightPos", lightPos[i]);
+
+        for (const auto& entity : mEntities)
+        {
+            auto& transform = ecs.GetComponent<CTransform>(entity);
+            auto& model3d = ecs.GetComponent<CModel>(entity);
+
+            glm::mat4 model = glm::mat4(1.0f);
+            model = glm::translate(model, transform.position);
+
+            model = glm::rotate(model, glm::radians(transform.rotation.x), glm::vec3(1.0f, 0.0, 0.0));
+            model = glm::rotate(model, glm::radians(transform.rotation.y), glm::vec3(0.0f, 1.0, 0.0));
+            model = glm::rotate(model, glm::radians(transform.rotation.z), glm::vec3(0.0f, 0.0, 1.0));
+            model = glm::scale(model, transform.scale);
+
+            mPointShadowMapShader.setMat4("model", model);
+
+            model3d.model.Draw(mPointShadowMapShader);
+        }
+
+     //  shadowTransforms.clear();
+    }
+   
+   
+   
 
     // send shadow transforms and far plane as uniforms 
 
-    for (unsigned int i = 0; i < 6; ++i)
-        mPointShadowMapShader.setMat4("shadowMatrices[" + std::to_string(i) + "]", shadowTransforms[i]);
-
-    mPointShadowMapShader.setFloat("far_plane", pointFar);
-    mPointShadowMapShader.setVec3("lightPos", lightPos);
-
-    for (const auto& entity : mEntities)
-    {
-        auto& transform = ecs.GetComponent<CTransform>(entity);
-        auto& model3d = ecs.GetComponent<CModel>(entity);
-
-        glm::mat4 model = glm::mat4(1.0f);
-        model = glm::translate(model, transform.position);
-
-        model = glm::rotate(model, glm::radians(transform.rotation.x), glm::vec3(1.0f, 0.0, 0.0));
-        model = glm::rotate(model, glm::radians(transform.rotation.y), glm::vec3(0.0f, 1.0, 0.0));
-        model = glm::rotate(model, glm::radians(transform.rotation.z), glm::vec3(0.0f, 0.0, 1.0));
-        model = glm::scale(model, transform.scale);
-
-     
-        mPointShadowMapShader.setMat4("model", model);
-
-
-        model3d.model.Draw(mPointShadowMapShader);
-    }
+   
 
     // ------------------------- LIGHTING PASS -----------------------------------
 
@@ -170,7 +187,7 @@ void RenderSystem::Update(float deltaTime, Camera& camera)
 
             mSolidColorShader.use(); 
            
-            mSolidColorShader.setMat4("projection", projection); // note: currently we set the projection matrix each frame, but since the projection matrix rarely changes it's often best practice to set it outside the main loop only once.
+            mSolidColorShader.setMat4("projection", projection);
             mSolidColorShader.setMat4("view", view);
             mSolidColorShader.setMat4("model", model);
             mSolidColorShader.setVec3("color", ecs.GetComponent<CLight>(entity).diffuse * 1.5f);
@@ -180,9 +197,8 @@ void RenderSystem::Update(float deltaTime, Camera& camera)
 
         mLightingShader.use();
         
-        
         glActiveTexture(GL_TEXTURE2);
-        glBindTexture(GL_TEXTURE_CUBE_MAP, mPointLightShadowMap);
+        glBindTexture(GL_TEXTURE_CUBE_MAP_ARRAY, mPointLightShadowMap);
 
         mLightingShader.setInt("pointShadowMap", 2);
        
@@ -224,7 +240,7 @@ void RenderSystem::Update(float deltaTime, Camera& camera)
     glBindVertexArray(mCubeVAO);
     mSkyBoxShader.setInt("skybox", 1);
     glActiveTexture(GL_TEXTURE1);
-    glBindTexture(GL_TEXTURE_CUBE_MAP, mCubemapID);
+    glBindTexture(GL_TEXTURE_CUBE_MAP_ARRAY, mPointLightShadowMap);
     glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
 
     glDepthFunc(GL_LESS);

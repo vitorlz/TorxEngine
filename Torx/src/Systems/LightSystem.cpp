@@ -16,7 +16,7 @@ struct Light
 	glm::vec4 ambient;
 	glm::vec4 diffuse;
 	glm::vec4 specular;
-	glm::vec4 quadratic;
+	glm::vec4 radius;
 
 	// for spotlight
 	glm::vec4 direction;
@@ -72,7 +72,7 @@ void LightSystem::Init()
 		lightData.ambient = glm::vec4(light.ambient, 1.0f);
 		lightData.diffuse = glm::vec4(light.diffuse, 1.0f);
 		lightData.specular = glm::vec4(light.specular, 1.0f);
-		lightData.quadratic = glm::vec4(light.quadratic);
+		lightData.radius = glm::vec4(light.radius);
 
 		EntityToLightMap[entity] = lightData;
 		EntityToLightIndexMap[entity] = mLightIndex - 1;
@@ -104,7 +104,7 @@ void LightSystem::Update(float deltaTime, Camera& camera)
 		EntityToLightMap[entity].ambient = glm::vec4(light.ambient, 1.0f);
 		EntityToLightMap[entity].diffuse = glm::vec4(light.diffuse, 1.0f);
 		EntityToLightMap[entity].specular = glm::vec4(light.specular, 1.0f);
-		EntityToLightMap[entity].quadratic = glm::vec4(light.quadratic);
+		EntityToLightMap[entity].radius = glm::vec4(light.radius);
 
 		glNamedBufferSubData(mSsbo, EntityToLightIndexMap[entity] * sizeof(Light), sizeof(Light), (const void*)&EntityToLightMap[entity]);
 	}
@@ -180,7 +180,7 @@ void LightSystem::Update(float deltaTime, Camera& camera)
 		lightData.ambient = glm::vec4(light.ambient, 1.0f);
 		lightData.diffuse = glm::vec4(light.diffuse, 1.0f);
 		lightData.specular = glm::vec4(light.specular, 1.0f);
-		lightData.quadratic = glm::vec4(light.quadratic);
+		lightData.radius = glm::vec4(light.radius);
 
 		EntityToLightMap[entityAdded] = lightData;
 		EntityToLightIndexMap[entityAdded] = mLightIndex - 1;

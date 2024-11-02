@@ -17,7 +17,7 @@ struct CLight
 	glm::vec3 ambient;
 	glm::vec3 diffuse;
 	glm::vec3 specular;
-	float quadratic;
+	float radius;
 
 	// for spotlight
 	glm::vec3 direction;
