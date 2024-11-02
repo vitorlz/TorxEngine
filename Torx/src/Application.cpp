@@ -141,6 +141,35 @@ int main()
 
         });
 
+    Entity pointLight3 = ecs.CreateEntity();
+
+    ecs.AddComponent<CTransform>(
+        pointLight3,
+        CTransform{
+            .position = glm::vec3(1.0f, 4.0f, 1.0f),
+            .scale = glm::vec3(0.2f, 0.2f, 0.2f),
+            .rotation = glm::vec3(0.0f),
+        });
+
+    ecs.AddComponent<CLight>(
+        pointLight3,
+        CLight{
+            .type = POINT,
+            .ambient = glm::vec3(0.0f),
+            .diffuse = glm::vec3(0.5f, 0.5f, 0.5f),
+            .specular = glm::vec3(1.0f, 1.0f, 1.0f),
+            .radius = 9.0f
+        });
+
+    ecs.AddComponent<CModel>(pointLight3,
+        CModel{
+            .model = AssetManager::GetModel("debugCube")
+
+        });
+
+
+
+
    /* Entity flashlight = ecs.CreateEntity();
 
     ecs.AddComponent<CTransform>(

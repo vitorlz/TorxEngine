@@ -1,9 +1,10 @@
 #version 460 core 
+
 layout (triangles) in;
-layout (triangle_strip, max_vertices=36) out;
+layout (triangle_strip, max_vertices=(90)) out;
 
-uniform mat4 shadowMatrices[12];
-
+uniform mat4 shadowMatrices[10 * 6];
+uniform int omniShadowCasters;
 // we send the fragPos to the fragment shader because we need it to calculate a depth value.
 out vec4 FragPos; // FragPos from GS (output per emitvertex)
 
@@ -19,7 +20,7 @@ void main()
 	// matrix corresponding to the respective face, essentially transforming the vertex position to light space. It transforms the vertices of 
 	// the received prmitive to all 6 faces of the cubemap. We output 6 triangles (18 vertices). 
 	
-	int numCubemapLayers = 2;
+	int numCubemapLayers = omniShadowCasters;
 	for(int cubemapLayer = 0; cubemapLayer < numCubemapLayers; ++cubemapLayer)
 	{
 		for(int face = 0; face < 6; ++face)

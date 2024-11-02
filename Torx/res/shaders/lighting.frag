@@ -53,7 +53,7 @@ uniform bool worldPosDebug;
 
 // probably make this an array for multiple shadow maps
 uniform samplerCubeArray pointShadowMap;
-uniform float point_far_plane;
+uniform float point_far_plane[10];
 
 float minResult = 0;
 
@@ -238,7 +238,7 @@ float PointShadowCalculation(vec3 fragPos, Light light, int lightIndex)
 	for(int i = 0; i < samples; ++i)
 	{
 		float closestDepth = texture(pointShadowMap, vec4(fragToLight + sampleOffsetDirections[i] * diskRadius, lightIndex)).r;
-		closestDepth *= point_far_plane;   // undo mapping [0;1]
+		closestDepth *= point_far_plane[lightIndex];   // undo mapping [0;1]
 		if(currentDepth - bias > closestDepth)
 			shadow += 1.0;
 	}

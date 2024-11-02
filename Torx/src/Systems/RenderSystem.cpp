@@ -42,36 +42,39 @@ void RenderSystem::Init()
     mScreenQuadTexture = RenderingUtil::GetScreenQuadTexture();
 }
 
-
-
+const int MAX_OMNISHADOWS = 10;
 
 void RenderSystem::Update(float deltaTime, Camera& camera)
 {
-    int i = 0;
-    // ------------------------- OMNIDIRECTIONAL SHADOW PASS -----------------------------------
+    // ------------------------- OMNIDIRECTIONAL SHADOWS PASS -----------------------------------
 
+    glEnable(GL_CULL_FACE);
+    glCullFace(GL_FRONT);
     glEnable(GL_DEPTH_TEST);
-    glm::vec3 lightPos[5]; 
+
+    int omniShadowCasters = 0;
+
+    glm::vec3 lightPos[MAX_OMNISHADOWS]{};
     glm::mat4 shadowProj;
+    std::vector<float> pointFar;
+    pointFar.reserve(MAX_OMNISHADOWS);
+    float pointNear = 1.0f;
     std::vector<glm::mat4> shadowTransforms;
 
-    
-    // get light position (in the future that is going to be an array)
+    // get light position, radius, and increase shadowcaster counter
     for (const auto& entity : mEntities)
     {
-        auto& transform = ecs.GetComponent<CTransform>(entity);
-        
         if (ecs.HasComponent<CLight>(entity))
         {
-            // we can later make an array of light pos and render the scene below for each light pos to get multiple shadow maps
-            lightPos[i] = transform.position;
-            i++;
+            auto& transform = ecs.GetComponent<CTransform>(entity);
+            auto& light = ecs.GetComponent<CLight>(entity);
+
+            lightPos[omniShadowCasters] = transform.position;
+            pointFar[omniShadowCasters] = light.radius;
+            omniShadowCasters++;
         }
     }
 
-    float pointNear = 1.0f;
-    float pointFar = 9.0f;
-    shadowProj = glm::perspective(glm::radians(90.0f), ((float)1024) / ((float)1024), pointNear, pointFar);
 
     glViewport(0, 0, ((float)1024), ((float)1024));
     glBindFramebuffer(GL_FRAMEBUFFER, mPointLightShadowMapFBO);
@@ -80,9 +83,12 @@ void RenderSystem::Update(float deltaTime, Camera& camera)
 
     mPointShadowMapShader.use();
     
-    
-    for (int i = 0; i < 2; i++) 
+    mPointShadowMapShader.setInt("omniShadowCasters", omniShadowCasters);
+
+    for (int i = 0; i < omniShadowCasters; i++)
     {
+
+        shadowProj = glm::perspective(glm::radians(90.0f), ((float)1024) / ((float)1024), pointNear, pointFar[i]);
 
         shadowTransforms.push_back(shadowProj *
             glm::lookAt(lightPos[i], lightPos[i] + glm::vec3(1.0, 0.0, 0.0), glm::vec3(0.0, -1.0, 0.0)));
@@ -98,15 +104,15 @@ void RenderSystem::Update(float deltaTime, Camera& camera)
             glm::lookAt(lightPos[i], lightPos[i] + glm::vec3(0.0, 0.0, -1.0), glm::vec3(0.0, -1.0, 0.0)));
     }
 
-    for (int i = 0; i < 2; i++) 
+    for (unsigned int j = 0; j < (omniShadowCasters * 6); ++j) {
+
+        mPointShadowMapShader.setMat4("shadowMatrices[" + std::to_string(j) + "]", shadowTransforms[j]);
+    }
+
+    for (int i = 0; i < omniShadowCasters; i++)
     {
        
-        for (unsigned int i = 0; i < 12; ++i) {
-
-            mPointShadowMapShader.setMat4("shadowMatrices[" + std::to_string(i) + "]", shadowTransforms[i]);
-        }
-
-        mPointShadowMapShader.setFloat("far_plane", pointFar);
+        mPointShadowMapShader.setFloat("far_plane", pointFar[i]);
         mPointShadowMapShader.setVec3("lightPos", lightPos[i]);
 
         for (const auto& entity : mEntities)
@@ -126,21 +132,12 @@ void RenderSystem::Update(float deltaTime, Camera& camera)
 
             model3d.model.Draw(mPointShadowMapShader);
         }
-
-     //  shadowTransforms.clear();
     }
-   
-   
-   
-
-    // send shadow transforms and far plane as uniforms 
-
-   
 
     // ------------------------- LIGHTING PASS -----------------------------------
 
 
-    glEnable(GL_CULL_FACE);
+    glCullFace(GL_BACK);
 
     if (Common::wireframeDebug)
     {
@@ -157,8 +154,7 @@ void RenderSystem::Update(float deltaTime, Camera& camera)
     glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glEnable(GL_DEPTH_TEST);
-    //glViewport(0, 0, Window::screenWidth, Window::screenHeight);
-
+  
     mLightingShader.use();
 
     glm::mat4 view = camera.GetViewMatrix();
@@ -202,8 +198,8 @@ void RenderSystem::Update(float deltaTime, Camera& camera)
 
         mLightingShader.setInt("pointShadowMap", 2);
        
-        mLightingShader.setFloat("point_far_plane", pointFar);
-
+        glUniform1fv(glGetUniformLocation(mLightingShader.ID, "point_far_plane"), omniShadowCasters, pointFar.data());
+        
         mLightingShader.setMat4("projection", projection); // note: currently we set the projection matrix each frame, but since the projection matrix rarely changes it's often best practice to set it outside the main loop only once.
         mLightingShader.setMat4("view", view);
         mLightingShader.setMat4("model", model);
