@@ -60,7 +60,7 @@ void RenderSystem::Update(float deltaTime, Camera& camera)
     pointFar.reserve(MAX_OMNISHADOWS);
     float pointNear = 1.0f;
     std::vector<glm::mat4> shadowTransforms;
-    bool dirtyLight = false;
+    bool dirtyLightFound = false;
 
     // get light position, radius, and increase shadowcaster counter
     for (const auto& entity : mEntities)
@@ -71,7 +71,6 @@ void RenderSystem::Update(float deltaTime, Camera& camera)
 
             if (light.shadowCaster) 
             {
-
                 auto& transform = ecs.GetComponent<CTransform>(entity);
                 lightPos[omniShadowCasters] = transform.position;
                 pointFar[omniShadowCasters] = light.radius;
@@ -79,13 +78,13 @@ void RenderSystem::Update(float deltaTime, Camera& camera)
 
                 if (light.isDirty)
                 {
-                    dirtyLight = true;
+                    dirtyLightFound = true;
                 }
             }
         }
     }
     
-    if (dirtyLight)
+    if (dirtyLightFound)
     {
 
         std::cout << "shadow map rendered \n";
@@ -129,7 +128,6 @@ void RenderSystem::Update(float deltaTime, Camera& camera)
 
             for (const auto& entity : mEntities)
             {
-
                 auto& transform = ecs.GetComponent<CTransform>(entity);
                 auto& model3d = ecs.GetComponent<CModel>(entity);
 

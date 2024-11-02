@@ -31,6 +31,7 @@ struct Light
 	vec4 outerCutoff;
 
 	vec4 shadowCaster;
+	vec4 isDirty;
 };
 
 layout(binding = 0, std430) buffer LightsSSBO 
@@ -56,13 +57,12 @@ uniform bool worldPosDebug;
 // probably make this an array for multiple shadow maps
 uniform samplerCubeArray pointShadowMap;
 uniform float point_far_plane[10];
+int pointShadowCasterIndex = 0;
 
-float minResult = 0;
-
-vec4 CalcPointLight(Light light, vec3 normal, vec3 fragPos, vec3 viewDir, int lightIndex);
+vec4 CalcPointLight(Light light, vec3 normal, vec3 fragPos, vec3 viewDir);
 vec4 CalcDirLight(Light light, vec3 normal, vec3 viewDir);
 vec4 CalcSpotLight(Light light, vec3 normal, vec3 fragPos, vec3 viewDir);
-float PointShadowCalculation(vec3 fragPos, Light light, int lightIndex);
+float PointShadowCalculation(vec3 fragPos, Light light, int shadowCasterIndex);
 
 void main() {
 	
@@ -94,7 +94,7 @@ void main() {
 	// ------ Point lights ---------
 	for(int i = 0; i < lights.length(); i++) {
 		if (lights[i].type == vec4(1.0))
-			result += CalcPointLight(lights[i], norm, FragPos, viewDir, i);
+			result += CalcPointLight(lights[i], norm, FragPos, viewDir);
 	}
 
 	// -------- Spotlight ------------
@@ -113,7 +113,7 @@ void main() {
 			
 }
 
-vec4 CalcPointLight(Light light, vec3 normal, vec3 fragPos, vec3 viewDir, int lightIndex) {
+vec4 CalcPointLight(Light light, vec3 normal, vec3 fragPos, vec3 viewDir) {
 
 	// the function OmniShadowCalculation requires the light position to be in world space for its calculations. However, we are doing the lighting calculations
 	// in view space, so we sent the light position in world space as an uniform and transformed it to view space here in the fragment shader.
@@ -123,10 +123,10 @@ vec4 CalcPointLight(Light light, vec3 normal, vec3 fragPos, vec3 viewDir, int li
 	float shadow = 0;
 
 	if (light.shadowCaster.x == 1) {
-		shadow = PointShadowCalculation(fragPos, light, lightIndex);
+		shadow = PointShadowCalculation(fragPos, light, pointShadowCasterIndex);
+		pointShadowCasterIndex++;
 	}
 	
-
 	// diffuse shading
 	float diff = max(dot(lightDir, normal), 0.0);
 
@@ -206,7 +206,7 @@ vec4 CalcSpotLight(Light light, vec3 normal, vec3 fragPos, vec3 viewDir) {
 	return (ambient + diffuse + specular);
 }
 
-float PointShadowCalculation(vec3 fragPos, Light light, int lightIndex) 
+float PointShadowCalculation(vec3 fragPos, Light light, int shadowCasterIndex) 
 {
 	// get a vector from the light source to the current fragment so that we can (1) get its length to use as the depth value of the current fragment (remember that we used the length
 	// of a vector from the light to a fragment as the depth value when generating the shadow map to make the depth values linear. We use perspective projection when rendering the scene
@@ -244,8 +244,8 @@ float PointShadowCalculation(vec3 fragPos, Light light, int lightIndex)
 	float diskRadius = 0.05;
 	for(int i = 0; i < samples; ++i)
 	{
-		float closestDepth = texture(pointShadowMap, vec4(fragToLight + sampleOffsetDirections[i] * diskRadius, lightIndex)).r;
-		closestDepth *= point_far_plane[lightIndex];   // undo mapping [0;1]
+		float closestDepth = texture(pointShadowMap, vec4(fragToLight + sampleOffsetDirections[i] * diskRadius, shadowCasterIndex)).r;
+		closestDepth *= point_far_plane[shadowCasterIndex];   // undo mapping [0;1]
 		if(currentDepth - bias > closestDepth)
 			shadow += 1.0;
 	}

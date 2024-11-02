@@ -170,9 +170,6 @@ int main()
 
         });
 
-
-
-
    /* Entity flashlight = ecs.CreateEntity();
 
     ecs.AddComponent<CTransform>(

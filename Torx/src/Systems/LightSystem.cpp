@@ -11,6 +11,7 @@ extern Coordinator ecs;
 
 struct Light
 {
+
 	glm::vec4 type;
 	glm::vec4 position;
 	glm::vec4 ambient;
@@ -24,6 +25,8 @@ struct Light
 	glm::vec4 outerCutoff;
 
 	glm::vec4 shadowCaster;
+	glm::vec4 isDirty;
+
 };
 
 std::vector<Light> lights;
