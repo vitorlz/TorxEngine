@@ -2,6 +2,7 @@
 #include "../Core/InputManager.h"
 #include "../Util/ShaderManager.h"
 #include "../UI/UI.h"
+#include "../Core/Common.h"
 
 int Window::screenWidth;
 int Window::screenHeight;
@@ -43,10 +44,9 @@ GLFWwindow* Window::GetWindow() const{
 void Window::Update() const {
 	glfwSwapBuffers(mWindow);
 	glfwPollEvents();
-	if (InputManager::GetKey(ESC)) {
+	if (glfwGetKey(mWindow, GLFW_KEY_ESCAPE) == GLFW_PRESS) {
 		glfwSetWindowShouldClose(mWindow, true);
 	}
-	InputManager::ResetKeys();
 }
 
 void Window::EnableVsync() const {
@@ -61,41 +61,11 @@ void Window::Terminate() const {
 	glfwTerminate();
 }
 
-
-void Window::ProcessInputs() {
-	if (glfwGetKey(mWindow, GLFW_KEY_ESCAPE) == GLFW_PRESS)
-		InputManager::AddKey(ESC);
-	if (glfwGetKey(mWindow, GLFW_KEY_W) == GLFW_PRESS)
-		InputManager::AddKey(W);
-	if (glfwGetKey(mWindow, GLFW_KEY_S) == GLFW_PRESS)
-		InputManager::AddKey(S);
-	if (glfwGetKey(mWindow, GLFW_KEY_A) == GLFW_PRESS)
-		InputManager::AddKey(A);
-	if (glfwGetKey(mWindow, GLFW_KEY_D) == GLFW_PRESS)
-		InputManager::AddKey(D);
-	if (glfwGetKey(mWindow, GLFW_KEY_V) == GLFW_PRESS)
-		InputManager::AddKey(V);
-	if (glfwGetKey(mWindow, GLFW_KEY_K) == GLFW_PRESS)
-		InputManager::AddKey(K);
-	if (glfwGetKey(mWindow, GLFW_KEY_SPACE) == GLFW_PRESS)
-		InputManager::AddKey(SPACE);
-	if (glfwGetKey(mWindow, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS)
-		InputManager::AddKey(LEFT_CONTROL);
-	if (glfwGetKey(mWindow, GLFW_KEY_W) == GLFW_PRESS && glfwGetKey(mWindow, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS)
-		InputManager::AddKey(SHIFT_W);
-	if (glfwGetKey(mWindow, GLFW_KEY_S) == GLFW_PRESS && glfwGetKey(mWindow, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS)
-		InputManager::AddKey(SHIFT_S);
-	if (glfwGetKey(mWindow, GLFW_KEY_A) == GLFW_PRESS && glfwGetKey(mWindow, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS)
-		InputManager::AddKey(SHIFT_A);
-	if (glfwGetKey(mWindow, GLFW_KEY_D) == GLFW_PRESS && glfwGetKey(mWindow, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS)
-		InputManager::AddKey(SHIFT_D);	
-	if (glfwGetKey(mWindow, GLFW_KEY_TAB) == GLFW_PRESS)
-		InputManager::AddKey(TAB);
-}
-
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods)
 {
-	if (InputManager::GetKey(TAB)) {
+
+	if (glfwGetKey(window, GLFW_KEY_TAB) == GLFW_PRESS) 
+	{
 		UI::isOpen = !UI::isOpen;
 		UI::firstMouseUpdateAfterMenu = true;
 		if (!UI::isOpen)
@@ -108,7 +78,7 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 		}
 	}
 
-	if (InputManager::GetKey(K))
+	if (glfwGetKey(window, GLFW_KEY_K) == GLFW_PRESS)
 	{
 		ShaderManager::ReloadShaders();
 	}

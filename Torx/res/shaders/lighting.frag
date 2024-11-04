@@ -32,6 +32,7 @@ struct Light
 
 	vec4 shadowCaster;
 	vec4 isDirty;
+	vec4 dynamic;
 };
 
 layout(binding = 0, std430) buffer LightsSSBO 
@@ -110,7 +111,6 @@ void main() {
 	else {
 		FragColor = result;	
 	}
-			
 }
 
 vec4 CalcPointLight(Light light, vec3 normal, vec3 fragPos, vec3 viewDir) {
@@ -135,7 +135,7 @@ vec4 CalcPointLight(Light light, vec3 normal, vec3 fragPos, vec3 viewDir) {
 	float spec = pow(max(dot(normal, halfwayDir), 0.0), 32.0);
 
 	// attenuation
-	float distance = length(light.position.xyz -  fragPos); // this is the distance between the fragment and the light 
+	float distance = length(light.position.xyz -  fragPos); 
 	float attenuation = smoothstep(light.radius.x, 0.0, length(light.position.xyz - fragPos));
 
 	vec4 ambient = light.ambient * materialDiffuse;

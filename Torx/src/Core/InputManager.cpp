@@ -1,5 +1,6 @@
 #include "InputManager.h"
 #include <unordered_map>
+#include "../Core/Common.h"
 
 void InputManager::AddKey(InputKey key)
 {

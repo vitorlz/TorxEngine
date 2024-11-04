@@ -25,6 +25,7 @@ struct CLight
 	float outerCutoff;
 	int shadowCaster{ 0 };
 	int isDirty{ 1 };
+	int dynamic{ 0 };
 };
 
 

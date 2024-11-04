@@ -11,7 +11,6 @@
 #include "Core/Common.h"
 #include "Util/Shader.h"
 #include "Util/Window.h"
-#include "Core/InputManager.h"
 #include "Util/Camera.h"
 #include "Core/Coordinator.hpp"
 #include "Util/ShaderManager.h"
@@ -20,9 +19,12 @@
 #include "Components/CTransform.h"
 #include "Components/CLight.h"
 #include "Components/CModel.h"
+#include "Components/CSingleton_Input.h"
 
 #include "Systems/RenderSystem.h"
 #include "Systems/LightSystem.h"
+#include "Systems/GeneralInputSystem.h"
+#include "Systems/playerInputSystem.h"
 
 #include <iostream>
 
@@ -70,6 +72,18 @@ int main()
         ecs.SetSystemSignature<LightSystem>(signature);
     }
 
+    auto generalInputSystem = ecs.RegisterSystem<GeneralInputSystem>();
+    {
+        Signature signature;
+        ecs.SetSystemSignature<GeneralInputSystem>(signature);
+    }
+
+    auto  playerInputSystem = ecs.RegisterSystem<PlayerInputSystem>();
+    {
+        Signature signature;
+        ecs.SetSystemSignature<PlayerInputSystem>(signature);
+    }
+
     renderSystem->Init();
     
     lightSystem->Init();
@@ -95,7 +109,7 @@ int main()
     ecs.AddComponent<CTransform>(
         pointLight,
         CTransform{
-            .position = glm::vec3(0.0f, 4.0f, 0.0f),
+            .position = glm::vec3(0.0f, 4.0f, -2.0f),
             .scale = glm::vec3(0.2f, 0.2f, 0.2f),
             .rotation = glm::vec3(0.0f),
         });
@@ -109,6 +123,7 @@ int main()
             .specular = glm::vec3(1.0f, 1.0f, 1.0f),
             .radius = 9.0f,
             .shadowCaster = true,
+            .dynamic = false
         });
 
     ecs.AddComponent<CModel>(pointLight,
@@ -121,7 +136,7 @@ int main()
     ecs.AddComponent<CTransform>(
         pointLight2,
         CTransform{
-            .position = glm::vec3(1.0f, 4.0f, 0.0f),
+            .position = glm::vec3(0.0f, 4.0f, 0.0f),
             .scale = glm::vec3(0.2f, 0.2f, 0.2f),
             .rotation = glm::vec3(0.0f),
         });
@@ -135,6 +150,7 @@ int main()
             .specular = glm::vec3(1.0f, 1.0f, 1.0f),
             .radius = 9.0f,
             .shadowCaster = true,
+            .dynamic = false
         });
 
     ecs.AddComponent<CModel>(pointLight2,
@@ -148,7 +164,7 @@ int main()
     ecs.AddComponent<CTransform>(
         pointLight3,
         CTransform{
-            .position = glm::vec3(1.0f, 4.0f, 1.0f),
+            .position = glm::vec3(0.0f, 4.0f, 2.0f),
             .scale = glm::vec3(0.2f, 0.2f, 0.2f),
             .rotation = glm::vec3(0.0f),
         });
@@ -162,6 +178,7 @@ int main()
             .specular = glm::vec3(1.0f, 1.0f, 1.0f),
             .radius = 9.0f,
             .shadowCaster = true,
+            .dynamic = false
         });
 
     ecs.AddComponent<CModel>(pointLight3,
@@ -170,7 +187,7 @@ int main()
 
         });
 
-   /* Entity flashlight = ecs.CreateEntity();
+    Entity flashlight = ecs.CreateEntity();
 
     ecs.AddComponent<CTransform>(
         flashlight,
@@ -187,11 +204,12 @@ int main()
             .ambient = glm::vec3(0.0f),
             .diffuse = glm::vec3(0.2f, 0.2f, 0.2f),
             .specular = glm::vec3(1.0f, 1.0f, 1.0f),
-            .quadratic = 0.032f,
+            .radius = 0.032f,
             .direction = camera.Front,
             .innerCutoff = 12.5f,
-            .outerCutoff = 17.5f
-        });*/
+            .outerCutoff = 17.5f,
+            .dynamic = true
+        });
 
     UI gui;
 
@@ -206,14 +224,15 @@ int main()
         deltaTime = currentFrame - lastFrame;
         lastFrame = currentFrame;
 
-        window.ProcessInputs();
-        camera.ProcessKeyboard(deltaTime);
-
         gui.NewFrame();
 
         renderSystem->Update(deltaTime, camera);
 
         lightSystem->Update(deltaTime, camera);
+      
+        generalInputSystem->Update(deltaTime, window.GetWindow());
+
+        playerInputSystem->Update(deltaTime, camera);
 
         gui.Update();
         window.Update();

@@ -23,24 +23,6 @@ using Signature = std::bitset<MAX_COMPONENTS>;
 
 // ------------------- Input -----------------------
 
-enum InputKey {
-	NONE,
-	W,
-	A,
-	S,
-	D,
-	F, 
-	Q,
-	V,
-	K,
-	SHIFT_W,
-	SHIFT_A,
-	SHIFT_S,
-	SHIFT_D,
-	SPACE,
-	TAB,
-	LEFT_CONTROL,
-	ESC,
-};
+
 
 

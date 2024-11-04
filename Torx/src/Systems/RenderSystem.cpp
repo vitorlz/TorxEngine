@@ -34,11 +34,6 @@ void RenderSystem::Init()
     mPointLightShadowMapFBO = RenderingUtil::CreatePointLightShadowMapFBO(1024, 1024);
     mPointLightShadowMap = RenderingUtil::GetPointLightShadowMap();
     mScreenQuadVAO = RenderingUtil::CreateScreenQuadVAO();
-    mLightingShader = ShaderManager::GetShaderProgram("lightingShader");
-    mSolidColorShader = ShaderManager::GetShaderProgram("solidColorShader");
-    mSkyBoxShader = ShaderManager::GetShaderProgram("cubemapShader");
-    mPostProcessingShader = ShaderManager::GetShaderProgram("postProcessingShader");
-    mPointShadowMapShader = ShaderManager::GetShaderProgram("pointShadowMapShader");
     mScreenQuadTexture = RenderingUtil::GetScreenQuadTexture();
 }
 
@@ -52,7 +47,6 @@ void RenderSystem::Update(float deltaTime, Camera& camera)
     glCullFace(GL_FRONT);
     glEnable(GL_DEPTH_TEST);
 
-   
     int omniShadowCasters = 0;
     glm::vec3 lightPos[MAX_OMNISHADOWS]{};
     glm::mat4 shadowProj;
@@ -92,6 +86,8 @@ void RenderSystem::Update(float deltaTime, Camera& camera)
         glBindFramebuffer(GL_FRAMEBUFFER, mPointLightShadowMapFBO);
 
         glClear(GL_DEPTH_BUFFER_BIT);
+
+        mPointShadowMapShader = ShaderManager::GetShaderProgram("pointShadowMapShader");
 
         mPointShadowMapShader.use();
 
@@ -166,12 +162,14 @@ void RenderSystem::Update(float deltaTime, Camera& camera)
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glEnable(GL_DEPTH_TEST);
   
+    mLightingShader = ShaderManager::GetShaderProgram("lightingShader");
+
     mLightingShader.use();
 
     glm::mat4 view = camera.GetViewMatrix();
     glm::mat4 projection = glm::mat4(1.0f);
     projection = glm::perspective(
-        glm::radians(camera.Zoom), (float)Window::screenWidth / (float)Window::screenHeight, 0.1f, 100.0f);
+        glm::radians(camera.Zoom), (float)Window::screenWidth / (float)Window::screenHeight, 0.1f, 200.0f);
 
     for (const auto& entity : mEntities) 
     {
@@ -190,8 +188,9 @@ void RenderSystem::Update(float deltaTime, Camera& camera)
 
         if (ecs.HasComponent<CLight>(entity)) 
         {
-
             auto& light = ecs.GetComponent<CLight>(entity);
+
+            mSolidColorShader = ShaderManager::GetShaderProgram("solidColorShader");
 
             mSolidColorShader.use(); 
            
@@ -237,6 +236,8 @@ void RenderSystem::Update(float deltaTime, Camera& camera)
     glDisable(GL_CULL_FACE);
 
     glDepthFunc(GL_LEQUAL);
+
+    mSkyBoxShader = ShaderManager::GetShaderProgram("cubemapShader");
 
     mSkyBoxShader.use();
 
@@ -286,6 +287,7 @@ void RenderSystem::Update(float deltaTime, Camera& camera)
     glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT);
 
+    mPostProcessingShader = ShaderManager::GetShaderProgram("postProcessingShader");
     mPostProcessingShader.use();
     mPostProcessingShader.setBool("showNormals", Common::normalsDebug);
     mPostProcessingShader.setBool("worldPosDebug", Common::worldPosDebug);

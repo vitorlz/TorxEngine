@@ -4,7 +4,7 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include "Camera.h"
 #include "../UI/UI.h"
-#include "../Core/InputManager.h"
+#include "../Core/Common.h"
 
 // Default camera values
 const float YAW = -90.0f;
@@ -41,57 +41,8 @@ glm::mat4 Camera::GetViewMatrix()
     return glm::lookAt(Position, Position + Front, Up);
 }
 
-// processes input received from any keyboard-like input system. Accepts input parameter in the form of camera defined ENUM (to abstract it from windowing systems)
-void Camera::ProcessKeyboard(float deltaTime)
-{
-    float velocity = MovementSpeed * deltaTime;
 
-    if (FPS == true) {
-        if (InputManager::GetKey(W))
-            Position += Front * velocity;
-        if (InputManager::GetKey(S))
-            Position -= Front * velocity;
-        if (InputManager::GetKey(A))
-            Position -= Right * velocity;
-        if (InputManager::GetKey(D))
-            Position += Right * velocity;
-     
-        if (InputManager::GetKey(SHIFT_W))
-            Position += Front * velocity * 2.0f;
-        if (InputManager::GetKey(SHIFT_S))
-            Position -= Front * velocity * 2.0f;
-        if (InputManager::GetKey(SHIFT_A))
-            Position -= Right * velocity * 2.0f;
-        if (InputManager::GetKey(SHIFT_D))
-            Position += Right * velocity * 2.0f;
 
-        Position.y = 1.0f;
-    }
-    else {
-        if (InputManager::GetKey(W))
-            Position += Front * velocity;
-        if (InputManager::GetKey(S))
-            Position -= Front * velocity;
-        if (InputManager::GetKey(A))
-            Position -= Right * velocity;
-        if (InputManager::GetKey(D))
-            Position += Right * velocity;
-        if (InputManager::GetKey(SPACE))
-            Position += WorldUp * velocity;
-        if (InputManager::GetKey(LEFT_CONTROL))
-            Position -= WorldUp* velocity;
-
-        if (InputManager::GetKey(SHIFT_W))
-            Position += Front * velocity * 2.0f;
-        if (InputManager::GetKey(SHIFT_S))
-            Position -= Front * velocity * 2.0f;
-        if (InputManager::GetKey(SHIFT_A))
-            Position -= Right * velocity * 2.0f;
-        if (InputManager::GetKey(SHIFT_D))
-            Position += Right * velocity * 2.0f;
-    }
-
-}
 
 float lastX{ 400 };
 float lastY{ 300 };
@@ -100,6 +51,7 @@ bool firstMouseUpdateAfterMenu = true;
 
 
 // processes input received from a mouse input system. Expects the offset value in both the x and y direction.
+// we want this in the player update functiont too
 void Camera::ProcessMouseMovement(float xpos, float ypos, GLboolean constrainPitch)
 {
 

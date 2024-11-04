@@ -98,6 +98,5 @@ private:
 
 		// We return the a pointer to the derived class by downcasting the base class pointer.
 		return std::static_pointer_cast<ComponentArray<T>>(mComponentArrays[typeName]);
-
 	}
 };

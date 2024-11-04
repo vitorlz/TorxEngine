@@ -10,7 +10,6 @@ struct Window
 	void EnableVsync() const;
 	void DisableVsync() const;
 	void Update() const;
-	void ProcessInputs();
 	void Terminate() const;
 	static int screenWidth;
 	static int screenHeight;

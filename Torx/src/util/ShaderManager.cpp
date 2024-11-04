@@ -25,6 +25,8 @@ void ShaderManager::LoadShaders()
 	shaderPrograms.insert({ "pointShadowMapShader", pointShadowMapShader });
 }
 
+// maybe make this more efficient in the future.
+
 Shader& ShaderManager::GetShaderProgram(std::string name) 
 {
 	return *shaderPrograms[name];
@@ -32,7 +34,7 @@ Shader& ShaderManager::GetShaderProgram(std::string name)
 
 void ShaderManager::ReloadShaders() 
 {
-	std::cout << "Reloading Shaders..\n";
+	std::cout << "Reloading Shaders...\n";
 
 	std::vector<std::shared_ptr<Shader>> pointersToDelete;
 

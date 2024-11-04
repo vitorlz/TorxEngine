@@ -1,8 +1,29 @@
 #pragma once 
 
+enum InputKey {
+	NONE,
+	W,
+	A,
+	S,
+	D,
+	F,
+	Q,
+	V,
+	K,
+	SHIFT_W,
+	SHIFT_A,
+	SHIFT_S,
+	SHIFT_D,
+	SPACE,
+	TAB,
+	LEFT_CONTROL,
+	ESC,
+};
+
 class Common
 {
 public:
+
 	static const unsigned int SCR_WIDTH;
 	static const unsigned int SCR_HEIGHT;
 	static bool normalsDebug;

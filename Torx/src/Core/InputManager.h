@@ -4,6 +4,7 @@
 #include <vector>
 #include <iostream>
 #include <unordered_map>
+#include "../Core/Common.h"
 
 class InputManager
 {
@@ -12,6 +13,6 @@ public:
 	static void ResetKeys();
 	static bool GetKey(InputKey key);
 
-private:
 	static std::unordered_map<InputKey, bool> keyMap;
+
 };

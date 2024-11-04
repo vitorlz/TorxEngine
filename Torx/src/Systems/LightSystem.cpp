@@ -11,7 +11,6 @@ extern Coordinator ecs;
 
 struct Light
 {
-
 	glm::vec4 type;
 	glm::vec4 position;
 	glm::vec4 ambient;
@@ -26,7 +25,7 @@ struct Light
 
 	glm::vec4 shadowCaster;
 	glm::vec4 isDirty;
-
+	glm::vec4 dynamic;
 };
 
 std::vector<Light> lights;
@@ -72,7 +71,15 @@ void LightSystem::Init()
 		}
 
 		lightData.type = glm::vec4((float)light.type);
-		lightData.position = glm::vec4(transform.position, 1.0f);
+
+		if (light.type == DIRECTIONAL)
+		{
+			lightData.position = glm::vec4(transform.position, 0.0f);
+		}
+		else
+		{
+			lightData.position = glm::vec4(transform.position, 1.0f);
+		}
 		lightData.ambient = glm::vec4(light.ambient, 1.0f);
 		lightData.diffuse = glm::vec4(light.diffuse, 1.0f);
 		lightData.specular = glm::vec4(light.specular, 1.0f);
@@ -96,7 +103,37 @@ void LightSystem::Update(float deltaTime, Camera& camera)
 		
 		auto& light = ecs.GetComponent<CLight>(entity);
 
-		if (light.isDirty) 
+		if (light.dynamic)
+		{
+			const auto& transform = ecs.GetComponent<CTransform>(entity);
+
+
+			if (light.type == DIRECTIONAL)
+			{
+				lightData.position = glm::vec4(transform.position, 0.0f);
+			}
+			else if (light.type == SPOT)
+			{
+				EntityToLightMap[entity].position = glm::vec4(camera.Position, 1.0f);
+				EntityToLightMap[entity].direction = glm::vec4(camera.Front, 1.0f);
+				EntityToLightMap[entity].innerCutoff = glm::vec4(glm::cos(glm::radians(light.innerCutoff)));
+				EntityToLightMap[entity].outerCutoff = glm::vec4(glm::cos(glm::radians(light.outerCutoff)));
+			}
+			else
+			{
+				lightData.position = glm::vec4(transform.position, 1.0f);
+			}
+
+			EntityToLightMap[entity].ambient = glm::vec4(light.ambient, 1.0f);
+			EntityToLightMap[entity].diffuse = glm::vec4(light.diffuse, 1.0f);
+			EntityToLightMap[entity].specular = glm::vec4(light.specular, 1.0f);
+			EntityToLightMap[entity].radius = glm::vec4(light.radius);
+			EntityToLightMap[entity].shadowCaster = glm::vec4(light.shadowCaster);
+
+			glNamedBufferSubData(mSsbo, EntityToLightIndexMap[entity] * sizeof(Light), sizeof(Light), (const void*)&EntityToLightMap[entity]);
+		}
+
+		if (!light.dynamic && light.isDirty) 
 		{	
 			const auto& transform = ecs.GetComponent<CTransform>(entity);
 			
