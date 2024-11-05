@@ -61,13 +61,11 @@ void main()
 	vec3 color = vec3(texture(screenQuadTexture, TexCoords));
 	vec3 bloomColor;
 
-	if (false /* bloom */)
+	if (bloom)
 	{
 		vec3 bloomColor = vec3(texture(bloomBlurTexture, TexCoords));
 		color += bloomColor;
 	}
-
-	
 
 	if (!showNormals && !worldPosDebug) {
 		

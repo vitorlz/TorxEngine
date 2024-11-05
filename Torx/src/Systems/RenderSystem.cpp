@@ -13,6 +13,7 @@
 #include "../Components/CPlayer.h"
 #include "../Util/ShaderManager.h"
 #include "../Util/TextureLoader.h"
+#include "../Util/Util.h"
 #include "../Rendering/RenderingUtil.h"
 
 
@@ -36,6 +37,8 @@ void RenderSystem::Init()
     mPointLightShadowMap = RenderingUtil::GetPointLightShadowMap();
     mScreenQuadVAO = RenderingUtil::CreateScreenQuadVAO();
     mScreenQuadTexture = RenderingUtil::GetScreenQuadTexture();
+    mBloomBrightnessTexture = RenderingUtil::GetBloomBrightnessTexture();
+    RenderingUtil::CreatePingPongFBOs();
 }
 
 const int MAX_OMNISHADOWS = 10;
@@ -231,6 +234,7 @@ void RenderSystem::Update(float deltaTime)
         lightingShader.setMat3("normalMatrix", normalMatrix);
         lightingShader.setBool("showNormals", Common::normalsDebug);
         lightingShader.setBool("worldPosDebug", Common::worldPosDebug);
+        lightingShader.setBool("bloom", Common::bloomOn);
 
         lightingShader.setVec3("cameraPos", ecs.GetComponent<CTransform>(playerEntity).position);
         lightingShader.setVec3("cameraFront", player.front);
@@ -266,16 +270,16 @@ void RenderSystem::Update(float deltaTime)
 
     // Set up to blit from the first color buffer
     glBindFramebuffer(GL_READ_FRAMEBUFFER, mMsFBO);
-   // glReadBuffer(GL_COLOR_ATTACHMENT0);  // Read from the first color attachment
+    glReadBuffer(GL_COLOR_ATTACHMENT0);  // Read from the first color attachment
 
     glBindFramebuffer(GL_DRAW_FRAMEBUFFER, mBlittingFBO);
-    //glDrawBuffer(GL_COLOR_ATTACHMENT0);  // Draw to the first color attachment
+    glDrawBuffer(GL_COLOR_ATTACHMENT0);  // Draw to the first color attachment
 
     glBlitFramebuffer(0, 0, Window::screenWidth, Window::screenHeight, 0, 0, Window::screenWidth, Window::screenHeight, GL_COLOR_BUFFER_BIT, GL_NEAREST);
 
     // Condition to do bloom
 
-    if (false) {
+    if (Common::bloomOn) {
         // Now blit from the second color buffer
         glReadBuffer(GL_COLOR_ATTACHMENT1);  // Read from the second color attachment
 
@@ -284,7 +288,49 @@ void RenderSystem::Update(float deltaTime)
         glBlitFramebuffer(0, 0, Window::screenWidth, Window::screenHeight, 0, 0, Window::screenWidth, Window::screenHeight, GL_COLOR_BUFFER_BIT, GL_NEAREST);
     }
 
-    // ------------------------------ POST PROCESSING PASS ---------------------
+    // ---------------------------------- BLOOM PASS -----------------------------------------------------------------
+
+    bool horizontal = true, first_iteration = true;
+
+    if (Common::bloomOn)
+    {
+        Shader& blurShader = ShaderManager::GetShaderProgram("blurShader");
+        blurShader.use();
+
+        int kernelSize = Common::bloomKernelSize;
+        float stdDeviation = Common::bloomStdDeviation;
+        float intervalMultiplier = Common::bloomIntervalMultiplier;
+
+        blurShader.setFloat("kernelSize", Common::bloomKernelSize);
+
+        Common::bloomWeights = Util::gaussian_weights(kernelSize, stdDeviation, intervalMultiplier);
+
+        std::vector<float> weights = Common::bloomWeights;
+
+        glUniform1fv(glGetUniformLocation(blurShader.ID, "weight"), kernelSize, weights.data());
+
+        glActiveTexture(GL_TEXTURE0);
+        blurShader.setInt("image", 0);
+
+        for (unsigned int i = 0; i < kernelSize * 2; i++)
+        {
+            glBindFramebuffer(GL_FRAMEBUFFER, RenderingUtil::mPingPongFBOs[horizontal]);
+            blurShader.setInt("horizontal", horizontal);
+            glBindTexture(
+                GL_TEXTURE_2D, first_iteration ? mBloomBrightnessTexture : RenderingUtil::mPingPongBuffers[!horizontal]
+            );
+
+            glBindVertexArray(mScreenQuadVAO);
+            glDisable(GL_DEPTH_TEST);
+            glDrawArrays(GL_TRIANGLES, 0, 6);
+
+            horizontal = !horizontal;
+            if (first_iteration)
+                first_iteration = false;
+        }
+    }
+
+    // ------------------------------ POST PROCESSING PASS -----------------------------------------------------------
 
     glDisable(GL_CULL_FACE);
 
@@ -300,17 +346,19 @@ void RenderSystem::Update(float deltaTime)
     postProcessingShader.setBool("reinhard", Common::reinhard);
     postProcessingShader.setBool("uncharted2", Common::uncharted);
     postProcessingShader.setBool("ACES", Common::aces);
+    postProcessingShader.setBool("bloom", Common::bloomOn);
    
     glBindVertexArray(mScreenQuadVAO);
     glDisable(GL_DEPTH_TEST);
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, mScreenQuadTexture);
 
-    /*  if (bloom) {
+    if (Common::bloomOn) {
         glActiveTexture(GL_TEXTURE1);
-        glBindTexture(GL_TEXTURE_2D, pingpongBuffers[(kernelSize * 2) % 2 ? !horizontal : horizontal]);
-    }*/
+        glBindTexture(GL_TEXTURE_2D, RenderingUtil::mPingPongBuffers[(Common::bloomKernelSize * 2) % 2 ? !horizontal : horizontal]);
+    }
 
     postProcessingShader.setInt("screenQuadTexture", 0);
+    postProcessingShader.setInt("bloomBlurTexture", 1);
     glDrawArrays(GL_TRIANGLES, 0, 6);
 }

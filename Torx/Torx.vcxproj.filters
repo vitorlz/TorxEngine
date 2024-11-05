@@ -93,6 +93,9 @@
     <ClCompile Include="src\Systems\PlayerInputSystem.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="src\Util\Util.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\Util\Shader.h">
@@ -200,6 +203,9 @@
     <ClInclude Include="src\Components\CPlayer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="src\Util\Util.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="res\shaders\solidColor.frag" />
@@ -217,6 +223,8 @@
     <None Include="res\shaders\pointShadowMap.frag" />
     <None Include="res\shaders\pointShadowMap.geom" />
     <None Include="res\shaders\lighting.frag" />
+    <None Include="res\shaders\gaussianBlur.frag" />
+    <None Include="res\shaders\gaussianBlur.vert" />
   </ItemGroup>
   <ItemGroup>
     <Library Include="vendor\assimp\lib\assimp-vc143-mt.lib" />

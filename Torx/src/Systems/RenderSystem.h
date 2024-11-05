@@ -22,4 +22,5 @@ private:
 	unsigned int mScreenQuadTexture;
 	unsigned int mPointLightShadowMapFBO;
 	unsigned int mPointLightShadowMap;
+	unsigned int mBloomBrightnessTexture;
 };

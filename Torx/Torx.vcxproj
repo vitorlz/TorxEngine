@@ -103,6 +103,7 @@
     <ClCompile Include="src\Core\InputManager.cpp" />
     <ClCompile Include="src\Util\ShaderManager.cpp" />
     <ClCompile Include="src\Util\TextureLoader.cpp" />
+    <ClCompile Include="src\Util\Util.cpp" />
     <ClCompile Include="src\Util\Window.cpp" />
     <ClCompile Include="src\Util\Shader.cpp" />
     <ClCompile Include="vendor\glad\src\glad.c" />
@@ -140,6 +141,7 @@
     <ClInclude Include="src\Core\Types.hpp" />
     <ClInclude Include="src\Util\ShaderManager.h" />
     <ClInclude Include="src\Util\TextureLoader.h" />
+    <ClInclude Include="src\Util\Util.h" />
     <ClInclude Include="src\Util\Window.h" />
     <ClInclude Include="src\Util\Shader.h" />
     <ClInclude Include="vendor\imgui\imconfig.h" />
@@ -155,6 +157,8 @@
   <ItemGroup>
     <None Include="res\shaders\cubemap.frag" />
     <None Include="res\shaders\cubemap.vert" />
+    <None Include="res\shaders\gaussianBlur.frag" />
+    <None Include="res\shaders\gaussianBlur.vert" />
     <None Include="res\shaders\lighting.frag" />
     <None Include="res\shaders\lighting.vert" />
     <None Include="res\shaders\pointShadowMap.frag" />

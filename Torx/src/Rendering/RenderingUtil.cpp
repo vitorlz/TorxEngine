@@ -6,6 +6,8 @@
 unsigned int RenderingUtil::mScreenQuadTexture;
 unsigned int RenderingUtil::mBloomBrightnessTexture;
 unsigned int RenderingUtil::mPointLightShadowMap;
+unsigned int RenderingUtil::mPingPongFBOs[2];
+unsigned int RenderingUtil::mPingPongBuffers[2];
 
 float cubeVertices[] = 
 {
@@ -161,9 +163,9 @@ unsigned int RenderingUtil::CreateMSAAFBO()
 
     // -------- UNCOMMENT THIS WHEN IT IS TIME TO DO BLOOM ---------------
 
-    //unsigned int attachments[2] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1 };
+    unsigned int attachments[2] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1 };
 
-    //glDrawBuffers(2, attachments);
+    glDrawBuffers(2, attachments);
 
     // create multisampled depth and stencil buffers as attachments of multisampled framebuffer
 
@@ -297,6 +299,32 @@ unsigned int RenderingUtil::CreatePointLightShadowMapFBO(unsigned int shadowWidt
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
     return pointLightShadowMapFBO;
+}
+
+void RenderingUtil::CreatePingPongFBOs() 
+{
+ 
+    glGenFramebuffers(2, mPingPongFBOs);
+    glGenTextures(2, mPingPongBuffers);
+    for (unsigned int i = 0; i < 2; i++)
+    {
+        glBindFramebuffer(GL_FRAMEBUFFER, mPingPongFBOs[i]);
+        glBindTexture(GL_TEXTURE_2D, mPingPongBuffers[i]);
+        glTexImage2D(
+            GL_TEXTURE_2D, 0, GL_RGB16F, Common::SCR_WIDTH, Common::SCR_HEIGHT, 0, GL_RGB, GL_FLOAT, NULL
+        );
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+        glFramebufferTexture2D(
+            GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, mPingPongBuffers[i], 0
+        );
+    }
+
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+
 }
 
 unsigned int RenderingUtil::GetScreenQuadTexture() 

@@ -212,6 +212,20 @@ void UI::Update()
         ImGui::TreePop();
     }
 
+    if (ImGui::TreeNode("Bloom"))
+    {
+        ImGui::Checkbox("Enable bloom", &Common::bloomOn);
+        if (Common::bloomOn) {
+            ImGui::SliderInt("Kernel Size", &Common::bloomKernelSize, 0, 20);
+            ImGui::SliderFloat("Std deviation", &Common::bloomStdDeviation, 0.001f, 10.0f);
+            ImGui::SliderFloat("Interval Multiplier", &Common::bloomIntervalMultiplier, 0.0f, 1.0f);
+
+            ImGui::PlotHistogram(
+                "Weights", Common::bloomWeights.data(), Common::bloomWeights.size(), 0, NULL, 0.0f, 0.25f, ImVec2(0, 80.0f));
+        }
+        ImGui::TreePop();
+    }
+
     ImGui::End();
     
     ImGui::Render();

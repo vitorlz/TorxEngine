@@ -1,5 +1,6 @@
 #version 460 core
 layout (location = 0) out vec4 FragColor;
+layout (location = 1) out vec4 BrightColor;
 
 struct Material 
 {
@@ -53,8 +54,8 @@ uniform vec3 cameraPos;
 uniform vec3 cameraFront;
 uniform bool showNormals;
 uniform bool worldPosDebug;
+uniform bool bloom;
 
-// probably make this an array for multiple shadow maps
 uniform samplerCubeArray pointShadowMap;
 uniform float point_far_plane[10];
 int pointShadowCasterIndex = 0;
@@ -109,6 +110,15 @@ void main() {
 		FragColor = vec4(FragPos, 1.0);
 	else {
 		FragColor = result;	
+
+		if (bloom)
+		{
+			float brightness = dot(FragColor.rgb, vec3(0.2126, 0.7152, 0.0722));
+			if(brightness > 1.0)
+				BrightColor = vec4(FragColor.rgb, 1.0);
+			else
+				BrightColor = vec4(0.0, 0.0, 0.0, 1.0);
+		}
 	}
 }
 

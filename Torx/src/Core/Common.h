@@ -1,5 +1,7 @@
 #pragma once 
 
+#include <vector>
+
 enum InputKey {
 	NONE,
 	W,
@@ -33,4 +35,9 @@ public:
 	static bool reinhard;
 	static bool uncharted;
 	static float exposure;
+	static bool bloomOn;
+	static int bloomKernelSize;
+	static float bloomStdDeviation;
+	static float bloomIntervalMultiplier;
+	static std::vector<float> bloomWeights;
 };

@@ -15,3 +15,10 @@ bool  Common::aces{ true };
 bool  Common::reinhard{ false };
 bool  Common::uncharted{ false };
 float Common::exposure{ 2.0f };
+
+// -------------- BLOOM ---------------------------------------
+bool Common::bloomOn{ true };
+int Common::bloomKernelSize{ 5 };
+float Common::bloomStdDeviation{ 1.0f };
+float Common::bloomIntervalMultiplier{ 0.2f };
+std::vector<float> Common::bloomWeights;
