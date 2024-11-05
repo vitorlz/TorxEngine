@@ -64,7 +64,7 @@ void Window::Terminate() const {
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods)
 {
 
-	if (glfwGetKey(window, GLFW_KEY_TAB) == GLFW_PRESS) 
+	if (key == GLFW_KEY_TAB && action == GLFW_PRESS) 
 	{
 		UI::isOpen = !UI::isOpen;
 		UI::firstMouseUpdateAfterMenu = true;

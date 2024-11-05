@@ -4,15 +4,27 @@
 #include "../Core/Coordinator.hpp"
 #include "../Components/CSingleton_Input.h"
 #include "../Core/Common.h"
+#include "../UI/UI.h"
 #include <iostream>
 
 
+
 extern Coordinator ecs;
+
+void GeneralInputSystem::Init() 
+{
+	CSingleton_Input& inputSing = CSingleton_Input::getInstance();
+
+	inputSing.firstMouse = true;
+}
+
 
 void GeneralInputSystem::Update(float deltaTime, GLFWwindow* window)
 {	
 
 	CSingleton_Input& inputSing = CSingleton_Input::getInstance();
+
+	// Key input
 
 	if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS) 
 	{
@@ -70,6 +82,14 @@ void GeneralInputSystem::Update(float deltaTime, GLFWwindow* window)
 	{
 		inputSing.pressedKeys[K] = false;
 	}
+	if (glfwGetKey(window, GLFW_KEY_F) == GLFW_PRESS)
+	{
+		inputSing.pressedKeys[F] = true;
+	}
+	else if ((glfwGetKey(window, GLFW_KEY_K) == GLFW_RELEASE))
+	{
+		inputSing.pressedKeys[F] = false;
+	}
 	if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS)
 	{
 		inputSing.pressedKeys[SPACE] = true;
@@ -126,5 +146,21 @@ void GeneralInputSystem::Update(float deltaTime, GLFWwindow* window)
 	{
 		inputSing.pressedKeys[TAB] = false;
 	}
+
+	// mouse input
+
+	double x, y;
+	glfwGetCursorPos(window, &x, &y);
+	if (inputSing.firstMouse || UI::firstMouseUpdateAfterMenu) {
+		inputSing.mouseX = x;
+		inputSing.mouseY = y;
+		inputSing.firstMouse = false;
+		UI::firstMouseUpdateAfterMenu = false;
+	}
+
+	inputSing.mouseOffsetX = x - inputSing.mouseX;
+	inputSing.mouseOffsetY = y - inputSing.mouseY;
+	inputSing.mouseX = x;
+	inputSing.mouseY = y;
 }
 

@@ -2,6 +2,7 @@
 #include "../Core/Coordinator.hpp"
 #include "../Components/CTransform.h"
 #include "../Components/CLight.h"
+#include "../Components/CPlayer.h"
 #include "glad/glad.h"
 #include "iostream"
 #include "../Core/Common.h"
@@ -25,7 +26,6 @@ struct Light
 
 	glm::vec4 shadowCaster;
 	glm::vec4 isDirty;
-	glm::vec4 dynamic;
 };
 
 std::vector<Light> lights;
@@ -70,8 +70,6 @@ void LightSystem::Init()
 			lightData.outerCutoff = glm::vec4(glm::cos(glm::radians(light.outerCutoff)));
 		}
 
-		lightData.type = glm::vec4((float)light.type);
-
 		if (light.type == DIRECTIONAL)
 		{
 			lightData.position = glm::vec4(transform.position, 0.0f);
@@ -80,6 +78,7 @@ void LightSystem::Init()
 		{
 			lightData.position = glm::vec4(transform.position, 1.0f);
 		}
+		lightData.type = glm::vec4((float)light.type);
 		lightData.ambient = glm::vec4(light.ambient, 1.0f);
 		lightData.diffuse = glm::vec4(light.diffuse, 1.0f);
 		lightData.specular = glm::vec4(light.specular, 1.0f);
@@ -93,7 +92,7 @@ void LightSystem::Init()
 	}
 }
 
-void LightSystem::Update(float deltaTime, Camera& camera)
+void LightSystem::Update(float deltaTime)
 {
 	// Here we fetch the light data for each entity and update it.
 	// We need this to send the updated light data to the ssbo. 
@@ -103,49 +102,25 @@ void LightSystem::Update(float deltaTime, Camera& camera)
 		
 		auto& light = ecs.GetComponent<CLight>(entity);
 
-		if (light.dynamic)
-		{
-			const auto& transform = ecs.GetComponent<CTransform>(entity);
-
-
-			if (light.type == DIRECTIONAL)
-			{
-				lightData.position = glm::vec4(transform.position, 0.0f);
-			}
-			else if (light.type == SPOT)
-			{
-				EntityToLightMap[entity].position = glm::vec4(camera.Position, 1.0f);
-				EntityToLightMap[entity].direction = glm::vec4(camera.Front, 1.0f);
-				EntityToLightMap[entity].innerCutoff = glm::vec4(glm::cos(glm::radians(light.innerCutoff)));
-				EntityToLightMap[entity].outerCutoff = glm::vec4(glm::cos(glm::radians(light.outerCutoff)));
-			}
-			else
-			{
-				lightData.position = glm::vec4(transform.position, 1.0f);
-			}
-
-			EntityToLightMap[entity].ambient = glm::vec4(light.ambient, 1.0f);
-			EntityToLightMap[entity].diffuse = glm::vec4(light.diffuse, 1.0f);
-			EntityToLightMap[entity].specular = glm::vec4(light.specular, 1.0f);
-			EntityToLightMap[entity].radius = glm::vec4(light.radius);
-			EntityToLightMap[entity].shadowCaster = glm::vec4(light.shadowCaster);
-
-			glNamedBufferSubData(mSsbo, EntityToLightIndexMap[entity] * sizeof(Light), sizeof(Light), (const void*)&EntityToLightMap[entity]);
-		}
-
-		if (!light.dynamic && light.isDirty) 
+		if (light.isDirty) 
 		{	
 			const auto& transform = ecs.GetComponent<CTransform>(entity);
 			
-			std::cout << "light is dirty \n";
-			EntityToLightMap[entity].position = glm::vec4(transform.position, 1.0f);
-
+			//std::cout << "light is dirty \n";
+		
 			if (light.type == SPOT)
 			{
-				EntityToLightMap[entity].position = glm::vec4(camera.Position, 1.0f);
-				EntityToLightMap[entity].direction = glm::vec4(camera.Front, 1.0f);
+				EntityToLightMap[entity].direction = glm::vec4(light.direction, 1.0f);
 				EntityToLightMap[entity].innerCutoff = glm::vec4(glm::cos(glm::radians(light.innerCutoff)));
 				EntityToLightMap[entity].outerCutoff = glm::vec4(glm::cos(glm::radians(light.outerCutoff)));
+			}
+			if (light.type == DIRECTIONAL)
+			{
+				EntityToLightMap[entity].position = glm::vec4(transform.position, 0.0f);
+			}
+			else
+			{
+				EntityToLightMap[entity].position = glm::vec4(transform.position, 1.0f);
 			}
 
 			EntityToLightMap[entity].ambient = glm::vec4(light.ambient, 1.0f);

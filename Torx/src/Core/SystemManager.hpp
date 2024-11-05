@@ -64,7 +64,6 @@ public:
 			else
 			{
 				system->mEntities.erase(entity);
-
 			}
 		}
 	}

@@ -14,5 +14,4 @@ public:
 	static bool GetKey(InputKey key);
 
 	static std::unordered_map<InputKey, bool> keyMap;
-
 };

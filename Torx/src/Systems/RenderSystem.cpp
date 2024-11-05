@@ -10,6 +10,7 @@
 #include "../Components/CTransform.h"
 #include "../Components/CLight.h"
 #include "../Components/CModel.h"
+#include "../Components/CPlayer.h"
 #include "../Util/ShaderManager.h"
 #include "../Util/TextureLoader.h"
 #include "../Rendering/RenderingUtil.h"
@@ -39,7 +40,7 @@ void RenderSystem::Init()
 
 const int MAX_OMNISHADOWS = 10;
 
-void RenderSystem::Update(float deltaTime, Camera& camera)
+void RenderSystem::Update(float deltaTime)
 {
     // ------------------------- OMNIDIRECTIONAL SHADOWS PASS -----------------------------------
 
@@ -63,7 +64,7 @@ void RenderSystem::Update(float deltaTime, Camera& camera)
         {
             auto& light = ecs.GetComponent<CLight>(entity);
 
-            if (light.shadowCaster) 
+            if (light.shadowCaster && light.type == POINT) 
             {
                 auto& transform = ecs.GetComponent<CTransform>(entity);
                 lightPos[omniShadowCasters] = transform.position;
@@ -80,18 +81,17 @@ void RenderSystem::Update(float deltaTime, Camera& camera)
     
     if (dirtyLightFound)
     {
-
         std::cout << "shadow map rendered \n";
         glViewport(0, 0, ((float)1024), ((float)1024));
         glBindFramebuffer(GL_FRAMEBUFFER, mPointLightShadowMapFBO);
 
         glClear(GL_DEPTH_BUFFER_BIT);
 
-        mPointShadowMapShader = ShaderManager::GetShaderProgram("pointShadowMapShader");
+        Shader& pointShadowMapShader = ShaderManager::GetShaderProgram("pointShadowMapShader");
 
-        mPointShadowMapShader.use();
+        pointShadowMapShader.use();
 
-        mPointShadowMapShader.setInt("omniShadowCasters", omniShadowCasters);
+        pointShadowMapShader.setInt("omniShadowCasters", omniShadowCasters);
 
         for (int i = 0; i < omniShadowCasters; i++)
         {
@@ -113,14 +113,14 @@ void RenderSystem::Update(float deltaTime, Camera& camera)
 
         for (unsigned int j = 0; j < (omniShadowCasters * 6); ++j) {
 
-            mPointShadowMapShader.setMat4("shadowMatrices[" + std::to_string(j) + "]", shadowTransforms[j]);
+            pointShadowMapShader.setMat4("shadowMatrices[" + std::to_string(j) + "]", shadowTransforms[j]);
         }
 
         for (int i = 0; i < omniShadowCasters; i++)
         {
 
-            mPointShadowMapShader.setFloat("far_plane", pointFar[i]);
-            mPointShadowMapShader.setVec3("lightPos", lightPos[i]);
+            pointShadowMapShader.setFloat("far_plane", pointFar[i]);
+            pointShadowMapShader.setVec3("lightPos", lightPos[i]);
 
             for (const auto& entity : mEntities)
             {
@@ -135,9 +135,9 @@ void RenderSystem::Update(float deltaTime, Camera& camera)
                 model = glm::rotate(model, glm::radians(transform.rotation.z), glm::vec3(0.0f, 0.0, 1.0));
                 model = glm::scale(model, transform.scale);
 
-                mPointShadowMapShader.setMat4("model", model);
+                pointShadowMapShader.setMat4("model", model);
 
-                model3d.model.Draw(mPointShadowMapShader);
+                model3d.model.Draw(pointShadowMapShader);
             }
         }
     }
@@ -162,14 +162,25 @@ void RenderSystem::Update(float deltaTime, Camera& camera)
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glEnable(GL_DEPTH_TEST);
   
-    mLightingShader = ShaderManager::GetShaderProgram("lightingShader");
+    Shader& lightingShader = ShaderManager::GetShaderProgram("lightingShader");
 
-    mLightingShader.use();
+    lightingShader.use();
 
-    glm::mat4 view = camera.GetViewMatrix();
     glm::mat4 projection = glm::mat4(1.0f);
     projection = glm::perspective(
-        glm::radians(camera.Zoom), (float)Window::screenWidth / (float)Window::screenHeight, 0.1f, 200.0f);
+        glm::radians(45.0f), (float)Window::screenWidth / (float)Window::screenHeight, 0.1f, 200.0f);
+
+
+    // get player
+    Entity playerEntity{};
+    for (const auto& entity : mEntities)
+    {
+        if (ecs.HasComponent<CPlayer>(entity))
+        {
+            playerEntity = entity;
+        }
+    }
+    auto& player = ecs.GetComponent<CPlayer>(playerEntity);
 
     for (const auto& entity : mEntities) 
     {
@@ -190,41 +201,41 @@ void RenderSystem::Update(float deltaTime, Camera& camera)
         {
             auto& light = ecs.GetComponent<CLight>(entity);
 
-            mSolidColorShader = ShaderManager::GetShaderProgram("solidColorShader");
+            Shader& solidColorShader = ShaderManager::GetShaderProgram("solidColorShader");
 
-            mSolidColorShader.use(); 
+            solidColorShader.use();
            
-            mSolidColorShader.setMat4("projection", projection);
-            mSolidColorShader.setMat4("view", view);
-            mSolidColorShader.setMat4("model", model);
-            mSolidColorShader.setVec3("color", ecs.GetComponent<CLight>(entity).diffuse * 1.5f);
+            solidColorShader.setMat4("projection", projection);
+            solidColorShader.setMat4("view", player.viewMatrix);
+            solidColorShader.setMat4("model", model);
+            solidColorShader.setVec3("color", ecs.GetComponent<CLight>(entity).diffuse * 1.5f);
 
-            model3d.model.Draw(mSolidColorShader);
+            model3d.model.Draw(solidColorShader);
         }
 
-        mLightingShader.use();
+        lightingShader.use();
         
         if (omniShadowCasters != 0) 
         {
             glActiveTexture(GL_TEXTURE2);
             glBindTexture(GL_TEXTURE_CUBE_MAP_ARRAY, mPointLightShadowMap);
 
-            mLightingShader.setInt("pointShadowMap", 2);
+            lightingShader.setInt("pointShadowMap", 2);
 
-            glUniform1fv(glGetUniformLocation(mLightingShader.ID, "point_far_plane"), omniShadowCasters, pointFar.data());
+            glUniform1fv(glGetUniformLocation(lightingShader.ID, "point_far_plane"), omniShadowCasters, pointFar.data());
         }
         
-        mLightingShader.setMat4("projection", projection); // note: currently we set the projection matrix each frame, but since the projection matrix rarely changes it's often best practice to set it outside the main loop only once.
-        mLightingShader.setMat4("view", view);
-        mLightingShader.setMat4("model", model);
-        mLightingShader.setMat3("normalMatrix", normalMatrix);
-        mLightingShader.setBool("showNormals", Common::normalsDebug);
-        mLightingShader.setBool("worldPosDebug", Common::worldPosDebug);
+        lightingShader.setMat4("projection", projection); // note: currently we set the projection matrix each frame, but since the projection matrix rarely changes it's often best practice to set it outside the main loop only once.
+        lightingShader.setMat4("view", player.viewMatrix);
+        lightingShader.setMat4("model", model);
+        lightingShader.setMat3("normalMatrix", normalMatrix);
+        lightingShader.setBool("showNormals", Common::normalsDebug);
+        lightingShader.setBool("worldPosDebug", Common::worldPosDebug);
 
-        mLightingShader.setVec3("cameraPos", camera.Position);
-        mLightingShader.setVec3("cameraFront", camera.Front);
+        lightingShader.setVec3("cameraPos", ecs.GetComponent<CTransform>(playerEntity).position);
+        lightingShader.setVec3("cameraFront", player.front);
 
-        model3d.model.Draw(mLightingShader);
+        model3d.model.Draw(lightingShader);
     }
     
     // ---------------------------- SKYBOX PASS ---------------------------------------
@@ -237,22 +248,16 @@ void RenderSystem::Update(float deltaTime, Camera& camera)
 
     glDepthFunc(GL_LEQUAL);
 
-    mSkyBoxShader = ShaderManager::GetShaderProgram("cubemapShader");
+    Shader& skyBoxShader = ShaderManager::GetShaderProgram("cubemapShader");
 
-    mSkyBoxShader.use();
+    skyBoxShader.use();
 
-    //mSkyBoxShader.setInt("skybox", 6);
-   // glActiveTexture(GL_TEXTURE0);
-   // glBindTexture(GL_TEXTURE_CUBE_MAP, mPointLightShadowMap);
-
-    view = glm::mat4(glm::mat3(camera.GetViewMatrix()));
-
-    mSkyBoxShader.setMat4("projection", projection);
-    mSkyBoxShader.setMat4("view", view);
+    skyBoxShader.setMat4("projection", projection);
+    skyBoxShader.setMat4("view", glm::mat4(glm::mat3(player.viewMatrix)));
     glBindVertexArray(mCubeVAO);
-    mSkyBoxShader.setInt("skybox", 1);
+    skyBoxShader.setInt("skybox", 1);
     glActiveTexture(GL_TEXTURE1);
-    glBindTexture(GL_TEXTURE_CUBE_MAP_ARRAY, mPointLightShadowMap);
+    glBindTexture(GL_TEXTURE_CUBE_MAP, mCubemapID);
     glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
 
     glDepthFunc(GL_LESS);
@@ -287,14 +292,14 @@ void RenderSystem::Update(float deltaTime, Camera& camera)
     glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT);
 
-    mPostProcessingShader = ShaderManager::GetShaderProgram("postProcessingShader");
-    mPostProcessingShader.use();
-    mPostProcessingShader.setBool("showNormals", Common::normalsDebug);
-    mPostProcessingShader.setBool("worldPosDebug", Common::worldPosDebug);
-    mPostProcessingShader.setFloat("exposure", Common::exposure);
-    mPostProcessingShader.setBool("reinhard", Common::reinhard);
-    mPostProcessingShader.setBool("uncharted2", Common::uncharted);
-    mPostProcessingShader.setBool("ACES", Common::aces);
+    Shader& postProcessingShader = ShaderManager::GetShaderProgram("postProcessingShader");
+    postProcessingShader.use();
+    postProcessingShader.setBool("showNormals", Common::normalsDebug);
+    postProcessingShader.setBool("worldPosDebug", Common::worldPosDebug);
+    postProcessingShader.setFloat("exposure", Common::exposure);
+    postProcessingShader.setBool("reinhard", Common::reinhard);
+    postProcessingShader.setBool("uncharted2", Common::uncharted);
+    postProcessingShader.setBool("ACES", Common::aces);
    
     glBindVertexArray(mScreenQuadVAO);
     glDisable(GL_DEPTH_TEST);
@@ -306,6 +311,6 @@ void RenderSystem::Update(float deltaTime, Camera& camera)
         glBindTexture(GL_TEXTURE_2D, pingpongBuffers[(kernelSize * 2) % 2 ? !horizontal : horizontal]);
     }*/
 
-    mPostProcessingShader.setInt("screenQuadTexture", 0);
+    postProcessingShader.setInt("screenQuadTexture", 0);
     glDrawArrays(GL_TRIANGLES, 0, 6);
 }

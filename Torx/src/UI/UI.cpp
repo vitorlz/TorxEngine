@@ -8,10 +8,10 @@
 #include "../Components/CLight.h"
 #include "../Components/CModel.h"
 #include "../Components/CTransform.h"
+#include "../Components/CSingleton_Input.h"
 
 bool UI::isOpen{ false };
 bool UI::firstMouseUpdateAfterMenu{ false };
-
 
 extern Coordinator ecs;
 
@@ -36,7 +36,7 @@ void UI::Update()
 {
     ImGui::Begin("Menu");
     ImGui::Shortcut(ImGuiKey_Tab, ImGuiInputFlags_None);
-    
+
     if (ImGui::TreeNode("Entities"))
     {
         std::vector<Entity> livingEntities = ecs.GetLivingEntities();

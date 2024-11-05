@@ -32,7 +32,6 @@ struct Light
 
 	vec4 shadowCaster;
 	vec4 isDirty;
-	vec4 dynamic;
 };
 
 layout(binding = 0, std430) buffer LightsSSBO 

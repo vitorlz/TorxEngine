@@ -11,7 +11,6 @@
 #include "Core/Common.h"
 #include "Util/Shader.h"
 #include "Util/Window.h"
-#include "Util/Camera.h"
 #include "Core/Coordinator.hpp"
 #include "Util/ShaderManager.h"
 #include "AssetLoading/AssetManager.h"
@@ -20,6 +19,7 @@
 #include "Components/CLight.h"
 #include "Components/CModel.h"
 #include "Components/CSingleton_Input.h"
+#include "Components/CPlayer.h"
 
 #include "Systems/RenderSystem.h"
 #include "Systems/LightSystem.h"
@@ -28,11 +28,8 @@
 
 #include <iostream>
 
-void mouse_callback(GLFWwindow* window, double xpos, double ypos);
-void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
 // settings
 
-Camera camera(glm::vec3(0.0f, 0.0f, 3.0f));
 Coordinator ecs;
 
 int main()
@@ -43,9 +40,6 @@ int main()
 
     window.DisableVsync();
 
-    glfwSetCursorPosCallback(window.GetWindow(), mouse_callback);
-    glfwSetScrollCallback(window.GetWindow(), scroll_callback);
-
     float deltaTime{};
     float lastFrame{};
 
@@ -55,6 +49,7 @@ int main()
     ecs.RegisterComponent<CTransform>();
     ecs.RegisterComponent<CModel>();
     ecs.RegisterComponent<CLight>();
+    ecs.RegisterComponent<CPlayer>();
 
     auto renderSystem = ecs.RegisterSystem<RenderSystem>();
     {
@@ -81,12 +76,48 @@ int main()
     auto  playerInputSystem = ecs.RegisterSystem<PlayerInputSystem>();
     {
         Signature signature;
+        signature.set(ecs.GetComponentType<CPlayer>());
         ecs.SetSystemSignature<PlayerInputSystem>(signature);
     }
 
     renderSystem->Init();
-    
     lightSystem->Init();
+    generalInputSystem->Init();
+
+    Entity playerEntity = ecs.CreateEntity();
+
+    ecs.AddComponent<CTransform>(
+        playerEntity,
+        CTransform{
+            .position = glm::vec3(0.0f, 1.8f, 0.0f),
+            .scale = glm::vec3(0.0f, 0.0f, 0.0f),
+            .rotation = glm::vec3(0.0f, 0.0f, 0.0f),
+        });
+
+    ecs.AddComponent<CModel>(
+        playerEntity,
+        CModel{
+            .model = AssetManager::GetModel("debugCube")
+        });
+
+    ecs.AddComponent<CLight>(
+        playerEntity,
+        CLight{
+            .type = SPOT,
+            .ambient = glm::vec3(0.0f),
+            .diffuse = glm::vec3(0.2f, 0.2f, 0.2f),
+            .specular = glm::vec3(1.0f, 1.0f, 1.0f),
+            .radius = 9.0f,
+            .direction = glm::vec3(0.0f, 0.0f, -1.0f),
+            .innerCutoff = 12.5f,
+            .outerCutoff = 17.5f,
+        });
+
+    ecs.AddComponent<CPlayer>(
+        playerEntity,
+        CPlayer{
+            .flashlightOn = true
+        });
 
     Entity sponzaEntity = ecs.CreateEntity();
     
@@ -123,7 +154,6 @@ int main()
             .specular = glm::vec3(1.0f, 1.0f, 1.0f),
             .radius = 9.0f,
             .shadowCaster = true,
-            .dynamic = false
         });
 
     ecs.AddComponent<CModel>(pointLight,
@@ -150,7 +180,6 @@ int main()
             .specular = glm::vec3(1.0f, 1.0f, 1.0f),
             .radius = 9.0f,
             .shadowCaster = true,
-            .dynamic = false
         });
 
     ecs.AddComponent<CModel>(pointLight2,
@@ -178,37 +207,12 @@ int main()
             .specular = glm::vec3(1.0f, 1.0f, 1.0f),
             .radius = 9.0f,
             .shadowCaster = true,
-            .dynamic = false
         });
 
     ecs.AddComponent<CModel>(pointLight3,
         CModel{
             .model = AssetManager::GetModel("debugCube")
 
-        });
-
-    Entity flashlight = ecs.CreateEntity();
-
-    ecs.AddComponent<CTransform>(
-        flashlight,
-        CTransform{
-            .position = camera.Position,
-            .scale = glm::vec3(0.2f, 0.2f, 0.2f),
-            .rotation = glm::vec3(0.0f)
-        });
-
-    ecs.AddComponent<CLight>(
-        flashlight,
-        CLight{
-            .type = SPOT,
-            .ambient = glm::vec3(0.0f),
-            .diffuse = glm::vec3(0.2f, 0.2f, 0.2f),
-            .specular = glm::vec3(1.0f, 1.0f, 1.0f),
-            .radius = 0.032f,
-            .direction = camera.Front,
-            .innerCutoff = 12.5f,
-            .outerCutoff = 17.5f,
-            .dynamic = true
         });
 
     UI gui;
@@ -226,13 +230,13 @@ int main()
 
         gui.NewFrame();
 
-        renderSystem->Update(deltaTime, camera);
-
-        lightSystem->Update(deltaTime, camera);
-      
         generalInputSystem->Update(deltaTime, window.GetWindow());
 
-        playerInputSystem->Update(deltaTime, camera);
+        renderSystem->Update(deltaTime);
+
+        playerInputSystem->Update(deltaTime);
+
+        lightSystem->Update(deltaTime);
 
         gui.Update();
         window.Update();
@@ -244,18 +248,4 @@ int main()
     return 0;
 }
 
-void mouse_callback(GLFWwindow* window, double xpos, double ypos) 
-{
-    if (UI::isOpen)
-    {
-        return;
-    }
-    
-    camera.ProcessMouseMovement(xpos, ypos);
-}
-
-void scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
-{
-    camera.ProcessMouseScroll(yoffset);
-}
 

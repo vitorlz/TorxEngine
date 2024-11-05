@@ -22,4 +22,10 @@ public:
 
 	std::unordered_map<InputKey, bool> pressedKeys;
 
+	bool firstMouse;
+	double mouseOffsetX;
+	double mouseOffsetY;
+	double mouseX;
+	double mouseY;
+
 };
