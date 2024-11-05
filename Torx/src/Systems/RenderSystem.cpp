@@ -225,7 +225,7 @@ void RenderSystem::Update(float deltaTime)
             glUniform1fv(glGetUniformLocation(lightingShader.ID, "point_far_plane"), omniShadowCasters, pointFar.data());
         }
         
-        lightingShader.setMat4("projection", projection); // note: currently we set the projection matrix each frame, but since the projection matrix rarely changes it's often best practice to set it outside the main loop only once.
+        lightingShader.setMat4("projection", projection); 
         lightingShader.setMat4("view", player.viewMatrix);
         lightingShader.setMat4("model", model);
         lightingShader.setMat3("normalMatrix", normalMatrix);

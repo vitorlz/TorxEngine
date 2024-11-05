@@ -23,7 +23,7 @@ void PlayerInputSystem::Update(float deltaTime)
         auto& transform = ecs.GetComponent<CTransform>(entity);
         auto& player = ecs.GetComponent<CPlayer>(entity);
 
-        float velocity = 3.0f * deltaTime;
+        float velocity = player.movementSpeed * deltaTime;
 
         if (!UI::isOpen) {
             transform.rotation.x -= inputSing.mouseOffsetY * 0.05; 
@@ -32,8 +32,8 @@ void PlayerInputSystem::Update(float deltaTime)
         }
 
         glm::mat4 model = glm::translate(glm::mat4(1.0f), transform.position);
-        model = glm::rotate(model, glm::radians(transform.rotation.y), glm::vec3(0.0f, 1.0, 0.0));
-        model = glm::rotate(model, glm::radians(transform.rotation.x), glm::vec3(1.0f, 0.0, 0.0));
+        model = glm::rotate(model, glm::radians(transform.rotation.y), glm::vec3(0.0f, 1.0, 0.0)); // Yaw
+        model = glm::rotate(model, glm::radians(transform.rotation.x), glm::vec3(1.0f, 0.0, 0.0)); // Pitch
          
         glm::vec3 cameraRight = glm::normalize(glm::vec3(model[0]));
         glm::vec3 cameraUp = glm::normalize(glm::vec3(model[1]));
@@ -93,7 +93,6 @@ void flashlightLogic(CPlayer& player, CLight& light)
     }
     if (inputSing.pressedKeys[F])
     {
-        std::cout << "F pressed";
         if (!flashlightSwitch)
         {
             if (!player.flashlightOn)

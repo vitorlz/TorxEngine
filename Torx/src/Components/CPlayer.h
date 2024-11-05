@@ -7,4 +7,5 @@ struct CPlayer
 	glm::vec3 right;
 	glm::vec3 up;
 	bool flashlightOn;
+	float movementSpeed;
 };

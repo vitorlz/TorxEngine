@@ -116,7 +116,8 @@ int main()
     ecs.AddComponent<CPlayer>(
         playerEntity,
         CPlayer{
-            .flashlightOn = true
+            .flashlightOn = true,
+            .movementSpeed = 3.0f,
         });
 
     Entity sponzaEntity = ecs.CreateEntity();

@@ -139,9 +139,9 @@ vec4 CalcPointLight(Light light, vec3 normal, vec3 fragPos, vec3 viewDir) {
 
 	vec4 ambient = light.ambient * materialDiffuse;
 	vec4 diffuse = light.diffuse * diff * materialDiffuse * clamp((1.0 - shadow), 0.0, 1.0);
-	vec4 specular = light.specular * spec * materialSpecular * clamp((1.0 - shadow), 0.0, 1.0);
+	vec4 specular = light.specular * spec * materialSpecular * clamp((1.0 - (shadow * 1.1)), 0.0, 1.0);
 
-	ambient *= attenuation;
+	ambient *= attenuation;	
 	diffuse *= attenuation;
 	specular *= attenuation;
 
@@ -238,8 +238,9 @@ float PointShadowCalculation(vec3 fragPos, Light light, int shadowCasterIndex)
 	// and then take the average. This gets us smoother shadows.
 
 	float shadow = 0.0;
-	float bias   = 0.05;
+	float bias   = 0;	
 	int samples  = 56;
+	// this diskradius is what is causing light bleed.
 	float diskRadius = 0.05;
 	for(int i = 0; i < samples; ++i)
 	{

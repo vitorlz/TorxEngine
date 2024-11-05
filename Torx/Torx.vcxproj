@@ -99,7 +99,6 @@
     <ClCompile Include="src\Systems\PlayerInputSystem.cpp" />
     <ClCompile Include="src\Systems\RenderSystem.cpp" />
     <ClCompile Include="src\UI\UI.cpp" />
-    <ClCompile Include="src\Util\Camera.cpp" />
     <ClCompile Include="src\Application.cpp" />
     <ClCompile Include="src\Core\InputManager.cpp" />
     <ClCompile Include="src\Util\ShaderManager.cpp" />
@@ -130,7 +129,6 @@
     <ClInclude Include="src\Systems\PlayerInputSystem.h" />
     <ClInclude Include="src\Systems\RenderSystem.h" />
     <ClInclude Include="src\UI\UI.h" />
-    <ClInclude Include="src\Util\Camera.h" />
     <ClInclude Include="src\Components\CTransform.h" />
     <ClInclude Include="src\Core\ComponentArray.hpp" />
     <ClInclude Include="src\Core\ComponentManager.hpp" />
