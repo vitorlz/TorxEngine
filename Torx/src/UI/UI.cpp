@@ -76,6 +76,10 @@ void UI::Update()
                         ImGui::ColorEdit3("Diffuse", &light.diffuse.x);
                         ImGui::ColorEdit3("Specular", &light.specular.x);
                         ImGui::SliderFloat("Radius", &light.radius, 0.001f, 30.0f, "%.5f");
+                        if (light.type == POINT || light.type == SPOT)
+                        {
+                            ImGui::SliderFloat3("Offset", &light.offset.x, -10.0f, 10.0f);
+                        }
                         ImGui::Checkbox("Cast Shadows", (bool*)&light.shadowCaster);
 
                         light.isDirty = true;
@@ -170,15 +174,6 @@ void UI::Update()
         ImGui::TreePop();
     }
 
-    if (ImGui::TreeNode("Debug"))
-    {
-        ImGui::Checkbox("Show normals", &Common::normalsDebug);
-        ImGui::Checkbox("Show World Position", &Common::worldPosDebug);
-        ImGui::Checkbox("Wireframe mode", &Common::wireframeDebug);
-        
-        ImGui::TreePop();
-    }
-
     if (ImGui::TreeNode("Tone Mapping"))
     {
         const char* items[] = { "ACES Filmic", "Reinhard Simple", "Uncharted 2"};
@@ -223,6 +218,15 @@ void UI::Update()
             ImGui::PlotHistogram(
                 "Weights", Common::bloomWeights.data(), Common::bloomWeights.size(), 0, NULL, 0.0f, 0.25f, ImVec2(0, 80.0f));
         }
+        ImGui::TreePop();
+    }
+
+    if (ImGui::TreeNode("Debug"))
+    {
+        ImGui::Checkbox("Show normals", &Common::normalsDebug);
+        ImGui::Checkbox("Show World Position", &Common::worldPosDebug);
+        ImGui::Checkbox("Wireframe mode", &Common::wireframeDebug);
+
         ImGui::TreePop();
     }
 

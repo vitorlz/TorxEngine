@@ -136,84 +136,60 @@ int main()
             .model = AssetManager::GetModel("sponza")
         });
 
-    Entity pointLight = ecs.CreateEntity();
+    Entity lampEntity1 = ecs.CreateEntity();
 
     ecs.AddComponent<CTransform>(
-        pointLight,
+        lampEntity1,
         CTransform{
-            .position = glm::vec3(0.0f, 4.0f, -2.0f),
-            .scale = glm::vec3(0.2f, 0.2f, 0.2f),
-            .rotation = glm::vec3(0.0f),
+            .position = glm::vec3(-0.330f, 3.600f, -6.610f),
+            .scale = glm::vec3(0.359f),
+            .rotation = glm::vec3(0.0f, 180.0f, 0.0f),
+        });
+
+    ecs.AddComponent<CModel>(
+        lampEntity1,
+        CModel{
+            .model = AssetManager::GetModel("victorianLamp")
         });
 
     ecs.AddComponent<CLight>(
-        pointLight,
+        lampEntity1,
         CLight{
             .type = POINT,
             .ambient = glm::vec3(0.0f),
-            .diffuse = glm::vec3(0.5f, 0.5f, 0.5f),
+            .diffuse = glm::vec3(0.725f, 0.529f, 0.286f),
             .specular = glm::vec3(1.0f, 1.0f, 1.0f),
-            .radius = 9.0f,
+            .radius = 7.64f,
             .shadowCaster = true,
+            .offset = glm::vec3(0.000f, -0.282f, 0.562f)
         });
 
-    ecs.AddComponent<CModel>(pointLight,
-        CModel{
-            .model = AssetManager::GetModel("debugCube")
-        });
-
-    Entity pointLight2 = ecs.CreateEntity();
+    Entity lampEntity2 = ecs.CreateEntity();
 
     ecs.AddComponent<CTransform>(
-        pointLight2,
+        lampEntity2,
         CTransform{
-            .position = glm::vec3(0.0f, 4.0f, 0.0f),
-            .scale = glm::vec3(0.2f, 0.2f, 0.2f),
-            .rotation = glm::vec3(0.0f),
+            .position = glm::vec3(-0.330f, 3.600f, 7.645f),
+            .scale = glm::vec3(0.359f),
+            .rotation = glm::vec3(0.0f, 0.0f, 0.0f),
+        });
+
+    ecs.AddComponent<CModel>(
+        lampEntity2,
+        CModel{
+            .model = AssetManager::GetModel("victorianLamp")
         });
 
     ecs.AddComponent<CLight>(
-        pointLight2,
+        lampEntity2,
         CLight{
             .type = POINT,
             .ambient = glm::vec3(0.0f),
-            .diffuse = glm::vec3(0.5f, 0.5f, 0.5f),
+            .diffuse = glm::vec3(0.725f, 0.529f, 0.286f),
             .specular = glm::vec3(1.0f, 1.0f, 1.0f),
-            .radius = 9.0f,
+            .radius = 7.54f,
             .shadowCaster = true,
-        });
-
-    ecs.AddComponent<CModel>(pointLight2,
-        CModel{
-            .model = AssetManager::GetModel("debugCube")
-
-        });
-
-    Entity pointLight3 = ecs.CreateEntity();
-
-    ecs.AddComponent<CTransform>(
-        pointLight3,
-        CTransform{
-            .position = glm::vec3(0.0f, 4.0f, 2.0f),
-            .scale = glm::vec3(0.2f, 0.2f, 0.2f),
-            .rotation = glm::vec3(0.0f),
-        });
-
-    ecs.AddComponent<CLight>(
-        pointLight3,
-        CLight{
-            .type = POINT,
-            .ambient = glm::vec3(0.0f),
-            .diffuse = glm::vec3(0.5f, 0.5f, 0.5f),
-            .specular = glm::vec3(1.0f, 1.0f, 1.0f),
-            .radius = 9.0f,
-            .shadowCaster = true,
-        });
-
-    ecs.AddComponent<CModel>(pointLight3,
-        CModel{
-            .model = AssetManager::GetModel("debugCube")
-
+            .offset = glm::vec3(0.000f, -0.282f, -0.562f)
         });
 
     UI gui;

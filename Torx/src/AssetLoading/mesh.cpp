@@ -46,6 +46,11 @@ void Mesh::setupMesh() {
 
 // we have to pass the shader object by reference because that will prevent copying and we want to modify the original inside the function.
 void Mesh::Draw(Shader &shader) {
+
+	shader.setInt("material.texture_diffuse1", 31);
+	shader.setInt("material.texture_specular1", 31);
+	shader.setInt("material.texture_emission1", 31);
+	shader.setInt("material.texture_normal1", 31);
 	unsigned int diffuseNr = 1;
 	unsigned int specularNr = 1;
 	unsigned int emissionNr = 1;

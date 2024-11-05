@@ -33,6 +33,7 @@ struct Light
 
 	vec4 shadowCaster;
 	vec4 isDirty;
+	vec4 offset;
 };
 
 layout(binding = 0, std430) buffer LightsSSBO 
@@ -109,11 +110,11 @@ void main() {
 	else if (worldPosDebug) 
 		FragColor = vec4(FragPos, 1.0);
 	else {
-		FragColor = result;	
+		FragColor = result + materialEmission;	
 
 		if (bloom)
 		{
-			float brightness = dot(FragColor.rgb, vec3(0.2126, 0.7152, 0.0722));
+			float brightness = dot(FragColor.rgb + materialEmission.rgb, vec3(0.2126, 0.7152, 0.0722));
 			if(brightness > 1.0)
 				BrightColor = vec4(FragColor.rgb, 1.0);
 			else
@@ -148,8 +149,8 @@ vec4 CalcPointLight(Light light, vec3 normal, vec3 fragPos, vec3 viewDir) {
 	float attenuation = smoothstep(light.radius.x, 0.0, length(light.position.xyz - fragPos));
 
 	vec4 ambient = light.ambient * materialDiffuse;
-	vec4 diffuse = light.diffuse * diff * materialDiffuse * clamp((1.0 - shadow), 0.0, 1.0);
-	vec4 specular = light.specular * spec * materialSpecular * clamp((1.0 - (shadow * 1.1)), 0.0, 1.0);
+	vec4 diffuse = light.diffuse * diff * materialDiffuse * clamp((1.0 - (shadow)), 0.0, 1.0);
+	vec4 specular = light.specular * spec * materialSpecular * clamp((1.0 - (shadow * 10)), 0.0, 1.0);
 
 	ambient *= attenuation;	
 	diffuse *= attenuation;
@@ -248,10 +249,10 @@ float PointShadowCalculation(vec3 fragPos, Light light, int shadowCasterIndex)
 	// and then take the average. This gets us smoother shadows.
 
 	float shadow = 0.0;
-	float bias   = 0;	
+	float bias   = 0.0;	
 	int samples  = 56;
-	// this diskradius is what is causing light bleed.
-	float diskRadius = 0.05;
+	// this diskradis is what is causing light bleed.
+	float diskRadius = 0.01;
 	for(int i = 0; i < samples; ++i)
 	{
 		float closestDepth = texture(pointShadowMap, vec4(fragToLight + sampleOffsetDirections[i] * diskRadius, shadowCasterIndex)).r;

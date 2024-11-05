@@ -26,6 +26,7 @@ struct Light
 
 	glm::vec4 shadowCaster;
 	glm::vec4 isDirty;
+	glm::vec4 offset;
 };
 
 std::vector<Light> lights;
@@ -76,7 +77,7 @@ void LightSystem::Init()
 		}
 		else
 		{
-			lightData.position = glm::vec4(transform.position, 1.0f);
+			lightData.position = glm::vec4(transform.position + light.offset, 1.0f);
 		}
 		lightData.type = glm::vec4((float)light.type);
 		lightData.ambient = glm::vec4(light.ambient, 1.0f);
@@ -104,7 +105,7 @@ void LightSystem::Update(float deltaTime)
 
 		if (light.isDirty) 
 		{	
-			const auto& transform = ecs.GetComponent<CTransform>(entity);
+			auto& transform = ecs.GetComponent<CTransform>(entity);
 			
 			//std::cout << "light is dirty \n";
 		
@@ -120,7 +121,8 @@ void LightSystem::Update(float deltaTime)
 			}
 			else
 			{
-				EntityToLightMap[entity].position = glm::vec4(transform.position, 1.0f);
+				EntityToLightMap[entity].position = glm::vec4(transform.position + light.offset, 1.0f);
+				
 			}
 
 			EntityToLightMap[entity].ambient = glm::vec4(light.ambient, 1.0f);
@@ -202,7 +204,7 @@ void LightSystem::Update(float deltaTime)
 		}
 
 		lightData.type = glm::vec4((float)light.type);
-		lightData.position = glm::vec4(transform.position, 1.0f);
+		lightData.position = glm::vec4(transform.position + light.offset, 1.0f);
 		lightData.ambient = glm::vec4(light.ambient, 1.0f);
 		lightData.diffuse = glm::vec4(light.diffuse, 1.0f);
 		lightData.specular = glm::vec4(light.specular, 1.0f);
