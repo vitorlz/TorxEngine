@@ -47,12 +47,15 @@ void RenderSystem::Update(float deltaTime)
 {
     // ------------------------- OMNIDIRECTIONAL SHADOWS PASS -----------------------------------
 
+    std::cout << mEntities.size() << "\n";
+
     glEnable(GL_CULL_FACE);
     glCullFace(GL_FRONT);
     glEnable(GL_DEPTH_TEST);
 
     int omniShadowCasters = 0;
-    glm::vec3 lightPos[MAX_OMNISHADOWS]{};
+    std::vector<glm::vec3> lightPos;
+    lightPos.reserve(MAX_OMNISHADOWS);
     glm::mat4 shadowProj;
     std::vector<float> pointFar;
     pointFar.reserve(MAX_OMNISHADOWS);
@@ -70,8 +73,8 @@ void RenderSystem::Update(float deltaTime)
             if (light.shadowCaster && light.type == POINT) 
             {
                 auto& transform = ecs.GetComponent<CTransform>(entity);
-                lightPos[omniShadowCasters] = transform.position + light.offset;
-                pointFar[omniShadowCasters] = light.radius;
+                lightPos.push_back(transform.position + light.offset);
+                pointFar.push_back(light.radius);
                 omniShadowCasters++;
 
                 if (light.isDirty)
@@ -121,7 +124,6 @@ void RenderSystem::Update(float deltaTime)
 
         for (int i = 0; i < omniShadowCasters; i++)
         {
-
             pointShadowMapShader.setFloat("far_plane", pointFar[i]);
             pointShadowMapShader.setVec3("lightPos", lightPos[i]);
 
@@ -169,6 +171,11 @@ void RenderSystem::Update(float deltaTime)
     glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glEnable(GL_DEPTH_TEST);
+
+    // for bloom
+    unsigned int attachments[2] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1 };
+    glDrawBuffers(2, attachments);
+
   
     Shader& lightingShader = ShaderManager::GetShaderProgram("lightingShader");
 
@@ -177,7 +184,6 @@ void RenderSystem::Update(float deltaTime)
     glm::mat4 projection = glm::mat4(1.0f);
     projection = glm::perspective(
         glm::radians(45.0f), (float)Window::screenWidth / (float)Window::screenHeight, 0.1f, 200.0f);
-
 
     // get player
     Entity playerEntity{};
@@ -250,7 +256,8 @@ void RenderSystem::Update(float deltaTime)
     }
     
     // ---------------------------- SKYBOX PASS ---------------------------------------
-
+    glDrawBuffers(1, attachments);
+    
     if (Common::wireframeDebug) {
         glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
     }

@@ -4,6 +4,7 @@
 #include <array>
 #include <cassert>
 #include <unordered_map>
+#include <iostream>
 
 // we use the virtual keyword so that we can have base class pointers that point to a derived class instance and then we can call the 
 // methods specific to each derived class using the base class pointers, and depending on which derived class the base class pointer points to, 
@@ -65,7 +66,7 @@ public:
 	T& GetData(Entity entity) 
 	{
 		assert(mEntityToIndexMap.find(entity) != mEntityToIndexMap.end() && "Retrieving non-existing component");
-		
+
 		// Return a reference to the entity's component.
 		return mComponentArray[mEntityToIndexMap[entity]];
 	}

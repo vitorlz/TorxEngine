@@ -18,7 +18,6 @@ void GeneralInputSystem::Init()
 	inputSing.firstMouse = true;
 }
 
-
 void GeneralInputSystem::Update(float deltaTime, GLFWwindow* window)
 {	
 

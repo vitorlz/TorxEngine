@@ -5,6 +5,7 @@
 #include "SystemManager.hpp"
 #include "Types.hpp"
 #include <memory>
+#include <iostream>
 
 // This class just bundles the different managers together because they need to communicate and for ease of use
 
@@ -56,6 +57,8 @@ public:
 
 	template<typename T> void RemoveComponent(Entity entity)
 	{
+
+		std::cout << "remove called \n";
 		mComponentManager->RemoveComponent<T>(entity);
 
 		auto signature = mEntityManager->GetSignature(entity);

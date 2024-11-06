@@ -9,6 +9,7 @@
 #include "../Components/CModel.h"
 #include "../Components/CTransform.h"
 #include "../Components/CSingleton_Input.h"
+#include "../Components/CPlayer.h"
 
 bool UI::isOpen{ false };
 bool UI::firstMouseUpdateAfterMenu{ false };
@@ -51,10 +52,9 @@ void UI::Update()
             {  
                 if (ecs.HasComponent<CLight>(livingEntities[i]))
                 {
-                    if (ImGui::CollapsingHeader("Light Component", ImGuiTreeNodeFlags_None))
+                    CLight& light = ecs.GetComponent<CLight>(livingEntities[i]);
+                    if (ImGui::CollapsingHeader("Light Component", ImGuiTreeNodeFlags_AllowItemOverlap))
                     {
-                        CLight& light = ecs.GetComponent<CLight>(livingEntities[i]);
-
                         if (light.type == DIRECTIONAL)
                         {
                             ImGui::TextColored(ImVec4(1.0f, 1.0f, 0.0f, 1.0f), "Type: directional light");
@@ -83,12 +83,18 @@ void UI::Update()
                         ImGui::Checkbox("Cast Shadows", (bool*)&light.shadowCaster);
 
                         light.isDirty = true;
+                       
+                    }
+                    ImGui::SameLine();
+                    if (ImGui::Button("Delete##xx0"))
+                    {
+                        ecs.RemoveComponent<CLight>(livingEntities[i]);
                     }
                 }
-
+               
                 if (ecs.HasComponent<CTransform>(livingEntities[i]))
                 {                
-                    if (ImGui::CollapsingHeader("Transform Component", ImGuiTreeNodeFlags_None))
+                    if (ImGui::CollapsingHeader("Transform Component", ImGuiTreeNodeFlags_AllowItemOverlap))
                     {
                         CTransform& transform = ecs.GetComponent<CTransform>(livingEntities[i]);
                         
@@ -102,62 +108,41 @@ void UI::Update()
                             light.isDirty = true;
                         }
                     }
+                    ImGui::SameLine();
+                    if (ImGui::Button("Delete##xx1"))
+                    {
+                        ecs.RemoveComponent<CTransform>(livingEntities[i]);
+                    }
                 }
 
                 if (ecs.HasComponent<CModel>(livingEntities[i]))
                 {
-                    if (ImGui::CollapsingHeader("Model Component", ImGuiTreeNodeFlags_None))
+                    if (ImGui::CollapsingHeader("Model Component", ImGuiTreeNodeFlags_AllowItemOverlap))
                     {
                         ImGui::TextColored(ImVec4(1.0f, 1.0f, 0.0f, 1.0f), "Has model component");
                     }
+                    ImGui::SameLine();
+                    if (ImGui::Button("Delete##xx2"))
+                    {
+                        ecs.RemoveComponent<CModel>(livingEntities[i]);
+                    }
                 }
-                
-                const char* items[] = { "Transform", "Light", "Model" };
-                // this variable is global, that is why it selects on all entities
-                static int item_selected_idx = 0;
 
-                const char* combo_preview_value = items[item_selected_idx];
-                if (ImGui::BeginCombo(std::to_string(livingEntities[i]).c_str(), combo_preview_value))
+                if (ecs.HasComponent<CPlayer>(livingEntities[i]))
                 {
-                    for (int n = 0; n < IM_ARRAYSIZE(items); n++)
+                    if (ImGui::CollapsingHeader("Player Component", ImGuiTreeNodeFlags_AllowItemOverlap))
                     {
-                        const bool is_selected = (item_selected_idx == n);
-                        if (ImGui::Selectable(items[n], is_selected))
-                        {
-                            item_selected_idx = n;
-                        }
-                        if (is_selected)
-                            ImGui::SetItemDefaultFocus();
+                        CPlayer& player = ecs.GetComponent<CPlayer>(livingEntities[i]);
+                        
+                        ImGui::InputFloat3("Front", &player.front.x);
+                        ImGui::InputFloat3("Right", &player.right.x);
+                        ImGui::InputFloat3("Up", &player.up.x);
+                        ImGui::SliderFloat("Movement Speed", &player.movementSpeed, 1.0f, 10.0f, "%.2f");
                     }
-                    ImGui::EndCombo();
-
-                }   
-           
-                ImGui::SameLine();
-                if (ImGui::Button("Add Component"))
-                {
-                    if ("Transform" == items[item_selected_idx] && !ecs.HasComponent<CTransform>(livingEntities[i]))
+                    ImGui::SameLine();
+                    if (ImGui::Button("Delete##xx3"))
                     {
-                        ecs.AddComponent<CTransform>(
-                            livingEntities[i],
-                            CTransform{
-                                .position = glm::vec3(0.0f, 0.0f, 0.0f),
-                                .scale = glm::vec3(1.0f, 1.0f, 1.0f),
-                                .rotation = glm::vec3(0.0f),
-                            });
-                    }
-                    else if ("Light" == items[item_selected_idx] && !ecs.HasComponent<CLight>(livingEntities[i]))
-                    {
-                        ecs.AddComponent<CLight>(
-                            livingEntities[i],
-                            CLight{
-                                .type = POINT,
-                                .ambient = glm::vec3(0.0f),
-                                .diffuse = glm::vec3(0.5f, 0.5f, 0.5f),
-                                .specular = glm::vec3(1.0f, 1.0f, 1.0f),
-                                .radius = 9.0f,
-                                .shadowCaster = true,
-                            });
+                        ecs.RemoveComponent<CPlayer>(livingEntities[i]);
                     }
                 }
 
@@ -165,12 +150,10 @@ void UI::Update()
                 {   
                     ecs.DestroyEntity(livingEntities[i]);
                 }
-
                 ImGui::TreePop();
             }
             ImGui::PopID();
         }
-        
         ImGui::TreePop();
     }
 

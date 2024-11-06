@@ -100,7 +100,6 @@ void LightSystem::Update(float deltaTime)
 
 	for (const auto& entity : mEntities) 
 	{
-		
 		auto& light = ecs.GetComponent<CLight>(entity);
 
 		if (light.isDirty) 
@@ -128,9 +127,9 @@ void LightSystem::Update(float deltaTime)
 			EntityToLightMap[entity].ambient = glm::vec4(light.ambient, 1.0f);
 			EntityToLightMap[entity].diffuse = glm::vec4(light.diffuse, 1.0f);
 			EntityToLightMap[entity].specular = glm::vec4(light.specular, 1.0f);
-			EntityToLightMap[entity].radius = glm::vec4(light.radius);
+			EntityToLightMap[entity].radius = glm::vec4(light.radius);	
 			EntityToLightMap[entity].shadowCaster = glm::vec4(light.shadowCaster);
-
+			
 			glNamedBufferSubData(mSsbo, EntityToLightIndexMap[entity] * sizeof(Light), sizeof(Light), (const void*)&EntityToLightMap[entity]);
 
 			light.isDirty = false;
@@ -165,6 +164,12 @@ void LightSystem::Update(float deltaTime)
 
 		std::cout << "Light index after deletion: " << mLightIndex << "\n";
 		std::cout << "Entities after deletion: " << mEntities.size() << "\n";
+
+		for (Entity entity : mEntities)
+		{
+			auto& light = ecs.GetComponent<CLight>(entity);
+			light.isDirty = true;
+		}
 
 	}
 
