@@ -62,7 +62,6 @@ void main()
 
 		// metallic surfaces don't refract light, so they have no diffuse reflections
 		kD *= 1.0 - metallic;
-		
 		// now we can calculate each light's contribution to the reflectance equation. Notice that here we are not taking the integral because we know the wi (the solid angle / 
 		// direction vector) of the fragment to all light sources to the fragment. We also know that each source has only a single direction vector (light ray) that influences the 
 		// fragment, so we can just loop through the light sources and calculate their irradiance. When we take environment lighting into account we will have to take the integral

@@ -226,6 +226,8 @@
     <None Include="res\shaders\gaussianBlur.frag" />
     <None Include="res\shaders\gaussianBlur.vert" />
     <None Include="res\shaders\pbrLighting.frag" />
+    <None Include="res\shaders\equirectangularToCubemap.vert" />
+    <None Include="res\shaders\equirectangularToCubemap.frag" />
   </ItemGroup>
   <ItemGroup>
     <Library Include="vendor\assimp\lib\assimp-vc143-mt.lib" />

@@ -31,7 +31,11 @@ void RenderSystem::Init()
         "res/textures/cubemaps/back.jpg"
     );
 
-    mCubeVAO = RenderingUtil::CreateCubeVAO();
+    mEquirectangularTexture = TextureLoader::LoadTextureHDR("res/textures/hdr/photo_studio_loft_hall_2k.hdr");
+
+    RenderingUtil::Init();
+
+   /* mCubeVAO = RenderingUtil::CreateCubeVAO();
     mMsFBO = RenderingUtil::CreateMSAAFBO();
     mBlittingFBO = RenderingUtil::CreateBlittingFBO();
     mPointLightShadowMapFBO = RenderingUtil::CreatePointLightShadowMapFBO(1024, 1024);
@@ -39,7 +43,7 @@ void RenderSystem::Init()
     mScreenQuadVAO = RenderingUtil::CreateScreenQuadVAO();
     mScreenQuadTexture = RenderingUtil::GetScreenQuadTexture();
     mBloomBrightnessTexture = RenderingUtil::GetBloomBrightnessTexture();
-    RenderingUtil::CreatePingPongFBOs();
+    RenderingUtil::CreatePingPongFBOs();*/
 }
 
 const int MAX_OMNISHADOWS = 10;
@@ -105,7 +109,7 @@ void RenderSystem::Update(float deltaTime)
     {
         std::cout << "shadow map rendered \n";
         glViewport(0, 0, ((float)1024), ((float)1024));
-        glBindFramebuffer(GL_FRAMEBUFFER, mPointLightShadowMapFBO);
+        glBindFramebuffer(GL_FRAMEBUFFER, RenderingUtil::mPointLightShadowMapFBO);
 
         glClear(GL_DEPTH_BUFFER_BIT);
 
@@ -183,7 +187,7 @@ void RenderSystem::Update(float deltaTime)
 
     glViewport(0, 0, Window::screenWidth, Window::screenHeight);
 
-    glBindFramebuffer(GL_FRAMEBUFFER, mMsFBO);
+    glBindFramebuffer(GL_FRAMEBUFFER, RenderingUtil::mMsFBO);
     glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glEnable(GL_DEPTH_TEST);
@@ -250,7 +254,7 @@ void RenderSystem::Update(float deltaTime)
         if (omniShadowCasters != 0) 
         {
             glActiveTexture(GL_TEXTURE3);
-            glBindTexture(GL_TEXTURE_CUBE_MAP_ARRAY, mPointLightShadowMap);
+            glBindTexture(GL_TEXTURE_CUBE_MAP_ARRAY, RenderingUtil::mPointLightShadowMap);
 
             lightingShader.setInt("pointShadowMap", 3);
 
@@ -276,8 +280,7 @@ void RenderSystem::Update(float deltaTime)
     if (Common::pbrDemonstration)
     {
         glDrawBuffers(1, attachments);
-        glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
-        //glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        //glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
         glEnable(GL_DEPTH_TEST);
 
         Shader& pbrLightingShader = ShaderManager::GetShaderProgram("pbrLightingShader");
@@ -330,9 +333,9 @@ void RenderSystem::Update(float deltaTime)
             model = glm::scale(model, glm::vec3(0.5f));
             pbrLightingShader.setMat4("model", model);
             pbrLightingShader.setMat3("normalMatrix", glm::transpose(glm::inverse(glm::mat3(model))));
-        }
+        }        
     }
-    
+
     // ---------------------------- SKYBOX PASS ---------------------------------------
     glDrawBuffers(1, attachments);
     
@@ -350,10 +353,10 @@ void RenderSystem::Update(float deltaTime)
 
     skyBoxShader.setMat4("projection", projection);
     skyBoxShader.setMat4("view", glm::mat4(glm::mat3(player.viewMatrix)));
-    glBindVertexArray(mCubeVAO);
+    glBindVertexArray(RenderingUtil::mUnitCubeVAO);
     skyBoxShader.setInt("skybox", 1);
     glActiveTexture(GL_TEXTURE1);
-    glBindTexture(GL_TEXTURE_CUBE_MAP, mCubemapID);
+    glBindTexture(GL_TEXTURE_CUBE_MAP, RenderingUtil::mEnvironmentCubemap);
     glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
 
     glDepthFunc(GL_LESS);
@@ -361,10 +364,10 @@ void RenderSystem::Update(float deltaTime)
     // ---------------------------------- BLITTING ---------------------------------------
 
     // Set up to blit from the first color buffer
-    glBindFramebuffer(GL_READ_FRAMEBUFFER, mMsFBO);
+    glBindFramebuffer(GL_READ_FRAMEBUFFER, RenderingUtil::mMsFBO);
     glReadBuffer(GL_COLOR_ATTACHMENT0);  // Read from the first color attachment
 
-    glBindFramebuffer(GL_DRAW_FRAMEBUFFER, mBlittingFBO);
+    glBindFramebuffer(GL_DRAW_FRAMEBUFFER, RenderingUtil::mBlittingFBO);
     glDrawBuffer(GL_COLOR_ATTACHMENT0);  // Draw to the first color attachment
 
     glBlitFramebuffer(0, 0, Window::screenWidth, Window::screenHeight, 0, 0, Window::screenWidth, Window::screenHeight, GL_COLOR_BUFFER_BIT, GL_NEAREST);
@@ -409,10 +412,10 @@ void RenderSystem::Update(float deltaTime)
             glBindFramebuffer(GL_FRAMEBUFFER, RenderingUtil::mPingPongFBOs[horizontal]);
             blurShader.setInt("horizontal", horizontal);
             glBindTexture(
-                GL_TEXTURE_2D, first_iteration ? mBloomBrightnessTexture : RenderingUtil::mPingPongBuffers[!horizontal]
+                GL_TEXTURE_2D, first_iteration ? RenderingUtil::mBloomBrightnessTexture : RenderingUtil::mPingPongBuffers[!horizontal]
             );
 
-            glBindVertexArray(mScreenQuadVAO);
+            glBindVertexArray(RenderingUtil::mScreenQuadVAO);
             glDisable(GL_DEPTH_TEST);
             glDrawArrays(GL_TRIANGLES, 0, 6);
 
@@ -440,10 +443,10 @@ void RenderSystem::Update(float deltaTime)
     postProcessingShader.setBool("ACES", Common::aces);
     postProcessingShader.setBool("bloom", Common::bloomOn);
    
-    glBindVertexArray(mScreenQuadVAO);
+    glBindVertexArray(RenderingUtil::mScreenQuadVAO);
     glDisable(GL_DEPTH_TEST);
     glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_2D, mScreenQuadTexture);
+    glBindTexture(GL_TEXTURE_2D, RenderingUtil::mScreenQuadTexture);
 
     if (Common::bloomOn) {
         glActiveTexture(GL_TEXTURE1);

@@ -15,12 +15,5 @@ public:
 	void Update(float deltaTime);
 private:
 	unsigned int mCubemapID;
-	unsigned int mCubeVAO;
-	unsigned int mScreenQuadVAO;
-	unsigned int mMsFBO;
-	unsigned int mBlittingFBO;
-	unsigned int mScreenQuadTexture;
-	unsigned int mPointLightShadowMapFBO;
-	unsigned int mPointLightShadowMap;
-	unsigned int mBloomBrightnessTexture;
+	unsigned int mEquirectangularTexture;
 };

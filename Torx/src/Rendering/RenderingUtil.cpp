@@ -2,12 +2,37 @@
 #include "glad/glad.h"
 #include "../Core/Common.h"
 #include "iostream"
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/type_ptr.hpp>
+#include "../Util/ShaderManager.h"
+#include "../Util/TextureLoader.h"
 
 unsigned int RenderingUtil::mScreenQuadTexture;
 unsigned int RenderingUtil::mBloomBrightnessTexture;
 unsigned int RenderingUtil::mPointLightShadowMap;
 unsigned int RenderingUtil::mPingPongFBOs[2];
 unsigned int RenderingUtil::mPingPongBuffers[2];
+unsigned int RenderingUtil::mUnitCubeVAO;
+unsigned int RenderingUtil::mMsFBO;
+unsigned int RenderingUtil::mBlittingFBO;
+unsigned int RenderingUtil::mPointLightShadowMapFBO;
+unsigned int RenderingUtil::mScreenQuadVAO;
+unsigned int RenderingUtil::mEnvironmentCubemap;
+unsigned int RenderingUtil::mCaptureFBO;
+
+void RenderingUtil::Init()
+{
+    RenderingUtil::CreateCubeVAO();
+    RenderingUtil::CreateMSAAFBO();
+    RenderingUtil::CreateBlittingFBO();
+    RenderingUtil::CreatePointLightShadowMapFBO(1024, 1024);
+    RenderingUtil::CreateScreenQuadVAO();
+    RenderingUtil::CreatePingPongFBOs();
+    RenderingUtil::CreateCubeCaptureFBO();
+    RenderingUtil::CreateEnvironmentCubemap();
+    RenderingUtil::EquirectangularToCubemap();
+}
 
 float cubeVertices[] = 
 {
@@ -77,15 +102,15 @@ float screenQuadVertices[] =
     1.0f,  1.0f,  1.0f, 1.0f
 };
 
-unsigned int RenderingUtil::CreateCubeVAO()
+void RenderingUtil::CreateCubeVAO()
 {
-    unsigned int cubeVBO, cubeEBO, cubeVAO;
+    unsigned int cubeVBO, cubeEBO;
 
-    glGenVertexArrays(1, &cubeVAO);
+    glGenVertexArrays(1, &mUnitCubeVAO);
     glGenBuffers(1, &cubeVBO);
     glGenBuffers(1, &cubeEBO);
 
-    glBindVertexArray(cubeVAO);
+    glBindVertexArray(mUnitCubeVAO);
 
     glBindBuffer(GL_ARRAY_BUFFER, cubeVBO);
     glBufferData(GL_ARRAY_BUFFER, sizeof(cubeVertices), cubeVertices, GL_STATIC_DRAW);
@@ -103,18 +128,16 @@ unsigned int RenderingUtil::CreateCubeVAO()
     glEnableVertexAttribArray(2);
 
     glBindVertexArray(0);
-
-    return cubeVAO;
 }
 
-unsigned int RenderingUtil::CreateScreenQuadVAO()
+void RenderingUtil::CreateScreenQuadVAO()
 {
-    unsigned int screenQuadVAO, screenQuadVBO;
+    unsigned int screenQuadVBO;
 
-    glGenVertexArrays(1, &screenQuadVAO);
+    glGenVertexArrays(1, &mScreenQuadVAO);
     glGenBuffers(1, &screenQuadVBO);
 
-    glBindVertexArray(screenQuadVAO);
+    glBindVertexArray(mScreenQuadVAO);
     glBindBuffer(GL_ARRAY_BUFFER, screenQuadVBO);
 
     glBufferData(GL_ARRAY_BUFFER, sizeof(screenQuadVertices), screenQuadVertices, GL_STATIC_DRAW);
@@ -125,15 +148,12 @@ unsigned int RenderingUtil::CreateScreenQuadVAO()
     glEnableVertexAttribArray(1);
 
     glBindVertexArray(0);
-
-    return screenQuadVAO;
 }
 
-unsigned int RenderingUtil::CreateMSAAFBO()
+void RenderingUtil::CreateMSAAFBO()
 {
-    unsigned int msFBO;
-    glGenFramebuffers(1, &msFBO);
-    glBindFramebuffer(GL_FRAMEBUFFER, msFBO);
+    glGenFramebuffers(1, &mMsFBO);
+    glBindFramebuffer(GL_FRAMEBUFFER, mMsFBO);
 
     // create multisampled texture to use as color buffer attachment of multisampled framebuffer
 
@@ -182,17 +202,14 @@ unsigned int RenderingUtil::CreateMSAAFBO()
     }
 
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
-
-    return msFBO;
 }
 
-unsigned int RenderingUtil::CreateBlittingFBO()
+void RenderingUtil::CreateBlittingFBO()
 {
     // SCREEN QUAD FRAMEBUFFER (WE BLIT BOTH THE MULTISAMPLED SCENE AND THE MULTISAMPLED BLUR BRIGHTNESS TEXTURE INTO THIS FRAMEBUFFER)
-    unsigned int blittingFBO;
-    glGenFramebuffers(1, &blittingFBO);
+    glGenFramebuffers(1, &mBlittingFBO);
 
-    glBindFramebuffer(GL_FRAMEBUFFER, blittingFBO);
+    glBindFramebuffer(GL_FRAMEBUFFER, mBlittingFBO);
 
     // SCREEN QUAD TEXTURE
 
@@ -256,15 +273,11 @@ unsigned int RenderingUtil::CreateBlittingFBO()
 
     // make sure to unbind the framebuffer to make sure we are not accidentally rendering to the wrong framebuffer.
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
-
-    return blittingFBO;
 }
 
-unsigned int RenderingUtil::CreatePointLightShadowMapFBO(unsigned int shadowWidth, unsigned int shadowHeight)
+void RenderingUtil::CreatePointLightShadowMapFBO(unsigned int shadowWidth, unsigned int shadowHeight)
 {
-
-    unsigned int pointLightShadowMapFBO;
-    glGenFramebuffers(1, &pointLightShadowMapFBO);
+    glGenFramebuffers(1, &mPointLightShadowMapFBO);
 
     glGenTextures(1, &mPointLightShadowMap);
     glBindTexture(GL_TEXTURE_CUBE_MAP_ARRAY, mPointLightShadowMap);
@@ -283,7 +296,7 @@ unsigned int RenderingUtil::CreatePointLightShadowMapFBO(unsigned int shadowWidt
     
     glBindTexture(GL_TEXTURE_CUBE_MAP_ARRAY, 0);
 
-    glBindFramebuffer(GL_FRAMEBUFFER, pointLightShadowMapFBO);
+    glBindFramebuffer(GL_FRAMEBUFFER, mPointLightShadowMapFBO);
     // Note that we can use glFramebufferTexture to attach an entire cubemap to the framebuffer.
     glFramebufferTexture(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, mPointLightShadowMap, 0);
     glDrawBuffer(GL_NONE);
@@ -297,8 +310,6 @@ unsigned int RenderingUtil::CreatePointLightShadowMapFBO(unsigned int shadowWidt
     }
 
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
-
-    return pointLightShadowMapFBO;
 }
 
 void RenderingUtil::CreatePingPongFBOs() 
@@ -323,21 +334,77 @@ void RenderingUtil::CreatePingPongFBOs()
     }
 
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
-
-
 }
 
-unsigned int RenderingUtil::GetScreenQuadTexture() 
+void RenderingUtil::CreateCubeCaptureFBO()
 {
-    return mScreenQuadTexture;
+    unsigned int captureRBO;
+    glGenFramebuffers(1, &mCaptureFBO);
+    glGenRenderbuffers(1, &captureRBO);
+
+    glBindFramebuffer(GL_FRAMEBUFFER, mCaptureFBO);
+    glBindRenderbuffer(GL_RENDERBUFFER, captureRBO);
+    glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT24, 512, 512);
+    glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, captureRBO);
 }
 
-unsigned int RenderingUtil::GetBloomBrightnessTexture() 
+void RenderingUtil::CreateEnvironmentCubemap()
 {
-    return mBloomBrightnessTexture;
+    glGenTextures(1, &mEnvironmentCubemap);
+    glBindTexture(GL_TEXTURE_CUBE_MAP, mEnvironmentCubemap);
+    for (unsigned int i = 0; i < 6; ++i)
+    {
+        // note that we store each face with 16 bit floating point values
+        glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_RGB16F,
+            512, 512, 0, GL_RGB, GL_FLOAT, nullptr);
+    }
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 }
 
-unsigned int RenderingUtil::GetPointLightShadowMap()
+void RenderingUtil::EquirectangularToCubemap()
 {
-    return mPointLightShadowMap;
+    glm::mat4 captureProjection = glm::perspective(glm::radians(90.0f), 1.0f, 0.1f, 10.0f);
+    glm::mat4 captureViews[] =
+    {
+       glm::lookAt(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(1.0f,  0.0f,  0.0f), glm::vec3(0.0f, -1.0f,  0.0f)),
+       glm::lookAt(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(-1.0f,  0.0f,  0.0f), glm::vec3(0.0f, -1.0f,  0.0f)),
+       glm::lookAt(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f,  1.0f,  0.0f), glm::vec3(0.0f,  0.0f,  1.0f)),
+       glm::lookAt(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, -1.0f,  0.0f), glm::vec3(0.0f,  0.0f, -1.0f)),
+       glm::lookAt(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f,  0.0f,  1.0f), glm::vec3(0.0f, -1.0f,  0.0f)),
+       glm::lookAt(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f,  0.0f, -1.0f), glm::vec3(0.0f, -1.0f,  0.0f))
+    };
+
+    Shader& equiToCubemapShader = ShaderManager::GetShaderProgram("equiToCubemapShader");
+    equiToCubemapShader.use();
+    equiToCubemapShader.setInt("equirectangularMap", 0);
+    equiToCubemapShader.setMat4("projection", captureProjection);
+   
+    unsigned int hdrTexture = TextureLoader::LoadTextureHDR("res/textures/hdr/photo_studio_loft_hall_2k.hdr");
+
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, hdrTexture);
+
+    glViewport(0, 0, 512, 512); // don't forget to configure the viewport to the capture dimensions.
+    glBindFramebuffer(GL_FRAMEBUFFER, mCaptureFBO);
+
+   glDisable(GL_CULL_FACE);
+    for (unsigned int i = 0; i < 6; ++i)
+    {
+        equiToCubemapShader.setMat4("view", captureViews[i]);
+        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
+        GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, mEnvironmentCubemap, 0);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+       
+        glBindVertexArray(mUnitCubeVAO);
+        glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
+    }
+   
+    glEnable(GL_CULL_FACE); 
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
+
+

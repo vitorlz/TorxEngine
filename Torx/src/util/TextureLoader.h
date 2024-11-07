@@ -9,4 +9,5 @@ public:
 		const std::string& faceRight, const std::string& faceLeft,
 		const std::string& faceTop, const std::string& faceBottom,
 		const std::string& faceBack, const  std::string& faceFront);
+	static unsigned int LoadTextureHDR(const char* path);
 };

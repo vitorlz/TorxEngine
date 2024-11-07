@@ -16,6 +16,7 @@ void ShaderManager::LoadShaders()
 	std::shared_ptr<Shader> pointShadowMapShader = std::make_shared<Shader>("res/shaders/pointShadowMap.vert", "res/shaders/pointShadowMap.frag", "res/shaders/pointShadowMap.geom");
 	std::shared_ptr<Shader> blurShader = std::make_shared<Shader>("res/shaders/gaussianBlur.vert", "res/shaders/gaussianBlur.frag");
 	std::shared_ptr<Shader> pbrLightingShader = std::make_shared<Shader>("res/shaders/lighting.vert", "res/shaders/pbrLighting.frag");
+	std::shared_ptr<Shader> equiToCubemapShader = std::make_shared<Shader>("res/shaders/equirectangularToCubemap.vert", "res/shaders/equirectangularToCubemap.frag");
 
 	shaderPrograms.clear();
 
@@ -27,7 +28,9 @@ void ShaderManager::LoadShaders()
 	shaderPrograms.insert({ "pointShadowMapShader", pointShadowMapShader });
 	shaderPrograms.insert({ "blurShader", blurShader });
 	shaderPrograms.insert({ "pbrLightingShader", pbrLightingShader });
+	shaderPrograms.insert({ "equiToCubemapShader", equiToCubemapShader });
 }
+
 
 // maybe make this more efficient in the future.
 

@@ -17,12 +17,12 @@ bool  Common::uncharted{ false };
 float Common::exposure{ 2.0f };
 
 // -------------- BLOOM ---------------------------------------
-bool Common::bloomOn{ true };
+bool Common::bloomOn{ false };
 int Common::bloomKernelSize{ 5 };
 float Common::bloomStdDeviation{ 1.0f };
 float Common::bloomIntervalMultiplier{ 0.2f };
 std::vector<float> Common::bloomWeights;
 
 // ------------- PBR demo -------------------------
-bool Common::pbrDemonstration;
+bool Common::pbrDemonstration{ true };
 
