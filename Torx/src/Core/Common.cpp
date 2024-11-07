@@ -22,3 +22,7 @@ int Common::bloomKernelSize{ 5 };
 float Common::bloomStdDeviation{ 1.0f };
 float Common::bloomIntervalMultiplier{ 0.2f };
 std::vector<float> Common::bloomWeights;
+
+// ------------- PBR demo -------------------------
+bool Common::pbrDemonstration;
+

@@ -39,5 +39,6 @@ public:
 	static int bloomKernelSize;
 	static float bloomStdDeviation;
 	static float bloomIntervalMultiplier;
+	static bool pbrDemonstration;
 	static std::vector<float> bloomWeights;
 };

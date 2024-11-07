@@ -209,6 +209,7 @@ void UI::Update()
         ImGui::Checkbox("Show normals", &Common::normalsDebug);
         ImGui::Checkbox("Show World Position", &Common::worldPosDebug);
         ImGui::Checkbox("Wireframe mode", &Common::wireframeDebug);
+        ImGui::Checkbox("PBR demo", &Common::pbrDemonstration);
 
         ImGui::TreePop();
     }
