@@ -162,9 +162,10 @@
     <None Include="res\shaders\equirectangularToCubemap.vert" />
     <None Include="res\shaders\gaussianBlur.frag" />
     <None Include="res\shaders\gaussianBlur.vert" />
+    <None Include="res\shaders\irradianceConvolution.frag" />
     <None Include="res\shaders\lighting.frag" />
     <None Include="res\shaders\lighting.vert" />
-    <None Include="res\shaders\pbrLighting.frag" />
+    <None Include="res\shaders\pbrLightingTest.frag" />
     <None Include="res\shaders\pointShadowMap.frag" />
     <None Include="res\shaders\pointShadowMap.geom" />
     <None Include="res\shaders\pointShadowMap.vert" />

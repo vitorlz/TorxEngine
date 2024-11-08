@@ -10,5 +10,6 @@ void main()
 {
 	vec3 envColor = texture(skybox, TexCoords).rgb;
 
+
 	FragColor = vec4(envColor, 1.0);
 }

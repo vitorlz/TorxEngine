@@ -31,8 +31,6 @@ void RenderSystem::Init()
         "res/textures/cubemaps/back.jpg"
     );
 
-    mEquirectangularTexture = TextureLoader::LoadTextureHDR("res/textures/hdr/photo_studio_loft_hall_2k.hdr");
-
     RenderingUtil::Init();
 
    /* mCubeVAO = RenderingUtil::CreateCubeVAO();
@@ -283,26 +281,30 @@ void RenderSystem::Update(float deltaTime)
         //glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
         glEnable(GL_DEPTH_TEST);
 
-        Shader& pbrLightingShader = ShaderManager::GetShaderProgram("pbrLightingShader");
-        pbrLightingShader.use();
+        Shader& pbrLightingTestShader = ShaderManager::GetShaderProgram("pbrLightingTestShader");
+        pbrLightingTestShader.use();
         glm::mat4 view = player.viewMatrix;
-        pbrLightingShader.setMat4("view", view);
-        pbrLightingShader.setVec3("camPos", ecs.GetComponent<CTransform>(playerEntity).position);
-        pbrLightingShader.setVec3("albedo", 0.5f, 0.0f, 0.0f);
-        pbrLightingShader.setFloat("ao", 1.0f);
+        pbrLightingTestShader.setMat4("view", view);
+        pbrLightingTestShader.setVec3("camPos", ecs.GetComponent<CTransform>(playerEntity).position);
+        pbrLightingTestShader.setVec3("albedo", 0.5f, 0.0f, 0.0f);
+        pbrLightingTestShader.setFloat("ao", 1.0f);
+        pbrLightingTestShader.setInt("irradianceMap", 2);
 
-        pbrLightingShader.setMat4("projection", projection);
+        glActiveTexture(GL_TEXTURE2);
+        glBindTexture(GL_TEXTURE_CUBE_MAP, RenderingUtil::mIrradianceCubemap);
+
+        pbrLightingTestShader.setMat4("projection", projection);
 
         // render rows*column number of spheres with varying metallic/roughness values scaled by rows and columns respectively
         glm::mat4 model = glm::mat4(1.0f);
         for (int row = 0; row < nrRows; ++row)
         {
-            pbrLightingShader.setFloat("metallic", (float)row / (float)nrRows);
+            pbrLightingTestShader.setFloat("metallic", (float)row / (float)nrRows);
             for (int col = 0; col < nrColumns; ++col)
             {
                 // we clamp the roughness to 0.05 - 1.0 as perfectly smooth surfaces (roughness of 0.0) tend to look a bit off
                 // on direct lighting.
-                pbrLightingShader.setFloat("roughness", glm::clamp((float)col / (float)nrColumns, 0.05f, 1.0f));
+                pbrLightingTestShader.setFloat("roughness", glm::clamp((float)col / (float)nrColumns, 0.05f, 1.0f));
 
                 model = glm::mat4(1.0f);
                 model = glm::translate(model, glm::vec3(
@@ -312,8 +314,8 @@ void RenderSystem::Update(float deltaTime)
                 ));
                 model = glm::translate(model, glm::vec3(0.0f, 2.0f, 0.0f));
                 model = glm::scale(model, glm::vec3(0.15f));
-                pbrLightingShader.setMat4("model", model);
-                pbrLightingShader.setMat3("normalMatrix", glm::transpose(glm::inverse(glm::mat3(model))));
+                pbrLightingTestShader.setMat4("model", model);
+                pbrLightingTestShader.setMat3("normalMatrix", glm::transpose(glm::inverse(glm::mat3(model))));
                 renderSphere();
             }
         }
@@ -325,14 +327,14 @@ void RenderSystem::Update(float deltaTime)
         {
             glm::vec3 newPos = lightPositions[i] + glm::vec3(sin(glfwGetTime() * 5.0) * 5.0, 0.0, 0.0);
             newPos = lightPositions[i];
-            pbrLightingShader.setVec3("lightPositions[" + std::to_string(i) + "]", newPos);
-            pbrLightingShader.setVec3("lightColors[" + std::to_string(i) + "]", lightColors[i]);
+            pbrLightingTestShader.setVec3("lightPositions[" + std::to_string(i) + "]", newPos);
+            pbrLightingTestShader.setVec3("lightColors[" + std::to_string(i) + "]", lightColors[i]);
 
             model = glm::mat4(1.0f);
             model = glm::translate(model, newPos);
             model = glm::scale(model, glm::vec3(0.5f));
-            pbrLightingShader.setMat4("model", model);
-            pbrLightingShader.setMat3("normalMatrix", glm::transpose(glm::inverse(glm::mat3(model))));
+            pbrLightingTestShader.setMat4("model", model);
+            pbrLightingTestShader.setMat3("normalMatrix", glm::transpose(glm::inverse(glm::mat3(model))));
         }        
     }
 

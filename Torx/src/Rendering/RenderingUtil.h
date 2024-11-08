@@ -16,6 +16,10 @@ public:
 	static unsigned int mPointLightShadowMapFBO;
 	static unsigned int mScreenQuadVAO;
 	static unsigned int mEnvironmentCubemap;
+	static unsigned int mIrradianceCubemap;
+
+	static void EquirectangularToCubemap(const char* path);
+	static void CreateIrradianceCubemap();
 
 private:
 	static void CreateCubeVAO();
@@ -24,9 +28,4 @@ private:
 	static void CreateBlittingFBO();
 	static void CreatePointLightShadowMapFBO(unsigned int shadowWidth, unsigned int shadowHeight);
 	static void CreatePingPongFBOs();
-	static void CreateCubeCaptureFBO();
-	static void CreateEnvironmentCubemap();
-	static void EquirectangularToCubemap();
-
-	static unsigned int mCaptureFBO;
 };

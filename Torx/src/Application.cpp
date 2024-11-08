@@ -120,7 +120,7 @@ int main()
             .movementSpeed = 3.0f,
         });
 
-    /*Entity sponzaEntity = ecs.CreateEntity();
+    Entity sponzaEntity = ecs.CreateEntity();
     
     ecs.AddComponent<CTransform>(
         sponzaEntity, 
@@ -190,7 +190,7 @@ int main()
             .radius = 7.54f,
             .shadowCaster = true,
             .offset = glm::vec3(0.000f, -0.282f, -0.562f)
-        });*/
+        });
 
     UI gui;
 

@@ -2,6 +2,7 @@
 #include "../vendor/imgui/imgui.h"
 #include "../vendor/imgui/imgui_impl_glfw.h"
 #include "../vendor/imgui/imgui_impl_opengl3.h"
+#include "../Rendering/RenderingUtil.h"
 #include "../Core/Common.h"
 #include "../Core/Coordinator.hpp"
 #include "../AssetLoading/AssetManager.h"
@@ -203,6 +204,82 @@ void UI::Update()
         }
         ImGui::TreePop();
     }
+
+    if (ImGui::TreeNode("Environment Maps"))
+    {
+        const char* items[] = { "Lilienstein", "Sunset", "Clear Night", "Cinema", "Fireplace"};
+        static int item_selected_idx = 0;
+
+        const char* combo_preview_value = items[item_selected_idx];
+
+        if (ImGui::BeginCombo("combo 1", combo_preview_value))
+        {
+            for (int n = 0; n < IM_ARRAYSIZE(items); n++)
+            {
+                ImGui::PushID(n);
+                const bool is_selected = (item_selected_idx == n);
+                if (ImGui::Selectable(items[n], is_selected))
+                {
+                    item_selected_idx = n;
+
+                    if ("Lilienstein" == items[n])
+                    {
+
+                        glDeleteTextures(1, &RenderingUtil::mEnvironmentCubemap);
+                        glDeleteTextures(1, &RenderingUtil::mIrradianceCubemap);
+
+                        RenderingUtil::EquirectangularToCubemap("res/textures/hdr/lilienstein_2k.hdr");
+                        RenderingUtil::CreateIrradianceCubemap();
+                    }
+
+                    if ("Sunset" == items[n])
+                    {
+                        glDeleteTextures(1, &RenderingUtil::mEnvironmentCubemap);
+                        glDeleteTextures(1, &RenderingUtil::mIrradianceCubemap);
+
+                        RenderingUtil::EquirectangularToCubemap("res/textures/hdr/sunset_jhbcentral_2k.hdr");
+                        RenderingUtil::CreateIrradianceCubemap();
+                    }
+
+                    if ("Clear Night" == items[n])
+                    {
+                        glDeleteTextures(1, &RenderingUtil::mEnvironmentCubemap);
+                        glDeleteTextures(1, &RenderingUtil::mIrradianceCubemap);
+
+                        RenderingUtil::EquirectangularToCubemap("res/textures/hdr/rogland_clear_night_2k.hdr");
+                        RenderingUtil::CreateIrradianceCubemap();
+                    }
+
+                    if ("Cinema" == items[n])
+                    {
+                        glDeleteTextures(1, &RenderingUtil::mEnvironmentCubemap);
+                        glDeleteTextures(1, &RenderingUtil::mIrradianceCubemap);
+
+                        RenderingUtil::EquirectangularToCubemap("res/textures/hdr/pretville_cinema_2k.hdr");
+                        RenderingUtil::CreateIrradianceCubemap();
+                    }
+
+                    if ("Fireplace" == items[n])
+                    {
+                        glDeleteTextures(1, &RenderingUtil::mEnvironmentCubemap);
+                        glDeleteTextures(1, &RenderingUtil::mIrradianceCubemap);
+
+                        RenderingUtil::EquirectangularToCubemap("res/textures/hdr/fireplace_2k.hdr");
+                        RenderingUtil::CreateIrradianceCubemap();
+                    }
+                    
+                }
+                if (is_selected)
+                    ImGui::SetItemDefaultFocus();
+
+                ImGui::PopID();
+            }
+            ImGui::EndCombo();
+        }
+
+        ImGui::TreePop();
+    }
+
 
     if (ImGui::TreeNode("Debug"))
     {
