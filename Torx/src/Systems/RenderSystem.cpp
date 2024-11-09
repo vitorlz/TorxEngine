@@ -17,7 +17,6 @@
 #include "../Rendering/RenderingUtil.h"
 #include "../AssetLoading/AssetManager.h"
 
-
 extern Coordinator ecs;
 void renderSphere();
 
@@ -311,7 +310,7 @@ void RenderSystem::Update(float deltaTime)
         // render light source (simply re-render sphere at light positions)
         // this looks a bit off as we use the same shader, but it'll make their positions obvious and 
         // keeps the codeprint small.
-        for (unsigned int i = 0; i < sizeof(lightPositions) / sizeof(lightPositions[0]); ++i)
+      /*  for (unsigned int i = 0; i < sizeof(lightPositions) / sizeof(lightPositions[0]); ++i)
         {
             glm::vec3 newPos = lightPositions[i] + glm::vec3(sin(glfwGetTime() * 5.0) * 5.0, 0.0, 0.0);
             newPos = lightPositions[i];
@@ -323,13 +322,13 @@ void RenderSystem::Update(float deltaTime)
             model = glm::scale(model, glm::vec3(0.5f));
             pbrLightingTestShader.setMat4("model", model);
             pbrLightingTestShader.setMat3("normalMatrix", glm::transpose(glm::inverse(glm::mat3(model))));
-        }        
+        }      */  
 
         Shader& pbrModelTestShader = ShaderManager::GetShaderProgram("pbrModelTestShader");
         pbrModelTestShader.use();
         model = glm::mat4(1.0f);
         model = glm::translate(model, glm::vec3(10.0f, 0.0f, 0.0f));
-        model = glm::scale(model, glm::vec3(10.0f, 10.0f, 10.0f));
+        model = glm::scale(model, glm::vec3(12.0f, 12.0f, 12.0f));
         //model = glm::rotate(model, glm::radians(90.0f), glm::vec3(0.0f, 1.0f, 0.0f));
         glm::mat3 normalMatrix = glm::transpose(glm::inverse(model));
 
@@ -351,6 +350,12 @@ void RenderSystem::Update(float deltaTime)
 
         AssetManager::GetModel("camera").Draw(pbrModelTestShader);
 
+
+        model = glm::mat4(1.0f);
+        model = glm::translate(model, glm::vec3(5.0f, -3.0f, 0.0f));
+        model = glm::scale(model, glm::vec3(0.15f, 0.15f, 0.15f));
+        pbrModelTestShader.setMat4("model", model);
+        AssetManager::GetModel("deagle").Draw(pbrModelTestShader);
     }
 
     // ---------------------------- SKYBOX PASS ---------------------------------------

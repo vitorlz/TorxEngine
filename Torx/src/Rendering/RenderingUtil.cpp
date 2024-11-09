@@ -421,7 +421,7 @@ void RenderingUtil::CreateIrradianceCubemap()
 
     glBindFramebuffer(GL_FRAMEBUFFER, captureFBO);
     glBindRenderbuffer(GL_RENDERBUFFER, captureRBO);
-    glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT24, 1024, 1024);
+    glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT24, 32, 32);
     glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, captureRBO);
 
     glGenTextures(1, &mIrradianceCubemap);
@@ -493,7 +493,7 @@ void RenderingUtil::CreatePrefilteredEnvMap()
 
     glBindFramebuffer(GL_FRAMEBUFFER, captureFBO);
     glBindRenderbuffer(GL_RENDERBUFFER, captureRBO);
-    glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT24, 1024, 1024);
+    glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT24, 356, 356);
     glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, captureRBO);
     
     glGenTextures(1, &mPrefilteredEnvMap);
@@ -563,6 +563,7 @@ void RenderingUtil::CreatePrefilteredEnvMap()
 
 void RenderingUtil::CreateBRDFIntegrationMap() 
 {
+
     glGenTextures(1, &mBrdfLUT);
 
     glBindTexture(GL_TEXTURE_2D, mBrdfLUT);
@@ -579,7 +580,7 @@ void RenderingUtil::CreateBRDFIntegrationMap()
 
     glBindFramebuffer(GL_FRAMEBUFFER, captureFBO);
     glBindRenderbuffer(GL_RENDERBUFFER, captureRBO);
-    glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT24, 1024, 1024);
+    glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT24, 512, 512);
     glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, captureRBO);
 
     glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, mBrdfLUT, 0);
@@ -591,4 +592,6 @@ void RenderingUtil::CreateBRDFIntegrationMap()
     
     glBindVertexArray(mScreenQuadVAO);
     glDrawArrays(GL_TRIANGLES, 0, 6);
+
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
