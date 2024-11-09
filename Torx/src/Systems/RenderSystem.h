@@ -13,7 +13,4 @@ public:
 	void Init();
 
 	void Update(float deltaTime);
-private:
-	unsigned int mCubemapID;
-	unsigned int mEquirectangularTexture;
 };

@@ -15,11 +15,17 @@ public:
 	static unsigned int mBlittingFBO;
 	static unsigned int mPointLightShadowMapFBO;
 	static unsigned int mScreenQuadVAO;
+	// diffuse indirect lighting
 	static unsigned int mEnvironmentCubemap;
 	static unsigned int mIrradianceCubemap;
+	// specular indirect lighting
+	static unsigned int mPrefilteredEnvMap;
+	static unsigned int mBrdfLUT;
 
 	static void EquirectangularToCubemap(const char* path);
 	static void CreateIrradianceCubemap();
+	static void CreatePrefilteredEnvMap();
+	static void CreateBRDFIntegrationMap();
 
 private:
 	static void CreateCubeVAO();

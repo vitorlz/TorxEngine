@@ -20,9 +20,13 @@ unsigned int RenderingUtil::mPointLightShadowMapFBO;
 unsigned int RenderingUtil::mScreenQuadVAO;
 unsigned int RenderingUtil::mEnvironmentCubemap;
 unsigned int RenderingUtil::mIrradianceCubemap;
+unsigned int RenderingUtil::mPrefilteredEnvMap;
+unsigned int RenderingUtil::mBrdfLUT;
 
 void RenderingUtil::Init()
 {
+    glEnable(GL_TEXTURE_CUBE_MAP_SEAMLESS);
+
     RenderingUtil::CreateCubeVAO();
     RenderingUtil::CreateMSAAFBO();
     RenderingUtil::CreateBlittingFBO();
@@ -30,8 +34,11 @@ void RenderingUtil::Init()
     RenderingUtil::CreateScreenQuadVAO();
     RenderingUtil::CreatePingPongFBOs();
     
-    RenderingUtil::EquirectangularToCubemap("res/textures/hdr/lilienstein_2k.hdr");
+    RenderingUtil::EquirectangularToCubemap("res/textures/hdr/sunset_jhbcentral_2k.hdr");
     RenderingUtil::CreateIrradianceCubemap();
+
+    RenderingUtil::CreatePrefilteredEnvMap();
+    RenderingUtil::CreateBRDFIntegrationMap();
 }
 
 float cubeVertices[] = 
@@ -166,7 +173,7 @@ void RenderingUtil::CreateMSAAFBO()
         // we can then set the color values of the lights as high as we want (conveying the true brightness of the lights).
         // We then convert these values back to the 0.0 to 1.0 range (low dynamic range) in the final shader (the shader used to render stuff to the screen quad)
         // using a process called tone mapping (for which we have many different algorithms).
-        glTexImage2DMultisample(GL_TEXTURE_2D_MULTISAMPLE, 4, GL_RGB16F, Common::SCR_WIDTH, Common::SCR_HEIGHT, GL_TRUE);
+        glTexImage2DMultisample(GL_TEXTURE_2D_MULTISAMPLE, 16, GL_RGB16F, Common::SCR_WIDTH, Common::SCR_HEIGHT, GL_TRUE);
 
         glTexParameteri(GL_TEXTURE_2D_MULTISAMPLE, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
         glTexParameteri(GL_TEXTURE_2D_MULTISAMPLE, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
@@ -192,7 +199,7 @@ void RenderingUtil::CreateMSAAFBO()
     unsigned int msRbo;
     glGenRenderbuffers(1, &msRbo);
     glBindRenderbuffer(GL_RENDERBUFFER, msRbo);
-    glRenderbufferStorageMultisample(GL_RENDERBUFFER, 4, GL_DEPTH24_STENCIL8, Common::SCR_WIDTH, Common::SCR_HEIGHT);
+    glRenderbufferStorageMultisample(GL_RENDERBUFFER, 16, GL_DEPTH24_STENCIL8, Common::SCR_WIDTH, Common::SCR_HEIGHT);
     glBindRenderbuffer(GL_RENDERBUFFER, 0);
 
     glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, msRbo);
@@ -361,6 +368,7 @@ void RenderingUtil::EquirectangularToCubemap(const char* path)
     glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
     glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
 
     glm::mat4 captureProjection = glm::perspective(glm::radians(90.0f), 1.0f, 0.1f, 10.0f);
     glm::mat4 captureViews[] =
@@ -398,6 +406,9 @@ void RenderingUtil::EquirectangularToCubemap(const char* path)
         glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
     }
    
+    glBindTexture(GL_TEXTURE_CUBE_MAP, mEnvironmentCubemap);
+    glGenerateMipmap(GL_TEXTURE_CUBE_MAP);
+
     glEnable(GL_CULL_FACE); 
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
@@ -420,7 +431,7 @@ void RenderingUtil::CreateIrradianceCubemap()
         // As the irradiance map averages all surrounding radiance uniformly it doesn't have a lot of high frequency details, 
         // so we can store the map at a low resolution (32x32) and let OpenGL's linear filtering do most of the work.
         glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_RGB16F,
-            128, 128, 0, GL_RGB, GL_FLOAT, nullptr);
+            32, 32, 0, GL_RGB, GL_FLOAT, nullptr);
     }
     glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
     glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
@@ -453,7 +464,7 @@ void RenderingUtil::CreateIrradianceCubemap()
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_CUBE_MAP, mEnvironmentCubemap);
 
-    glViewport(0, 0, 128, 128); // don't forget to configure the viewport to the capture dimensions.
+    glViewport(0, 0, 32, 32); // don't forget to configure the viewport to the capture dimensions.
     glBindFramebuffer(GL_FRAMEBUFFER, captureFBO);
 
     glDisable(GL_CULL_FACE);
@@ -470,4 +481,114 @@ void RenderingUtil::CreateIrradianceCubemap()
 
     glEnable(GL_CULL_FACE);
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
+}
+
+void RenderingUtil::CreatePrefilteredEnvMap()
+{
+    // this is very similar to how we did the irradiance map, the difference is that we are now going to account for roughness and store
+    // sequentially rougher (blurrier) reflections in the prefiltered map's mip map levels.
+    unsigned int captureFBO, captureRBO;
+    glGenFramebuffers(1, &captureFBO);
+    glGenRenderbuffers(1, &captureRBO);
+
+    glBindFramebuffer(GL_FRAMEBUFFER, captureFBO);
+    glBindRenderbuffer(GL_RENDERBUFFER, captureRBO);
+    glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT24, 1024, 1024);
+    glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, captureRBO);
+    
+    glGenTextures(1, &mPrefilteredEnvMap);
+    glBindTexture(GL_TEXTURE_CUBE_MAP, mPrefilteredEnvMap);
+    for (unsigned int i = 0; i < 6; ++i)
+    {
+        glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_RGB16F, 356, 356, 0, GL_RGB, GL_FLOAT, nullptr);
+    }
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+    glGenerateMipmap(GL_TEXTURE_CUBE_MAP);
+
+    glm::mat4 captureProjection = glm::perspective(glm::radians(90.0f), 1.0f, 0.1f, 10.0f);
+    glm::mat4 captureViews[] =
+    {
+       glm::lookAt(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(1.0f,  0.0f,  0.0f), glm::vec3(0.0f, -1.0f,  0.0f)),
+       glm::lookAt(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(-1.0f,  0.0f,  0.0f), glm::vec3(0.0f, -1.0f,  0.0f)),
+       glm::lookAt(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f,  1.0f,  0.0f), glm::vec3(0.0f,  0.0f,  1.0f)),
+       glm::lookAt(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, -1.0f,  0.0f), glm::vec3(0.0f,  0.0f, -1.0f)),
+       glm::lookAt(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f,  0.0f,  1.0f), glm::vec3(0.0f, -1.0f,  0.0f)),
+       glm::lookAt(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f,  0.0f, -1.0f), glm::vec3(0.0f, -1.0f,  0.0f))
+    };
+
+    Shader& prefilterConvolutionShader = ShaderManager::GetShaderProgram("prefilterConvolutionShader");
+    prefilterConvolutionShader.use();
+    prefilterConvolutionShader.setInt("environmentMap", 0);
+    prefilterConvolutionShader.setMat4("projection", captureProjection);
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_CUBE_MAP, mEnvironmentCubemap);
+
+    glBindFramebuffer(GL_FRAMEBUFFER, captureFBO);
+
+    // here we render the cube 6 times for each of the mip map levels based on the roughness level. This way, as we increase the mip map level, the texture will become 
+    // rougher /blurrier. 
+    unsigned int maxMipLevels = 5;
+    glDisable(GL_CULL_FACE);
+    for (unsigned int mip = 0; mip < maxMipLevels; ++mip)
+    {
+        // resize framebuffer according to mip-level size.
+        unsigned int mipWidth = 356 * std::pow(0.5, mip);
+        unsigned int mipHeight = 356 * std::pow(0.5, mip);
+        glBindRenderbuffer(GL_RENDERBUFFER, captureRBO);
+        glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT24, mipWidth, mipHeight);
+        glViewport(0, 0, mipWidth, mipHeight);
+
+        float roughness = (float)mip / (float)(maxMipLevels - 1);
+        prefilterConvolutionShader.setFloat("roughness", roughness);
+        for (unsigned int i = 0; i < 6; ++i)
+        {
+            prefilterConvolutionShader.setMat4("view", captureViews[i]);
+            glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
+                GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, mPrefilteredEnvMap, mip);
+
+            glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+            glBindVertexArray(mUnitCubeVAO);
+            glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
+        }
+    }
+    glEnable(GL_CULL_FACE);
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+}
+
+void RenderingUtil::CreateBRDFIntegrationMap() 
+{
+    glGenTextures(1, &mBrdfLUT);
+
+    glBindTexture(GL_TEXTURE_2D, mBrdfLUT);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RG16F, 512, 512, 0, GL_RG, GL_FLOAT, 0);
+
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+    unsigned int captureFBO, captureRBO;
+    glGenFramebuffers(1, &captureFBO);
+    glGenRenderbuffers(1, &captureRBO);
+
+    glBindFramebuffer(GL_FRAMEBUFFER, captureFBO);
+    glBindRenderbuffer(GL_RENDERBUFFER, captureRBO);
+    glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT24, 1024, 1024);
+    glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, captureRBO);
+
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, mBrdfLUT, 0);
+    glViewport(0, 0, 512, 512);
+
+    Shader& brdfConvolutionShader = ShaderManager::GetShaderProgram("brdfConvolutionShader");
+    brdfConvolutionShader.use();
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    
+    glBindVertexArray(mScreenQuadVAO);
+    glDrawArrays(GL_TRIANGLES, 0, 6);
 }

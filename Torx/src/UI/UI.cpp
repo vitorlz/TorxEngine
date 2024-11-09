@@ -227,45 +227,65 @@ void UI::Update()
 
                         glDeleteTextures(1, &RenderingUtil::mEnvironmentCubemap);
                         glDeleteTextures(1, &RenderingUtil::mIrradianceCubemap);
+                        glDeleteTextures(1, &RenderingUtil::mPrefilteredEnvMap);
+                        glDeleteTextures(1, &RenderingUtil::mBrdfLUT);
 
                         RenderingUtil::EquirectangularToCubemap("res/textures/hdr/lilienstein_2k.hdr");
                         RenderingUtil::CreateIrradianceCubemap();
+                        RenderingUtil::CreatePrefilteredEnvMap();
+                        RenderingUtil::CreateBRDFIntegrationMap();
                     }
 
                     if ("Sunset" == items[n])
                     {
                         glDeleteTextures(1, &RenderingUtil::mEnvironmentCubemap);
                         glDeleteTextures(1, &RenderingUtil::mIrradianceCubemap);
+                        glDeleteTextures(1, &RenderingUtil::mPrefilteredEnvMap);
+                        glDeleteTextures(1, &RenderingUtil::mBrdfLUT);
 
                         RenderingUtil::EquirectangularToCubemap("res/textures/hdr/sunset_jhbcentral_2k.hdr");
                         RenderingUtil::CreateIrradianceCubemap();
+                        RenderingUtil::CreatePrefilteredEnvMap();
+                        RenderingUtil::CreateBRDFIntegrationMap();
                     }
 
                     if ("Clear Night" == items[n])
                     {
                         glDeleteTextures(1, &RenderingUtil::mEnvironmentCubemap);
                         glDeleteTextures(1, &RenderingUtil::mIrradianceCubemap);
+                        glDeleteTextures(1, &RenderingUtil::mPrefilteredEnvMap);
+                        glDeleteTextures(1, &RenderingUtil::mBrdfLUT);
 
                         RenderingUtil::EquirectangularToCubemap("res/textures/hdr/rogland_clear_night_2k.hdr");
                         RenderingUtil::CreateIrradianceCubemap();
+                        RenderingUtil::CreatePrefilteredEnvMap();
+                        RenderingUtil::CreateBRDFIntegrationMap();
                     }
 
                     if ("Cinema" == items[n])
                     {
                         glDeleteTextures(1, &RenderingUtil::mEnvironmentCubemap);
                         glDeleteTextures(1, &RenderingUtil::mIrradianceCubemap);
+                        glDeleteTextures(1, &RenderingUtil::mPrefilteredEnvMap);
+                        glDeleteTextures(1, &RenderingUtil::mBrdfLUT);
 
                         RenderingUtil::EquirectangularToCubemap("res/textures/hdr/pretville_cinema_2k.hdr");
                         RenderingUtil::CreateIrradianceCubemap();
+                        RenderingUtil::CreatePrefilteredEnvMap();
+                        RenderingUtil::CreateBRDFIntegrationMap();
                     }
 
                     if ("Fireplace" == items[n])
                     {
                         glDeleteTextures(1, &RenderingUtil::mEnvironmentCubemap);
                         glDeleteTextures(1, &RenderingUtil::mIrradianceCubemap);
+                        glDeleteTextures(1, &RenderingUtil::mPrefilteredEnvMap);
+                        glDeleteTextures(1, &RenderingUtil::mBrdfLUT);
 
                         RenderingUtil::EquirectangularToCubemap("res/textures/hdr/fireplace_2k.hdr");
                         RenderingUtil::CreateIrradianceCubemap();
+                        RenderingUtil::CreatePrefilteredEnvMap();
+                        RenderingUtil::CreateBRDFIntegrationMap();
                     }
                     
                 }

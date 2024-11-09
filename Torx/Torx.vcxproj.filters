@@ -229,6 +229,9 @@
     <None Include="res\shaders\equirectangularToCubemap.vert" />
     <None Include="res\shaders\equirectangularToCubemap.frag" />
     <None Include="res\shaders\irradianceConvolution.frag" />
+    <None Include="res\shaders\prefilterConvolution.frag" />
+    <None Include="res\shaders\brdfConvolution.frag" />
+    <None Include="res\shaders\brdfConvolution.vert" />
   </ItemGroup>
   <ItemGroup>
     <Library Include="vendor\assimp\lib\assimp-vc143-mt.lib" />

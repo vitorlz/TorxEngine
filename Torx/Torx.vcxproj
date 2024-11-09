@@ -156,6 +156,8 @@
     <ClInclude Include="vendor\imgui\imstb_truetype.h" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="res\shaders\brdfConvolution.frag" />
+    <None Include="res\shaders\brdfConvolution.vert" />
     <None Include="res\shaders\cubemap.frag" />
     <None Include="res\shaders\cubemap.vert" />
     <None Include="res\shaders\equirectangularToCubemap.frag" />
@@ -171,6 +173,7 @@
     <None Include="res\shaders\pointShadowMap.vert" />
     <None Include="res\shaders\postProcessing.frag" />
     <None Include="res\shaders\postProcessing.vert" />
+    <None Include="res\shaders\prefilterConvolution.frag" />
     <None Include="res\shaders\solidColor.frag" />
     <None Include="res\shaders\solidColor.vert" />
     <None Include="res\shaders\testShader.frag" />

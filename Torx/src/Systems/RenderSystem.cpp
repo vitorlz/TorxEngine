@@ -22,26 +22,7 @@ void renderSphere();
 
 void RenderSystem::Init() 
 {
-    mCubemapID = TextureLoader::LoadCubeMap(
-        "res/textures/cubemaps/right.jpg",
-        "res/textures/cubemaps/left.jpg",
-        "res/textures/cubemaps/top.jpg",
-        "res/textures/cubemaps/bottom.jpg",
-        "res/textures/cubemaps/front.jpg",
-        "res/textures/cubemaps/back.jpg"
-    );
-
     RenderingUtil::Init();
-
-   /* mCubeVAO = RenderingUtil::CreateCubeVAO();
-    mMsFBO = RenderingUtil::CreateMSAAFBO();
-    mBlittingFBO = RenderingUtil::CreateBlittingFBO();
-    mPointLightShadowMapFBO = RenderingUtil::CreatePointLightShadowMapFBO(1024, 1024);
-    mPointLightShadowMap = RenderingUtil::GetPointLightShadowMap();
-    mScreenQuadVAO = RenderingUtil::CreateScreenQuadVAO();
-    mScreenQuadTexture = RenderingUtil::GetScreenQuadTexture();
-    mBloomBrightnessTexture = RenderingUtil::GetBloomBrightnessTexture();
-    RenderingUtil::CreatePingPongFBOs();*/
 }
 
 const int MAX_OMNISHADOWS = 10;
@@ -289,9 +270,15 @@ void RenderSystem::Update(float deltaTime)
         pbrLightingTestShader.setVec3("albedo", 0.5f, 0.0f, 0.0f);
         pbrLightingTestShader.setFloat("ao", 1.0f);
         pbrLightingTestShader.setInt("irradianceMap", 2);
-
+        pbrLightingTestShader.setInt("prefilterMap", 3);
+        pbrLightingTestShader.setInt("brdfLUT", 4);
+       
         glActiveTexture(GL_TEXTURE2);
         glBindTexture(GL_TEXTURE_CUBE_MAP, RenderingUtil::mIrradianceCubemap);
+        glActiveTexture(GL_TEXTURE3);
+        glBindTexture(GL_TEXTURE_CUBE_MAP, RenderingUtil::mPrefilteredEnvMap);
+        glActiveTexture(GL_TEXTURE4);
+        glBindTexture(GL_TEXTURE_2D, RenderingUtil::mBrdfLUT);
 
         pbrLightingTestShader.setMat4("projection", projection);
 
@@ -459,9 +446,6 @@ void RenderSystem::Update(float deltaTime)
     postProcessingShader.setInt("bloomBlurTexture", 1);
     glDrawArrays(GL_TRIANGLES, 0, 6);
 }
-
-
-
 
 // PBR testing
 unsigned int sphereVAO = 0;

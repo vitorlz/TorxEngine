@@ -11,7 +11,7 @@ void main()
 	// In this fragment shader we convolute the cubemap we created from the hdr texture in order to create an irradiance map from which we can
 	// sample to retrieve indirect diffuse lighting (irradiance / sum of radiance) for each fragment. We do that by sampling from the cubemap
 	// in multiple directions inside a hemisphere at a given orientation, we then average the values sampled to get the irradiance. We store that irradiance
-	// in another cubemap (an irradiance map) and when we want to get to irradiance (indirect diffuse lighting) for a given fragment we simply sample
+	// in another cubemap (an irradiance map) and when we want to get the irradiance (indirect diffuse lighting) for a given fragment we simply sample
 	// from this irradiance map at the given fragment's surface normal direction. This is basically an approximation of the reflectance equation for each
 	// texel of the cubemap.
 
@@ -38,7 +38,7 @@ void main()
 			// tangent space to world
 			vec3 sampleVec = tangentSample.x * right + tangentSample.y * up + tangentSample.z * normal;
 
-			irradiance += texture(environmentMap, sampleVec).rgb * cos(theta) * sin(theta);
+			irradiance += textureLod(environmentMap, sampleVec, 0).rgb * cos(theta) * sin(theta);
 			nrSamples++;
 		}
 	}

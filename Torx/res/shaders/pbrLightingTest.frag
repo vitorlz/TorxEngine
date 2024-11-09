@@ -11,6 +11,8 @@ uniform float roughness;
 uniform float ao;
 
 uniform samplerCube irradianceMap;
+uniform samplerCube prefilterMap;
+uniform sampler2D brdfLUT;
 
 //lights
 uniform vec3 lightPositions[4];
@@ -30,6 +32,7 @@ void main()
 {
 	vec3 N = normalize(Normal); // normal vector
 	vec3 V = normalize(camPos - FragPos); // viewDir
+	vec3 R = reflect(-V, N);   
 
 	vec3 F0 = vec3(0.04);
 	F0 = mix(F0, albedo, metallic);
@@ -84,14 +87,21 @@ void main()
 	// We now use the value sampled from our irradiance map as the indirect diffuse lighting, which we put in the ambient component of the light.
 	// indirect lighting has both a diffuse and specular part, so we need to weigh both parts according to the indirect reflectance (specular) ratio 
 	// and indirect refractive (diffuse) ratio. We use the fresnelSchlick formula to find the reflectance ratio and use that to find the refractive ratio.
-	vec3 kS = fresnelSchlickRoughness(max(dot(N, V), 0.0), F0, roughness);
+	vec3 F = fresnelSchlickRoughness(max(dot(N, V), 0.0), F0, roughness);
+
+	vec3 kS = F;
 	vec3 kD = 1.0 - kS;
 	kD *= 1.0 - metallic;
 	// retrieve the irradiance influencing the fragment
 	vec3 irradiance = texture(irradianceMap, N).rgb;
 	vec3 diffuse = irradiance * albedo;
 	// We treat both diffuse and specular indirect lighting as ambient lighting as it comes from outside sources and not from direct light sources.
-	vec3 ambient = (kD * diffuse) * ao;
+	const float MAX_REFLECTION_LOD = 4.0;
+	vec3 prefilteredColor = textureLod(prefilterMap, R, roughness * MAX_REFLECTION_LOD).rgb;
+	vec2 envBRDF = texture(brdfLUT, vec2(max(dot(N, V), 0.0), roughness)).rg;
+	vec3 specular = prefilteredColor * (F * envBRDF.x + envBRDF.y);
+	
+	vec3 ambient = (kD * diffuse + specular) * ao;
 
 	vec3 color = ambient + Lo;
 	
