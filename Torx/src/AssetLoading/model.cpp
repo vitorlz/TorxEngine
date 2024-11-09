@@ -155,6 +155,19 @@ Mesh Model::processMesh(aiMesh* mesh, const aiScene* scene, glm::mat4 globalTran
 		// Change texture type to NORMALS when not loading the backpack
 		std::vector<Texture> normalMaps = loadMaterialTextures(material, aiTextureType_NORMALS, "texture_normal");
 		textures.insert(textures.end(), normalMaps.begin(), normalMaps.end());
+
+
+		std::vector<Texture> albedoMaps = loadMaterialTextures(material, aiTextureType_BASE_COLOR, "texture_albedo");
+		textures.insert(textures.end(), albedoMaps.begin(), albedoMaps.end());
+
+		std::vector<Texture> roughnessMaps = loadMaterialTextures(material, aiTextureType_DIFFUSE_ROUGHNESS, "texture_roughness");
+		textures.insert(textures.end(), roughnessMaps.begin(), roughnessMaps.end());
+
+		std::vector<Texture> matalnessMaps = loadMaterialTextures(material, aiTextureType_METALNESS, "texture_metalness");
+		textures.insert(textures.end(), matalnessMaps.begin(), matalnessMaps.end());
+
+		std::vector<Texture> aoMaps = loadMaterialTextures(material, aiTextureType_AMBIENT_OCCLUSION, "texture_ao");
+		textures.insert(textures.end(), aoMaps.begin(), aoMaps.end());
 	}
 
 	return Mesh(vertices, indices, textures);
@@ -182,7 +195,7 @@ std::vector<Texture> Model::loadMaterialTextures(aiMaterial* mat, aiTextureType 
 			// THIS FUNCTION ONLY WORKS IF THE TEXTURES ARE STORED IN THE SAME DIRECTORY AS THE MODEL ITSELF
 			// SOME MODELS STORE TEXTURES IN ABSOLUTE PATHS, WHICH WE NEED TO EDIT TO LOCAL IF WE WANT IT TO WORK
 
-			if (typeName == "texture_diffuse")
+			if (typeName == "texture_diffuse" || typeName == "texture_albedo")
 			{
 				texture.id = TextureFromFile(str.C_Str(), directory, true);
 			}

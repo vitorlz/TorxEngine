@@ -15,6 +15,7 @@
 #include "../Util/TextureLoader.h"
 #include "../Util/Util.h"
 #include "../Rendering/RenderingUtil.h"
+#include "../AssetLoading/AssetManager.h"
 
 
 extern Coordinator ecs;
@@ -323,6 +324,33 @@ void RenderSystem::Update(float deltaTime)
             pbrLightingTestShader.setMat4("model", model);
             pbrLightingTestShader.setMat3("normalMatrix", glm::transpose(glm::inverse(glm::mat3(model))));
         }        
+
+        Shader& pbrModelTestShader = ShaderManager::GetShaderProgram("pbrModelTestShader");
+        pbrModelTestShader.use();
+        model = glm::mat4(1.0f);
+        model = glm::translate(model, glm::vec3(10.0f, 0.0f, 0.0f));
+        model = glm::scale(model, glm::vec3(10.0f, 10.0f, 10.0f));
+        //model = glm::rotate(model, glm::radians(90.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+        glm::mat3 normalMatrix = glm::transpose(glm::inverse(model));
+
+        pbrModelTestShader.setVec3("camPos", ecs.GetComponent<CTransform>(playerEntity).position);
+        pbrModelTestShader.setInt("irradianceMap", 6);
+        pbrModelTestShader.setInt("prefilterMap", 7);
+        pbrModelTestShader.setInt("brdfLUT", 8);
+
+        glActiveTexture(GL_TEXTURE6);
+        glBindTexture(GL_TEXTURE_CUBE_MAP, RenderingUtil::mIrradianceCubemap);
+        glActiveTexture(GL_TEXTURE7);
+        glBindTexture(GL_TEXTURE_CUBE_MAP, RenderingUtil::mPrefilteredEnvMap);
+        glActiveTexture(GL_TEXTURE8);
+        glBindTexture(GL_TEXTURE_2D, RenderingUtil::mBrdfLUT);
+        pbrModelTestShader.setMat4("projection", projection);
+        pbrModelTestShader.setMat4("view", player.viewMatrix);
+        pbrModelTestShader.setMat4("model", model);
+        pbrModelTestShader.setMat3("normalMatrix", normalMatrix);
+
+        AssetManager::GetModel("camera").Draw(pbrModelTestShader);
+
     }
 
     // ---------------------------- SKYBOX PASS ---------------------------------------

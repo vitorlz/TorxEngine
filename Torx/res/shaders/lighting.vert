@@ -37,6 +37,7 @@ void main()
     {
         B = B * -1.0;
     } 
+    
 
     TBN = mat3(T, B, N);    
 }

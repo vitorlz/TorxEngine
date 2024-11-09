@@ -55,6 +55,10 @@ void Mesh::Draw(Shader &shader) {
 	unsigned int specularNr = 1;
 	unsigned int emissionNr = 1;
 	unsigned int normalNr = 1;
+	unsigned int albedoNr = 1;
+	unsigned int roughnessNr = 1;
+	unsigned int metalnessNr = 1;
+	unsigned int aoNr = 1;
 	
 	unsigned int i = 0;
 
@@ -75,6 +79,14 @@ void Mesh::Draw(Shader &shader) {
 			number = std::to_string(emissionNr++);
 		else if (name == "texture_normal")
 			number = std::to_string(normalNr++);
+		else if (name == "texture_albedo")
+			number = std::to_string(albedoNr++);
+		else if (name == "texture_roughness")
+			number = std::to_string(roughnessNr++);
+		else if (name == "texture_metalness")
+			number = std::to_string(metalnessNr++);
+		else if (name == "texture_ao")
+			number = std::to_string(aoNr++);
 
 		shader.setInt(("material." + name + number).c_str(), i);
 		glBindTexture(GL_TEXTURE_2D, textures[i].id);

@@ -20,6 +20,7 @@ void ShaderManager::LoadShaders()
 	std::shared_ptr<Shader> irradianceConvolutionShader = std::make_shared<Shader>("res/shaders/equirectangularToCubemap.vert", "res/shaders/irradianceConvolution.frag");
 	std::shared_ptr<Shader>	prefilterConvolutionShader = std::make_shared<Shader>("res/shaders/equirectangularToCubemap.vert", "res/shaders/prefilterConvolution.frag");
 	std::shared_ptr<Shader>	brdfConvolutionShader = std::make_shared<Shader>("res/shaders/brdfConvolution.vert", "res/shaders/brdfConvolution.frag");
+	std::shared_ptr<Shader>	pbrModelTestShader = std::make_shared<Shader>("res/shaders/lighting.vert", "res/shaders/pbrTestModelLoading.frag");
 
 	shaderPrograms.clear();
 
@@ -35,6 +36,7 @@ void ShaderManager::LoadShaders()
 	shaderPrograms.insert({ "irradianceConvolutionShader", irradianceConvolutionShader });
 	shaderPrograms.insert({ "prefilterConvolutionShader", prefilterConvolutionShader });
 	shaderPrograms.insert({ "brdfConvolutionShader", brdfConvolutionShader });
+	shaderPrograms.insert({ "pbrModelTestShader", pbrModelTestShader });
 }
 
 
