@@ -113,7 +113,7 @@ void main()
 	if(albedoSample.a < 0.5)
 		discard;
 
-	vec3 albedo = albedoSample.rgb;
+	albedo = albedoSample.rgb;
 
 	vec3 N = getNormalFromMap();
 	vec3 V = normalize(camPos - FragPos); // viewDir
