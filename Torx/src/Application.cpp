@@ -100,7 +100,7 @@ int main()
             .model = AssetManager::GetModel("debugCube")
         });
 
-    ecs.AddComponent<CLight>(
+    /*ecs.AddComponent<CLight>(
         playerEntity,
         CLight{
             .type = SPOT,
@@ -111,7 +111,7 @@ int main()
             .direction = glm::vec3(0.0f, 0.0f, -1.0f),
             .innerCutoff = 12.5f,
             .outerCutoff = 17.5f,
-        });
+        });*/
 
     ecs.AddComponent<CPlayer>(
         playerEntity,
@@ -120,36 +120,37 @@ int main()
             .movementSpeed = 3.0f,
         });
 
-    /*Entity sponzaEntity = ecs.CreateEntity();
+    Entity deagle = ecs.CreateEntity();
     
     ecs.AddComponent<CTransform>(
-        sponzaEntity, 
+        deagle,
         CTransform{
-            .position = glm::vec3(0.0f, 0.0f, 0.0f),
-            .scale = glm::vec3(1.0f, 1.0f, 1.0f),
-            .rotation = glm::vec3(0.0f, 90.0f, 0.0f),
+            .position = glm::vec3(5.0f, -3.0f, 0.0f),
+            .scale = glm::vec3(0.15f),
+            .rotation = glm::vec3(0.0f, 0.0f, 0.0f),
         });
 
     ecs.AddComponent<CModel>(
-        sponzaEntity,
+        deagle,
         CModel{
-            .model = AssetManager::GetModel("sponza")
+            .model = AssetManager::GetModel("deagle")
         });
 
+   
     Entity lampEntity1 = ecs.CreateEntity();
 
     ecs.AddComponent<CTransform>(
         lampEntity1,
         CTransform{
-            .position = glm::vec3(-0.330f, 3.600f, -6.610f),
-            .scale = glm::vec3(0.359f),
-            .rotation = glm::vec3(0.0f, 180.0f, 0.0f),
+            .position = glm::vec3(0.0, 0.0f, 0.0f),
+            .scale = glm::vec3(0.2f),
+            .rotation = glm::vec3(0.0f, 0.0f, 0.0f),
         });
 
     ecs.AddComponent<CModel>(
         lampEntity1,
         CModel{
-            .model = AssetManager::GetModel("victorianLamp")
+            .model = AssetManager::GetModel("debugCube")
         });
 
     ecs.AddComponent<CLight>(
@@ -157,14 +158,14 @@ int main()
         CLight{
             .type = POINT,
             .ambient = glm::vec3(0.0f),
-            .diffuse = glm::vec3(0.725f, 0.529f, 0.286f),
+            .diffuse = glm::vec3(100.0f, 0.0f, 0.0f),
             .specular = glm::vec3(1.0f, 1.0f, 1.0f),
-            .radius = 7.64f,
-            .shadowCaster = true,
-            .offset = glm::vec3(0.000f, -0.282f, 0.562f)
+            .radius = 30.0f,
+            .shadowCaster = false,
+            .offset = glm::vec3(0.0f, 0.0f, 0.0f)
         });
 
-    Entity lampEntity2 = ecs.CreateEntity();
+    /*Entity lampEntity2 = ecs.CreateEntity();
 
     ecs.AddComponent<CTransform>(
         lampEntity2,

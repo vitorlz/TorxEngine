@@ -175,11 +175,6 @@ void RenderSystem::Update(float deltaTime)
     unsigned int attachments[2] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1 };
     glDrawBuffers(2, attachments);
 
-  
-    Shader& lightingShader = ShaderManager::GetShaderProgram("lightingShader");
-
-    lightingShader.use();
-
     glm::mat4 projection = glm::mat4(1.0f);
     projection = glm::perspective(
         glm::radians(45.0f), (float)Window::screenWidth / (float)Window::screenHeight, 0.1f, 200.0f);
@@ -194,6 +189,21 @@ void RenderSystem::Update(float deltaTime)
         }
     }
     auto& player = ecs.GetComponent<CPlayer>(playerEntity);
+    Shader& pbrModelTestShader = ShaderManager::GetShaderProgram("pbrModelTestShader");
+    pbrModelTestShader.use();
+
+    pbrModelTestShader.setMat4("view", player.viewMatrix);
+    pbrModelTestShader.setMat4("projection", projection);
+    pbrModelTestShader.setVec3("camPos", ecs.GetComponent<CTransform>(playerEntity).position);
+    pbrModelTestShader.setInt("irradianceMap", 6);
+    pbrModelTestShader.setInt("prefilterMap", 7);
+    pbrModelTestShader.setInt("brdfLUT", 8);
+    glActiveTexture(GL_TEXTURE6);
+    glBindTexture(GL_TEXTURE_CUBE_MAP, RenderingUtil::mIrradianceCubemap);
+    glActiveTexture(GL_TEXTURE7);
+    glBindTexture(GL_TEXTURE_CUBE_MAP, RenderingUtil::mPrefilteredEnvMap);
+    glActiveTexture(GL_TEXTURE8);
+    glBindTexture(GL_TEXTURE_2D, RenderingUtil::mBrdfLUT);
 
     for (const auto& entity : mEntities) 
     {
@@ -210,8 +220,8 @@ void RenderSystem::Update(float deltaTime)
 
         glm::mat3 normalMatrix = glm::transpose(glm::inverse(model));
 
-        /*if (ecs.HasComponent<CLight>(entity)) 
-        {
+       if (ecs.HasComponent<CLight>(entity)) 
+       {
             auto& light = ecs.GetComponent<CLight>(entity);
 
             Shader& solidColorShader = ShaderManager::GetShaderProgram("solidColorShader");
@@ -226,11 +236,9 @@ void RenderSystem::Update(float deltaTime)
             model3d.model.Draw(solidColorShader);
 
             continue;
-        }*/
-
-        lightingShader.use();
+       }
         
-        if (omniShadowCasters != 0) 
+      /*  if (omniShadowCasters != 0) 
         {
             glActiveTexture(GL_TEXTURE3);
             glBindTexture(GL_TEXTURE_CUBE_MAP_ARRAY, RenderingUtil::mPointLightShadowMap);
@@ -238,25 +246,18 @@ void RenderSystem::Update(float deltaTime)
             lightingShader.setInt("pointShadowMap", 3);
 
             glUniform1fv(glGetUniformLocation(lightingShader.ID, "point_far_plane"), omniShadowCasters, pointFar.data());
-        }
-        
-        lightingShader.setMat4("projection", projection); 
-        lightingShader.setMat4("view", player.viewMatrix);
-        lightingShader.setMat4("model", model);
-        lightingShader.setMat3("normalMatrix", normalMatrix);
-        lightingShader.setBool("showNormals", Common::normalsDebug);
-        lightingShader.setBool("worldPosDebug", Common::worldPosDebug);
-        lightingShader.setBool("bloom", Common::bloomOn);
+        }*/
 
-        lightingShader.setVec3("cameraPos", ecs.GetComponent<CTransform>(playerEntity).position);
-        lightingShader.setVec3("cameraFront", player.front);
+        pbrModelTestShader.use();  
+        pbrModelTestShader.setMat4("model", model);
+        pbrModelTestShader.setMat3("normalMatrix", normalMatrix);
 
-        model3d.model.Draw(lightingShader);
+        model3d.model.Draw(pbrModelTestShader);
     }
 
     // ----------------------------- PBR TESTING -----------------------------------------------------------------------------------------
 
-    if (Common::pbrDemonstration)
+    if (false)
     {
         glDrawBuffers(1, attachments);
         //glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
@@ -264,8 +265,7 @@ void RenderSystem::Update(float deltaTime)
 
         Shader& pbrLightingTestShader = ShaderManager::GetShaderProgram("pbrLightingTestShader");
         pbrLightingTestShader.use();
-        glm::mat4 view = player.viewMatrix;
-        pbrLightingTestShader.setMat4("view", view);
+        pbrLightingTestShader.setMat4("view", player.viewMatrix);
         pbrLightingTestShader.setVec3("camPos", ecs.GetComponent<CTransform>(playerEntity).position);
         pbrLightingTestShader.setVec3("albedo", 0.5f, 0.0f, 0.0f);
         pbrLightingTestShader.setFloat("ao", 1.0f);
