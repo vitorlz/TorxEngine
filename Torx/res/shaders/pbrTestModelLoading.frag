@@ -1,5 +1,7 @@
 #version 460 core
 layout (location = 0) out vec4 FragColor;
+layout (location = 1) out vec4 BrightColor;
+
 in vec2 TexCoords;
 in vec3 FragPos;
 in vec3 Normal;
@@ -18,6 +20,8 @@ struct Material
 	sampler2D texture_diffuse1;
 	
 	sampler2D texture_ao1;
+
+	sampler2D texture_emission1;
 };
 
 uniform Material material;
@@ -28,8 +32,13 @@ uniform samplerCube irradianceMap;
 uniform samplerCube prefilterMap;
 uniform sampler2D brdfLUT;
 
-//lights
+// debug
 
+uniform bool showNormals;
+uniform bool worldPosDebug;
+uniform bool bloom;
+
+//lights
 struct Light
 {
 	vec4 type;
@@ -53,8 +62,6 @@ layout(binding = 0, std430) buffer LightsSSBO
 {
 	Light lights[];
 };
-uniform vec3 lightPositions[4];
-uniform vec3 lightColors[4];
 
 uniform vec3 camPos;
 
@@ -86,6 +93,7 @@ vec3 getNormalFromMap()
 }
 
 vec3 albedo;
+vec3 emission;
 float roughness; 
 float metallic;
 float ao;
@@ -98,6 +106,7 @@ void main()
 	// roughness texture.
     metallic = texture(material.texture_roughness1, TexCoords).b;
     roughness = texture(material.texture_roughness1, TexCoords).g;
+	emission = texture(material.texture_emission1, TexCoords).rgb;
     ao = texture(material.texture_ao1, TexCoords).r;
 	ao = 1;
 
@@ -144,7 +153,27 @@ void main()
 	
 	vec3 color = ambient + Lo;
 
-	FragColor = vec4(color, 1.0);
+	if(showNormals) 
+	{
+		FragColor = vec4(N, 1.0);
+	}
+	else if (worldPosDebug) 
+	{
+		FragColor = vec4(FragPos, 1.0);
+	}
+	else 
+	{
+		FragColor = vec4(color + emission * 2, 1.0);	
+
+		if (bloom)
+		{
+			float brightness = dot(FragColor.rgb, vec3(0.2126, 0.7152, 0.0722));
+			if(brightness > 1.0)
+				BrightColor = vec4(FragColor.rgb, 1.0);
+			else
+				BrightColor = vec4(0.0, 0.0, 0.0, 1.0);
+		}
+	}
 }
 
 vec3 fresnelSchlick(float cosTheta, vec3 F0)

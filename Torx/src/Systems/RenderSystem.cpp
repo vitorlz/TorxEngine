@@ -167,13 +167,17 @@ void RenderSystem::Update(float deltaTime)
     glViewport(0, 0, Window::screenWidth, Window::screenHeight);
 
     glBindFramebuffer(GL_FRAMEBUFFER, RenderingUtil::mMsFBO);
-    glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    glEnable(GL_DEPTH_TEST);
-
-    // for bloom
+    
+    // set both color buffer attachments as the draw buffers before clearing them, otherwise only the first color attachment will get cleared.
+    // This would mean that the color buffer which we render the bloom brightness texture onto would not get cleared and the bloom would effect would
+    // just accumulate over frames.
     unsigned int attachments[2] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1 };
     glDrawBuffers(2, attachments);
+
+    glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+    glClear(GL_COLOR_BUFFER_BIT);
+    glClear(GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
+    glEnable(GL_DEPTH_TEST);
 
     glm::mat4 projection = glm::mat4(1.0f);
     projection = glm::perspective(
@@ -195,6 +199,9 @@ void RenderSystem::Update(float deltaTime)
     pbrModelTestShader.setMat4("view", player.viewMatrix);
     pbrModelTestShader.setMat4("projection", projection);
     pbrModelTestShader.setVec3("camPos", ecs.GetComponent<CTransform>(playerEntity).position);
+    pbrModelTestShader.setBool("showNormals", Common::normalsDebug);
+    pbrModelTestShader.setBool("worldPosDebug", Common::worldPosDebug);
+    pbrModelTestShader.setBool("bloom", Common::bloomOn);
     pbrModelTestShader.setInt("irradianceMap", 6);
     pbrModelTestShader.setInt("prefilterMap", 7);
     pbrModelTestShader.setInt("brdfLUT", 8);
@@ -220,7 +227,7 @@ void RenderSystem::Update(float deltaTime)
 
         glm::mat3 normalMatrix = glm::transpose(glm::inverse(model));
 
-       if (ecs.HasComponent<CLight>(entity)) 
+      /* if (ecs.HasComponent<CLight>(entity)) 
        {
             auto& light = ecs.GetComponent<CLight>(entity);
 
@@ -236,7 +243,7 @@ void RenderSystem::Update(float deltaTime)
             model3d.model.Draw(solidColorShader);
 
             continue;
-       }
+       }*/
         
       /*  if (omniShadowCasters != 0) 
         {
@@ -306,56 +313,6 @@ void RenderSystem::Update(float deltaTime)
                 renderSphere();
             }
         }
-
-        // render light source (simply re-render sphere at light positions)
-        // this looks a bit off as we use the same shader, but it'll make their positions obvious and 
-        // keeps the codeprint small.
-      /*  for (unsigned int i = 0; i < sizeof(lightPositions) / sizeof(lightPositions[0]); ++i)
-        {
-            glm::vec3 newPos = lightPositions[i] + glm::vec3(sin(glfwGetTime() * 5.0) * 5.0, 0.0, 0.0);
-            newPos = lightPositions[i];
-            pbrLightingTestShader.setVec3("lightPositions[" + std::to_string(i) + "]", newPos);
-            pbrLightingTestShader.setVec3("lightColors[" + std::to_string(i) + "]", lightColors[i]);
-
-            model = glm::mat4(1.0f);
-            model = glm::translate(model, newPos);
-            model = glm::scale(model, glm::vec3(0.5f));
-            pbrLightingTestShader.setMat4("model", model);
-            pbrLightingTestShader.setMat3("normalMatrix", glm::transpose(glm::inverse(glm::mat3(model))));
-        }      */  
-
-        Shader& pbrModelTestShader = ShaderManager::GetShaderProgram("pbrModelTestShader");
-        pbrModelTestShader.use();
-        model = glm::mat4(1.0f);
-        model = glm::translate(model, glm::vec3(10.0f, 0.0f, 0.0f));
-        model = glm::scale(model, glm::vec3(12.0f, 12.0f, 12.0f));
-        //model = glm::rotate(model, glm::radians(90.0f), glm::vec3(0.0f, 1.0f, 0.0f));
-        glm::mat3 normalMatrix = glm::transpose(glm::inverse(model));
-
-        pbrModelTestShader.setVec3("camPos", ecs.GetComponent<CTransform>(playerEntity).position);
-        pbrModelTestShader.setInt("irradianceMap", 6);
-        pbrModelTestShader.setInt("prefilterMap", 7);
-        pbrModelTestShader.setInt("brdfLUT", 8);
-
-        glActiveTexture(GL_TEXTURE6);
-        glBindTexture(GL_TEXTURE_CUBE_MAP, RenderingUtil::mIrradianceCubemap);
-        glActiveTexture(GL_TEXTURE7);
-        glBindTexture(GL_TEXTURE_CUBE_MAP, RenderingUtil::mPrefilteredEnvMap);
-        glActiveTexture(GL_TEXTURE8);
-        glBindTexture(GL_TEXTURE_2D, RenderingUtil::mBrdfLUT);
-        pbrModelTestShader.setMat4("projection", projection);
-        pbrModelTestShader.setMat4("view", player.viewMatrix);
-        pbrModelTestShader.setMat4("model", model);
-        pbrModelTestShader.setMat3("normalMatrix", normalMatrix);
-
-        AssetManager::GetModel("camera").Draw(pbrModelTestShader);
-
-
-        model = glm::mat4(1.0f);
-        model = glm::translate(model, glm::vec3(5.0f, -3.0f, 0.0f));
-        model = glm::scale(model, glm::vec3(0.15f, 0.15f, 0.15f));
-        pbrModelTestShader.setMat4("model", model);
-        AssetManager::GetModel("deagle").Draw(pbrModelTestShader);
     }
 
     // ---------------------------- SKYBOX PASS ---------------------------------------
@@ -448,7 +405,7 @@ void RenderSystem::Update(float deltaTime)
     }
 
     // ------------------------------ POST PROCESSING PASS -----------------------------------------------------------
-
+    
     glDisable(GL_CULL_FACE);
 
     glBindFramebuffer(GL_FRAMEBUFFER, 0);

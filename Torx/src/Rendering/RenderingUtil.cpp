@@ -324,6 +324,7 @@ void RenderingUtil::CreatePingPongFBOs()
  
     glGenFramebuffers(2, mPingPongFBOs);
     glGenTextures(2, mPingPongBuffers);
+
     for (unsigned int i = 0; i < 2; i++)
     {
         glBindFramebuffer(GL_FRAMEBUFFER, mPingPongFBOs[i]);
