@@ -173,7 +173,7 @@ void RenderingUtil::CreateMSAAFBO()
         // we can then set the color values of the lights as high as we want (conveying the true brightness of the lights).
         // We then convert these values back to the 0.0 to 1.0 range (low dynamic range) in the final shader (the shader used to render stuff to the screen quad)
         // using a process called tone mapping (for which we have many different algorithms).
-        glTexImage2DMultisample(GL_TEXTURE_2D_MULTISAMPLE, 16, GL_RGB16F, Common::SCR_WIDTH, Common::SCR_HEIGHT, GL_TRUE);
+        glTexImage2DMultisample(GL_TEXTURE_2D_MULTISAMPLE, 4, GL_RGB16F, Common::SCR_WIDTH, Common::SCR_HEIGHT, GL_TRUE);
 
         glTexParameteri(GL_TEXTURE_2D_MULTISAMPLE, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
         glTexParameteri(GL_TEXTURE_2D_MULTISAMPLE, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
@@ -199,7 +199,7 @@ void RenderingUtil::CreateMSAAFBO()
     unsigned int msRbo;
     glGenRenderbuffers(1, &msRbo);
     glBindRenderbuffer(GL_RENDERBUFFER, msRbo);
-    glRenderbufferStorageMultisample(GL_RENDERBUFFER, 16, GL_DEPTH24_STENCIL8, Common::SCR_WIDTH, Common::SCR_HEIGHT);
+    glRenderbufferStorageMultisample(GL_RENDERBUFFER, 4, GL_DEPTH24_STENCIL8, Common::SCR_WIDTH, Common::SCR_HEIGHT);
     glBindRenderbuffer(GL_RENDERBUFFER, 0);
 
     glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, msRbo);

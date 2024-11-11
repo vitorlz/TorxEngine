@@ -120,7 +120,7 @@ int main()
             .movementSpeed = 3.0f,
         });
 
-    Entity sponzaEntity = ecs.CreateEntity();
+   Entity sponzaEntity = ecs.CreateEntity();
 
     ecs.AddComponent<CTransform>(
         sponzaEntity,
@@ -157,6 +157,7 @@ int main()
         CLight{
             .type = POINT,
             .diffuse = glm::vec3(0.725f, 0.529f, 0.286f),
+            .radius = 7.57993f,
             .shadowCaster = true,
             .offset = glm::vec3(0.000f, -0.282f, 0.562f)
         });
@@ -182,6 +183,7 @@ int main()
         CLight{
             .type = POINT,
             .diffuse = glm::vec3(0.725f, 0.529f, 0.286f),
+            .radius = 7.75744f,
             .shadowCaster = true,
             .offset = glm::vec3(0.000f, -0.282f, -0.562f)
         });

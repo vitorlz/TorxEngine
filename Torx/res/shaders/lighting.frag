@@ -262,5 +262,5 @@ float PointShadowCalculation(vec3 fragPos, Light light, int shadowCasterIndex)
 	}
 	shadow /= float(samples) * 1.1;  
 
-	return shadow;
+	return shadow / currentDepth;
 }

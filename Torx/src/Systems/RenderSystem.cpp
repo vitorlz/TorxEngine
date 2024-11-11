@@ -146,6 +146,7 @@ void RenderSystem::Update(float deltaTime)
 
                 pointShadowMapShader.setMat4("model", model);
 
+                std::cout << "before rendering" << "\n";
                 model3d.model.Draw(pointShadowMapShader);
             }
         }
@@ -245,17 +246,17 @@ void RenderSystem::Update(float deltaTime)
             continue;
        }*/
         
-      /*  if (omniShadowCasters != 0) 
+        pbrModelTestShader.use();
+
+        if (omniShadowCasters != 0) 
         {
-            glActiveTexture(GL_TEXTURE3);
+            glActiveTexture(GL_TEXTURE9);
             glBindTexture(GL_TEXTURE_CUBE_MAP_ARRAY, RenderingUtil::mPointLightShadowMap);
+            pbrModelTestShader.setInt("pointShadowMap", 9);
 
-            lightingShader.setInt("pointShadowMap", 3);
+            glUniform1fv(glGetUniformLocation(pbrModelTestShader.ID, "point_far_plane"), omniShadowCasters, pointFar.data());
+        }
 
-            glUniform1fv(glGetUniformLocation(lightingShader.ID, "point_far_plane"), omniShadowCasters, pointFar.data());
-        }*/
-
-        pbrModelTestShader.use();  
         pbrModelTestShader.setMat4("model", model);
         pbrModelTestShader.setMat3("normalMatrix", normalMatrix);
 
