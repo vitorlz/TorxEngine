@@ -7,7 +7,6 @@ std::unordered_map<std::string, std::shared_ptr<Shader>> ShaderManager::shaderPr
 
 void ShaderManager::LoadShaders() 
 {
-
 	std::shared_ptr<Shader> ourShader =  std::make_shared<Shader>("res/shaders/testShader.vert", "res/shaders/testShader.frag");
 	std::shared_ptr<Shader> cubemapShader = std::make_shared<Shader>("res/shaders/cubemap.vert", "res/shaders/cubemap.frag");
 	std::shared_ptr<Shader> lightingShader = std::make_shared<Shader>("res/shaders/lighting.vert", "res/shaders/lighting.frag");
@@ -38,7 +37,6 @@ void ShaderManager::LoadShaders()
 	shaderPrograms.insert({ "brdfConvolutionShader", brdfConvolutionShader });
 	shaderPrograms.insert({ "pbrModelTestShader", pbrModelTestShader });
 }
-
 
 // maybe make this more efficient in the future.
 

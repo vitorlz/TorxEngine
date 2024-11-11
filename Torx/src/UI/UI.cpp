@@ -307,6 +307,10 @@ void UI::Update()
         ImGui::Checkbox("Show World Position", &Common::worldPosDebug);
         ImGui::Checkbox("Wireframe mode", &Common::wireframeDebug);
         ImGui::Checkbox("PBR demo", &Common::pbrDemonstration);
+        ImGui::Checkbox("Show light position", &Common::lightPosDebug);
+        ImGui::Checkbox("Show albedo ", &Common::albedoDebug);
+        ImGui::Checkbox("Show roughness", &Common::roughnessDebug);
+        ImGui::Checkbox("Show metalness", &Common::metallicDebug);
 
         ImGui::TreePop();
     }

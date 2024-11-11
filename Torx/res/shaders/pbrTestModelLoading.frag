@@ -35,6 +35,9 @@ uniform sampler2D brdfLUT;
 uniform bool showNormals;
 uniform bool worldPosDebug;
 uniform bool bloom;
+uniform bool albedoDebug;
+uniform bool roughnessDebug;
+uniform bool metallicDebug;
 
 // shadows
 uniform samplerCubeArray pointShadowMap;
@@ -77,23 +80,7 @@ float GeometrySmith(vec3 N, vec3 V, vec3 L, float roughness);
 float DistributionGGX(vec3 N, vec3 H, float roughness);
 vec3 CalcPointLight(Light light, vec3 N, vec3 V, vec3 F0);
 float PointShadowCalculation(vec3 fragPos, Light light, int shadowCasterIndex);
-
-vec3 getNormalFromMap()
-{
-    vec3 tangentNormal = texture(material.texture_normal1, TexCoords).xyz * 2.0 - 1.0;
-
-    vec3 Q1  = dFdx(FragPos);
-    vec3 Q2  = dFdy(FragPos);
-    vec2 st1 = dFdx(TexCoords);
-    vec2 st2 = dFdy(TexCoords);
-
-    vec3 N   = normalize(Normal);
-    vec3 T  = normalize(Q1*st2.t - Q2*st1.t);
-    vec3 B  = -normalize(cross(N, T));
-    mat3 TBN = mat3(T, B, N);
-
-    return normalize(TBN * tangentNormal);
-}
+vec3 getNormalFromMap();
 
 vec3 albedo;
 vec3 emission;
@@ -165,6 +152,18 @@ void main()
 	else if (worldPosDebug) 
 	{
 		FragColor = vec4(FragPos, 1.0);
+	}
+	else if (albedoDebug)
+	{
+		FragColor = vec4(albedo, 1.0);
+	}
+	else if (roughnessDebug)
+	{
+		FragColor = vec4(vec3(roughness), 1.0);
+	}
+	else if (metallicDebug)
+	{
+		FragColor = vec4(vec3(metallic), 1.0);
 	}
 	else 
 	{
@@ -275,7 +274,6 @@ vec3 CalcPointLight(Light light, vec3 N, vec3 V, vec3 F0)
 
 		float NdotL = max(dot(N, L), 0.0); // scale the light's contribution by its angle to the surface's normal.
 		
-		
 		return (kD * albedo / PI + specular) * radiance * NdotL * clamp((1.0 - shadow), 0.0, 1.0);
 
 		//return vec3(roughness);
@@ -335,7 +333,21 @@ float PointShadowCalculation(vec3 fragPos, Light light, int shadowCasterIndex)
 	float unitDepth = currentDepth / point_far_plane[shadowCasterIndex];
 
 	return mix(shadow, 0, unitDepth / 3);
-
-	return shadow;
 }
 
+vec3 getNormalFromMap()
+{
+    vec3 tangentNormal = texture(material.texture_normal1, TexCoords).xyz * 2.0 - 1.0;
+
+    vec3 Q1  = dFdx(FragPos);
+    vec3 Q2  = dFdy(FragPos);
+    vec2 st1 = dFdx(TexCoords);
+    vec2 st2 = dFdy(TexCoords);
+
+    vec3 N   = normalize(Normal);
+    vec3 T  = normalize(Q1*st2.t - Q2*st1.t);
+    vec3 B  = -normalize(cross(N, T));
+    mat3 TBN = mat3(T, B, N);
+
+    return normalize(TBN * tangentNormal);
+}

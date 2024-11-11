@@ -31,6 +31,7 @@ public:
 	static bool normalsDebug;
 	static bool wireframeDebug;
 	static bool worldPosDebug;
+	static bool lightPosDebug;
 	static bool aces;
 	static bool reinhard;
 	static bool uncharted;
@@ -40,5 +41,8 @@ public:
 	static float bloomStdDeviation;
 	static float bloomIntervalMultiplier;
 	static bool pbrDemonstration;
+	static bool albedoDebug;
+	static bool roughnessDebug;
+	static bool metallicDebug;
 	static std::vector<float> bloomWeights;
 };

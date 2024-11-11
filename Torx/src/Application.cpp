@@ -196,7 +196,6 @@ int main()
 
     while (!glfwWindowShouldClose(window.GetWindow()))
     {
-
         float currentFrame = glfwGetTime();
         deltaTime = currentFrame - lastFrame;
         lastFrame = currentFrame;

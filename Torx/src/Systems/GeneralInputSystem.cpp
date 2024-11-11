@@ -20,7 +20,6 @@ void GeneralInputSystem::Init()
 
 void GeneralInputSystem::Update(float deltaTime, GLFWwindow* window)
 {	
-
 	CSingleton_Input& inputSing = CSingleton_Input::getInstance();
 
 	// Key input

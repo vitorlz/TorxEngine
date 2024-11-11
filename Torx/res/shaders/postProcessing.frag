@@ -14,6 +14,9 @@ uniform bool ACES;
 uniform float exposure;
 uniform bool bloom;
 uniform bool worldPosDebug;
+uniform bool albedoDebug;
+uniform bool roughnessDebug;
+uniform bool metallicDebug;
 
 // testing some tone mapping algorithms
 
@@ -67,7 +70,7 @@ void main()
 		color += bloomColor;
 	}
 
-	if (!showNormals && !worldPosDebug) {
+	if (!showNormals && !worldPosDebug && !albedoDebug && !roughnessDebug && !metallicDebug) {
 		
 		if(reinhard)
 		{
