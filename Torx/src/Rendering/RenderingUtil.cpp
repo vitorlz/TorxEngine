@@ -22,6 +22,8 @@ unsigned int RenderingUtil::mEnvironmentCubemap;
 unsigned int RenderingUtil::mIrradianceCubemap;
 unsigned int RenderingUtil::mPrefilteredEnvMap;
 unsigned int RenderingUtil::mBrdfLUT;
+unsigned int RenderingUtil::mDirLightShadowMapFBO;
+unsigned int RenderingUtil::mDirLightShadowMap;
 
 void RenderingUtil::Init()
 {
@@ -30,6 +32,7 @@ void RenderingUtil::Init()
     RenderingUtil::CreateCubeVAO();
     RenderingUtil::CreateMSAAFBO();
     RenderingUtil::CreateBlittingFBO();
+    RenderingUtil::CreateDirLightShadowMapFBO(2048, 2048);
     RenderingUtil::CreatePointLightShadowMapFBO(1024, 1024);
     RenderingUtil::CreateScreenQuadVAO();
     RenderingUtil::CreatePingPongFBOs();
@@ -291,10 +294,8 @@ void RenderingUtil::CreatePointLightShadowMapFBO(unsigned int shadowWidth, unsig
 
     // CUBE MAPS REQUIRE THE SAME WIDTH AND HEIGHT FOR THE TEXTURE IMAGE SIZE OF EACH FACE OF THE CUBE. SO SHADOW_WIDTH AND SHADOW_HEIGHT HAVE TO BE THE SAME
 
-   
     glTexImage3D(GL_TEXTURE_CUBE_MAP_ARRAY, 0, GL_DEPTH_COMPONENT, shadowWidth, shadowHeight, 2 * 24, 0, GL_DEPTH_COMPONENT, GL_FLOAT, nullptr);
     
-
     glTexParameteri(GL_TEXTURE_CUBE_MAP_ARRAY, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_CUBE_MAP_ARRAY, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_CUBE_MAP_ARRAY, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
@@ -595,4 +596,28 @@ void RenderingUtil::CreateBRDFIntegrationMap()
     glDrawArrays(GL_TRIANGLES, 0, 6);
 
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
+}
+
+void RenderingUtil::CreateDirLightShadowMapFBO(unsigned int shadowWidth, unsigned int shadowHeight)
+{
+    glGenTextures(1, &mDirLightShadowMap);
+    glGenFramebuffers(1, &mDirLightShadowMapFBO);
+
+    glBindTexture(GL_TEXTURE_2D, mDirLightShadowMap);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, shadowWidth, shadowHeight, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
+
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
+
+    float borderColor[]{ 1.0f, 1.0f, 1.0f, 1.0f };
+    glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, borderColor);
+
+    glBindFramebuffer(GL_FRAMEBUFFER, mDirLightShadowMapFBO);
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, mDirLightShadowMap, 0);
+
+    glDrawBuffer(GL_NONE);
+    glReadBuffer(GL_NONE);
+    glBindBuffer(GL_FRAMEBUFFER, 0);
 }

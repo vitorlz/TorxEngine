@@ -72,11 +72,11 @@ void PlayerInputSystem::Update(float deltaTime)
         player.right = cameraRight;
         player.up = cameraUp;
 
-       if (ecs.HasComponent<CLight>(entity))
-       {
+        if (ecs.HasComponent<CLight>(entity))
+        {
             auto& light = ecs.GetComponent<CLight>(entity);
             flashlightLogic(player, light);    
-       }
+        }
     }
 }
 

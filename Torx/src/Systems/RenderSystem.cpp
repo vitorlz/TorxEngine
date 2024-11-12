@@ -45,6 +45,81 @@ float spacing = 0.4;
 // PBR testing 
 void RenderSystem::Update(float deltaTime)
 {
+    // ------------------------- DIRECTIONAL SHADOWS PASS ---------------------------------------
+
+
+    // this probably should not be here. For something to go through the render system it has to have a model. This means that we have to add a model to 
+    // the directional light and scale it to 0 if we want it to go through the process below.
+    //glEnable(GL_CULL_FACE);
+    //glCullFace(GL_FRONT);
+    glEnable(GL_DEPTH_TEST);
+    bool dirtyDirLightFound = false;
+    glm::vec3 dirLightPos;
+    glm::mat4 dirLightSpaceMatrix;
+
+    for (const auto& entity : mEntities)
+    {
+        if (ecs.HasComponent<CLight>(entity))
+        {
+            auto& light = ecs.GetComponent<CLight>(entity);
+            
+            if (light.shadowCaster && light.type == DIRECTIONAL)
+            {
+                auto& transform = ecs.GetComponent<CTransform>(entity);
+               
+                dirLightPos = transform.position;
+
+                if (light.isDirty)
+                {
+                    dirtyDirLightFound = true;
+                }
+            }
+        }
+    }
+
+    if (dirtyDirLightFound)
+    {
+        float near_plane = 0.1f, far_plane = 40.0f;
+        glm::mat4 lightProjection = glm::ortho(-17.0f, 17.0f, -17.0f, 17.0f, near_plane, far_plane);
+
+        glm::mat4 lightView = glm::lookAt(dirLightPos, glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+
+        dirLightSpaceMatrix = lightProjection * lightView;
+
+        glViewport(0, 0, 2048, 2048);
+        glBindFramebuffer(GL_FRAMEBUFFER, RenderingUtil::mDirLightShadowMapFBO);
+
+        glClear(GL_DEPTH_BUFFER_BIT);
+
+        // we need to send the directional light space matrix to the lighting shader so that we can calculate the texcoords of the current fragment
+        // to sample from the shadow map.
+
+        Shader& dirShadowMapShader = ShaderManager::GetShaderProgram("dirShadowMapShader");
+
+        dirShadowMapShader.use();
+
+        dirShadowMapShader.setMat4("lightSpaceMatrix", dirLightSpaceMatrix);
+
+        for (const auto& entity : mEntities)
+        {
+            auto& transform = ecs.GetComponent<CTransform>(entity);
+            auto& model3d = ecs.GetComponent<CModel>(entity);
+
+            glm::mat4 model = glm::mat4(1.0f);
+            model = glm::translate(model, transform.position);
+
+            model = glm::rotate(model, glm::radians(transform.rotation.x), glm::vec3(1.0f, 0.0, 0.0));
+            model = glm::rotate(model, glm::radians(transform.rotation.y), glm::vec3(0.0f, 1.0, 0.0));
+            model = glm::rotate(model, glm::radians(transform.rotation.z), glm::vec3(0.0f, 0.0, 1.0));
+            model = glm::scale(model, transform.scale);
+
+            dirShadowMapShader.setMat4("model", model);
+
+            std::cout << "stuff rendered to dir shadow map" << "\n";
+            model3d.model.Draw(dirShadowMapShader);
+        }
+    }
+
     // ------------------------- OMNIDIRECTIONAL SHADOWS PASS -----------------------------------
 
     glEnable(GL_CULL_FACE);
@@ -90,6 +165,12 @@ void RenderSystem::Update(float deltaTime)
         glBindFramebuffer(GL_FRAMEBUFFER, RenderingUtil::mPointLightShadowMapFBO);
 
         glClear(GL_DEPTH_BUFFER_BIT);
+
+        Shader& pbrModelTestShader = ShaderManager::GetShaderProgram("pbrModelTestShader");
+        
+        pbrModelTestShader.use();
+
+        pbrModelTestShader.setMat4("dirLightSpaceMatrix", dirLightSpaceMatrix);
 
         Shader& pointShadowMapShader = ShaderManager::GetShaderProgram("pointShadowMapShader");
 
@@ -208,12 +289,16 @@ void RenderSystem::Update(float deltaTime)
     pbrModelTestShader.setInt("irradianceMap", 6);
     pbrModelTestShader.setInt("prefilterMap", 7);
     pbrModelTestShader.setInt("brdfLUT", 8);
+    pbrModelTestShader.setInt("dirShadowMap", 9);
+
     glActiveTexture(GL_TEXTURE6);
     glBindTexture(GL_TEXTURE_CUBE_MAP, RenderingUtil::mIrradianceCubemap);
     glActiveTexture(GL_TEXTURE7);
     glBindTexture(GL_TEXTURE_CUBE_MAP, RenderingUtil::mPrefilteredEnvMap);
     glActiveTexture(GL_TEXTURE8);
     glBindTexture(GL_TEXTURE_2D, RenderingUtil::mBrdfLUT);
+    glActiveTexture(GL_TEXTURE9);
+    glBindTexture(GL_TEXTURE_2D, RenderingUtil::mDirLightShadowMap);
 
     for (const auto& entity : mEntities) 
     {
@@ -254,9 +339,9 @@ void RenderSystem::Update(float deltaTime)
 
         if (omniShadowCasters != 0) 
         {
-            glActiveTexture(GL_TEXTURE9);
+            glActiveTexture(GL_TEXTURE10);
             glBindTexture(GL_TEXTURE_CUBE_MAP_ARRAY, RenderingUtil::mPointLightShadowMap);
-            pbrModelTestShader.setInt("pointShadowMap", 9);
+            pbrModelTestShader.setInt("pointShadowMap", 10);
 
             glUniform1fv(glGetUniformLocation(pbrModelTestShader.ID, "point_far_plane"), omniShadowCasters, pointFar.data());
         }

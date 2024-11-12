@@ -21,11 +21,11 @@ void main()
 	// the received prmitive to all 6 faces of the cubemap. We output 6 triangles (18 vertices). 
 	
 	int numCubemapLayers = omniShadowCasters;
-	for(int cubemapLayer = 0; cubemapLayer < numCubemapLayers; ++cubemapLayer)
+	for (int cubemapLayer = 0; cubemapLayer < numCubemapLayers; ++cubemapLayer)
 	{
-		for(int face = 0; face < 6; ++face)
+		for (int face = 0; face < 6; ++face)
 		{	
-			int faceLayer = cubemapLayer*6 + face;
+			int faceLayer = cubemapLayer * 6 + face;
 				
 			gl_Layer = faceLayer; 
 			for(int i = 0; i < 3; ++i) // for each triangle vertex

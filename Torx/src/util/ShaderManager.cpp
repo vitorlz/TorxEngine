@@ -12,6 +12,7 @@ void ShaderManager::LoadShaders()
 	std::shared_ptr<Shader> lightingShader = std::make_shared<Shader>("res/shaders/lighting.vert", "res/shaders/lighting.frag");
 	std::shared_ptr<Shader> solidColorShader = std::make_shared<Shader>("res/shaders/solidColor.vert", "res/shaders/solidColor.frag");
 	std::shared_ptr<Shader> postProcessingShader = std::make_shared<Shader>("res/shaders/postProcessing.vert", "res/shaders/postProcessing.frag");
+	std::shared_ptr<Shader> dirShadowMapShader = std::make_shared<Shader>("res/shaders/dirShadowMap.vert", "res/shaders/dirShadowMap.frag");
 	std::shared_ptr<Shader> pointShadowMapShader = std::make_shared<Shader>("res/shaders/pointShadowMap.vert", "res/shaders/pointShadowMap.frag", "res/shaders/pointShadowMap.geom");
 	std::shared_ptr<Shader> blurShader = std::make_shared<Shader>("res/shaders/gaussianBlur.vert", "res/shaders/gaussianBlur.frag");
 	std::shared_ptr<Shader> pbrLightingTestShader = std::make_shared<Shader>("res/shaders/lighting.vert", "res/shaders/pbrLightingTest.frag");
@@ -36,6 +37,7 @@ void ShaderManager::LoadShaders()
 	shaderPrograms.insert({ "prefilterConvolutionShader", prefilterConvolutionShader });
 	shaderPrograms.insert({ "brdfConvolutionShader", brdfConvolutionShader });
 	shaderPrograms.insert({ "pbrModelTestShader", pbrModelTestShader });
+	shaderPrograms.insert({ "dirShadowMapShader", dirShadowMapShader });
 }
 
 // maybe make this more efficient in the future.

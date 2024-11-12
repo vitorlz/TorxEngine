@@ -24,6 +24,7 @@ struct CLight
 	float innerCutoff;
 	float outerCutoff;
 	int shadowCaster{ 0 };
+	// set isDirty to true initially so light is updated at least once
 	int isDirty{ 1 };
 	glm::vec3 offset;
 };

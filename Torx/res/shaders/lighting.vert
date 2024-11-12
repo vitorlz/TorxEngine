@@ -11,6 +11,10 @@ uniform mat4 view;
 uniform mat4 projection;
 uniform mat3 normalMatrix;
 
+// directional light space matrix and vertex light space position
+uniform mat4 dirLightSpaceMatrix;
+out vec4 FragPosLightSpaceDir;
+
 out vec3 FragPos;
 out vec3 Normal;
 out vec2 TexCoords;
@@ -22,6 +26,7 @@ void main()
     TexCoords = aTexCoords;
     FragPos = vec3(model * vec4(aPos, 1.0));
     Normal = normalMatrix * aNormal;
+    FragPosLightSpaceDir = dirLightSpaceMatrix * model * vec4(aPos, 1.0);
 
     vec3 T = normalize(vec3(model * vec4(aTangent, 0.0)));
 	vec3 N = normalize(vec3(normalMatrix * aNormal));

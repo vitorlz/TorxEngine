@@ -188,6 +188,30 @@ int main()
             .offset = glm::vec3(0.000f, -0.282f, -0.562f)
         });
 
+    Entity directionalLight = ecs.CreateEntity();
+
+    ecs.AddComponent<CTransform>(
+        directionalLight,
+        CTransform{
+            .position = glm::vec3(-0.5f, 15.0f, -0.5f),
+            .scale = glm::vec3(0.1f),
+            .rotation = glm::vec3(0.0f, 0.0f, 0.0f),
+        });
+
+    ecs.AddComponent<CLight>(
+        directionalLight,
+        CLight{
+            .type = DIRECTIONAL,
+            .diffuse = glm::vec3(10.0f),
+            .shadowCaster = true,
+        });
+
+    ecs.AddComponent<CModel>(
+        directionalLight,
+        CModel{
+            .model = AssetManager::GetModel("debugCube")
+        });
+
     UI gui;
 
     gui.Init(window.GetWindow());

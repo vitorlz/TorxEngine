@@ -233,6 +233,8 @@
     <None Include="res\shaders\brdfConvolution.frag" />
     <None Include="res\shaders\brdfConvolution.vert" />
     <None Include="res\shaders\pbrTestModelLoading.frag" />
+    <None Include="res\shaders\dirShadowMap.vert" />
+    <None Include="res\shaders\dirShadowMap.frag" />
   </ItemGroup>
   <ItemGroup>
     <Library Include="vendor\assimp\lib\assimp-vc143-mt.lib" />
