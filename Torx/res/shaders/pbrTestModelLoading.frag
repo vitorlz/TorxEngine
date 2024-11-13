@@ -16,13 +16,7 @@ struct Material
 
 	sampler2D texture_normal1;
 
-	sampler2D texture_roughness1;
-
-	sampler2D texture_metallic1;
-
-	sampler2D texture_diffuse1;
-	
-	sampler2D texture_ao1;
+	sampler2D texture_rma1;
 
 	sampler2D texture_emission1;
 };
@@ -41,6 +35,7 @@ uniform bool bloom;
 uniform bool albedoDebug;
 uniform bool roughnessDebug;
 uniform bool metallicDebug;
+uniform bool aoDebug;
 
 // shadows
 uniform sampler2D dirShadowMap;
@@ -53,9 +48,7 @@ struct Light
 {
 	vec4 type;
 	vec4 position;
-	vec4 ambient;
-	vec4 diffuse;
-	vec4 specular;
+	vec4 color;
 	vec4 radius;
 
 	// for spotlight
@@ -84,6 +77,7 @@ float GeometrySmith(vec3 N, vec3 V, vec3 L, float roughness);
 float DistributionGGX(vec3 N, vec3 H, float roughness);
 vec3 CalcPointLight(Light light, vec3 N, vec3 V, vec3 F0);
 vec3 CalcDirLight(Light light, vec3 N, vec3 V, vec3 F0);
+vec3 CalcSpotLight(Light light, vec3 N, vec3 V, vec3 F0);
 float PointShadowCalculation(vec3 fragPos, Light light, int shadowCasterIndex);
 float DirShadowCalculation(vec4 fragPosLightSpace, vec3 normal, vec3 lightDir);
 vec3 getNormalFromMap();
@@ -97,14 +91,15 @@ vec3 F0;
 
 void main()
 {
-	vec4 albedoSample = texture(material.texture_diffuse1, TexCoords).rgba;
-	// assimp apparently puts roughness in the green value of the roughness texture and metallic in the blue value of the 
-	// roughness texture.
-    metallic = texture(material.texture_roughness1, TexCoords).b;
-    roughness = texture(material.texture_roughness1, TexCoords).g;
+	vec4 albedoSample = texture(material.texture_albedo1, TexCoords).rgba;
+	vec3 RMA = texture(material.texture_rma1, TexCoords).gba;
 	emission = texture(material.texture_emission1, TexCoords).rgb;
-    ao = texture(material.texture_ao1, TexCoords).r;
-	ao = 1;
+
+	roughness = RMA.r;
+	metallic = RMA.g;
+	ao = RMA.b;
+
+	ao = 1.0;
 
 	if(albedoSample.a < 0.5)
 		discard;
@@ -120,6 +115,15 @@ void main()
 
 	vec3 Lo = vec3(0.0); // reflectance (total sum of radiance that comes from light sources and get reflected by a point P (the fragment in this case)
 
+
+	// ------ Directional Light ---------
+	for(int i = 0; i < lights.length(); i++) {
+		if (lights[i].type == vec4(0.0))
+		{
+			Lo += CalcDirLight(lights[i], N, V, F0);
+		}
+	}
+
 	// ------ Point lights ---------
 	for(int i = 0; i < lights.length(); i++) {
 		if (lights[i].type == vec4(1.0))
@@ -128,11 +132,11 @@ void main()
 		}
 	}
 
-	// ------ Directional Light ---------
+	// ------ Spot lights ---------
 	for(int i = 0; i < lights.length(); i++) {
-		if (lights[i].type == vec4(0.0))
+		if (lights[i].type == vec4(2.0))
 		{
-			Lo += CalcDirLight(lights[i], N, V, F0);
+			Lo += CalcSpotLight(lights[i], N, V, F0);
 		}
 	}
 
@@ -154,11 +158,8 @@ void main()
 	vec3 specular = prefilteredColor * (F * envBRDF.x + envBRDF.y);
 	
 	//vec3 ambient = (kD * diffuse + specular) * ao;
-
 	vec3 ambient = ((kD * diffuse + specular) * ao) / 10;
 	
-	// vec3 color = Lo + ambient;
-
 	vec3 color = Lo;
 
 	if(showNormals) 
@@ -180,6 +181,10 @@ void main()
 	else if (metallicDebug)
 	{
 		FragColor = vec4(vec3(metallic), 1.0);
+	}
+	else if (false)
+	{
+		FragColor = vec4(vec3(ao), 1.0);
 	}
 	else 
 	{
@@ -257,7 +262,7 @@ vec3 CalcPointLight(Light light, vec3 N, vec3 V, vec3 F0)
 
 	float distance = length(light.position.xyz - FragPos);
 	float attenuation = smoothstep(light.radius.x, 0.0, length(light.position.xyz - FragPos));
-	vec3 radiance = light.diffuse.xyz * attenuation; // the scaling by the angle between the normal of the surface and the solid angle (which is just the direction vector
+	vec3 radiance = light.color.xyz * attenuation; // the scaling by the angle between the normal of the surface and the solid angle (which is just the direction vector
 	// of the fragment to the light in this case) is in the final reflectance formula.
 
 	float NDF = DistributionGGX(N, H, roughness);
@@ -317,7 +322,7 @@ vec3 CalcDirLight(Light light, vec3 N, vec3 V, vec3 F0)
 
 	vec3 H = normalize(V + L); // halfway vector
 
-	vec3 radiance = light.diffuse.xyz;
+	vec3 radiance = light.color.xyz;
 
 	float NDF = DistributionGGX(N, H, roughness);
 	float G = GeometrySmith(N, V, L, roughness);
@@ -338,6 +343,38 @@ vec3 CalcDirLight(Light light, vec3 N, vec3 V, vec3 F0)
 	return (kD * albedo / PI + specular) * radiance * NdotL * clamp(1.0 - shadow, 0.0, 1.0);
 }
 
+vec3 CalcSpotLight(Light light, vec3 N, vec3 V, vec3 F0) 
+{
+	vec3 L = normalize(light.position.xyz - FragPos); // lightDir
+	vec3 H = normalize(V + L); // halfway vector
+
+	float distance = length(light.position.xyz - FragPos);
+	float attenuation = smoothstep(light.radius.x, 0.0, length(light.position.xyz - FragPos));
+	float theta = dot(normalize(-light.direction.xyz), L);
+	float episilon = light.innerCutoff.x - light.outerCutoff.x;
+	float intensity = clamp((theta - light.outerCutoff.x) / episilon, 0.0, 1.0); 
+	vec3 radiance = light.color.xyz * attenuation * intensity; 
+
+	float NDF = DistributionGGX(N, H, roughness);
+	float G = GeometrySmith(N, V, L, roughness);
+	vec3 F = fresnelSchlick(max(dot(H, V), 0.0), F0);
+
+	vec3 numerator = NDF * G * F;
+	float denominator = 4.0 * max(dot(N, V), 0.0) *  max(dot(N, L), 0.0) + 0.0001;
+	
+	vec3 specular = numerator / denominator;
+
+	vec3 kS = F;
+	vec3 kD = vec3(1.0) - kS;
+
+	// metallic surfaces don't refract light, so they have no diffuse reflections
+	kD *= 1.0 - metallic;
+
+	float NdotL = max(dot(N, L), 0.0); // scale the light's contribution by its angle to the surface's normal.
+		
+	return (kD * albedo / PI + specular) * radiance * NdotL;
+
+}
 
 float PointShadowCalculation(vec3 fragPos, Light light, int shadowCasterIndex) 
 {
@@ -405,15 +442,15 @@ float DirShadowCalculation(vec4 fragPosLightSpace, vec3 normal, vec3 lightDir)
 
 	float shadow = 0.0;
 	vec2 texelSize = 0.2 / textureSize(dirShadowMap, 0);
-	for(float x = -3.5; x <= 3.5; ++x)
+	for(float x = -5.5; x <= 5.5; ++x)
 	{
-		for(float y = -3.5; y <= 3.5; ++y)
+		for(float y = -5.5; y <= 5.5; ++y)
 		{
 			float pcfDepth = texture(dirShadowMap, projCoords.xy + vec2(x, y) * texelSize).r; 
 			shadow += currentDepth > pcfDepth ? 1.0 : 0.0;        
 		}    
 	}
-	shadow /= 81;
+	shadow /= 90;
 
 	if(projCoords.z > 1.0)
         shadow = 0.0;

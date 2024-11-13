@@ -8,8 +8,8 @@ void AssetManager::LoadModels()
 	stbi_set_flip_vertically_on_load(true);
 	//Model backpack("res/models/backpack/backpack.obj");
 	stbi_set_flip_vertically_on_load(false);
-    Model debugCube("res/models/debugCube/scene.gltf");
-    Model sponza("res/models/sponza-atrium/Sponza.gltf");
+   //Model debugCube("res/models/debugCube/scene.gltf");
+	Model sponza("res/models/sponza-atrium/Sponza.gltf");
 	Model victorianLamp("res/models/victorianLamp/scene.gltf");
 	//Model deagle("res/models/deagle/scene.gltf");
 	//Model camera("res/models/camera/scene.gltf");
@@ -18,7 +18,7 @@ void AssetManager::LoadModels()
 	//Model ar15("res/models/AR-15/scene.gltf");
 
 	//mModels.insert({ "backpack", backpack });
-    mModels.insert({ "debugCube", debugCube });
+    //mModels.insert({ "debugCube", debugCube });
 	mModels.insert({ "sponza", sponza });
 	mModels.insert({ "victorianLamp", victorianLamp });
 	//mModels.insert({ "deagle", deagle });

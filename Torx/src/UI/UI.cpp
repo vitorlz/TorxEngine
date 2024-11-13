@@ -72,11 +72,10 @@ void UI::Update()
                             ImGui::SliderFloat("Inner Cutoff", &light.innerCutoff, 0.1f, light.outerCutoff, "angle = %.1f");
                             ImGui::SliderFloat("Outer Cutoff", &light.outerCutoff, light.innerCutoff, 90.0f, "angle = %.1f");
                         }
-
-                        ImGui::ColorEdit3("Ambient", &light.ambient.x);
-                        ImGui::ColorEdit3("Diffuse", &light.diffuse.x);
-                        ImGui::ColorEdit3("Specular", &light.specular.x);
-                        ImGui::SliderFloat("Radius", &light.radius, 0.001f, 30.0f, "%.5f");
+                       
+                        ImGui::ColorEdit3("Color", &light.color.x);
+                        ImGui::SliderFloat("Radius", &light.radius, 0.001f, 100.0f, "%.5f");
+                        ImGui::SliderFloat("Strength", &light.strength, 0.001f, 100.0f, "%.2f");
                         if (light.type == POINT || light.type == SPOT)
                         {
                             ImGui::SliderFloat3("Offset", &light.offset.x, -10.0f, 10.0f);

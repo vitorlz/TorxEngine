@@ -14,9 +14,7 @@ struct Light
 {
 	glm::vec4 type;
 	glm::vec4 position;
-	glm::vec4 ambient;
-	glm::vec4 diffuse;
-	glm::vec4 specular;
+	glm::vec4 color;
 	glm::vec4 radius;
 
 	// for spotlight
@@ -80,9 +78,7 @@ void LightSystem::Init()
 			lightData.position = glm::vec4(transform.position + light.offset, 1.0f);
 		}
 		lightData.type = glm::vec4((float)light.type);
-		lightData.ambient = glm::vec4(light.ambient, 1.0f);
-		lightData.diffuse = glm::vec4(light.diffuse, 1.0f);
-		lightData.specular = glm::vec4(light.specular, 1.0f);
+		lightData.color = glm::vec4(light.color * light.strength, 1.0f);
 		lightData.radius = glm::vec4(light.radius);
 		lightData.shadowCaster = glm::vec4(light.shadowCaster);
 
@@ -124,9 +120,7 @@ void LightSystem::Update(float deltaTime)
 				
 			}
 
-			EntityToLightMap[entity].ambient = glm::vec4(light.ambient, 1.0f);
-			EntityToLightMap[entity].diffuse = glm::vec4(light.diffuse, 1.0f);
-			EntityToLightMap[entity].specular = glm::vec4(light.specular, 1.0f);
+			EntityToLightMap[entity].color = glm::vec4(light.color * light.strength, 1.0f);
 			EntityToLightMap[entity].radius = glm::vec4(light.radius);	
 			EntityToLightMap[entity].shadowCaster = glm::vec4(light.shadowCaster);
 			
@@ -210,9 +204,7 @@ void LightSystem::Update(float deltaTime)
 
 		lightData.type = glm::vec4((float)light.type);
 		lightData.position = glm::vec4(transform.position + light.offset, 1.0f);
-		lightData.ambient = glm::vec4(light.ambient, 1.0f);
-		lightData.diffuse = glm::vec4(light.diffuse, 1.0f);
-		lightData.specular = glm::vec4(light.specular, 1.0f);
+		lightData.color = glm::vec4(light.color * light.strength, 1.0f);
 		lightData.radius = glm::vec4(light.radius);
 
 		EntityToLightMap[entityAdded] = lightData;

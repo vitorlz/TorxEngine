@@ -43,6 +43,7 @@ int nrRows = 7;
 int nrColumns = 7;
 float spacing = 0.4;
 // PBR testing 
+glm::mat4 dirLightSpaceMatrix;
 void RenderSystem::Update(float deltaTime)
 {
     // ------------------------- DIRECTIONAL SHADOWS PASS ---------------------------------------
@@ -50,12 +51,11 @@ void RenderSystem::Update(float deltaTime)
 
     // this probably should not be here. For something to go through the render system it has to have a model. This means that we have to add a model to 
     // the directional light and scale it to 0 if we want it to go through the process below.
-    //glEnable(GL_CULL_FACE);
-    //glCullFace(GL_FRONT);
+    glEnable(GL_CULL_FACE);
+    glCullFace(GL_FRONT);
     glEnable(GL_DEPTH_TEST);
     bool dirtyDirLightFound = false;
     glm::vec3 dirLightPos;
-    glm::mat4 dirLightSpaceMatrix;
 
     for (const auto& entity : mEntities)
     {
@@ -166,11 +166,9 @@ void RenderSystem::Update(float deltaTime)
 
         glClear(GL_DEPTH_BUFFER_BIT);
 
-        Shader& pbrModelTestShader = ShaderManager::GetShaderProgram("pbrModelTestShader");
+        /*Shader& pbrModelTestShader = ShaderManager::GetShaderProgram("pbrModelTestShader");
         
-        pbrModelTestShader.use();
-
-        pbrModelTestShader.setMat4("dirLightSpaceMatrix", dirLightSpaceMatrix);
+        pbrModelTestShader.use();*/
 
         Shader& pointShadowMapShader = ShaderManager::GetShaderProgram("pointShadowMapShader");
 
@@ -273,6 +271,7 @@ void RenderSystem::Update(float deltaTime)
             playerEntity = entity;
         }
     }
+
     auto& player = ecs.GetComponent<CPlayer>(playerEntity);
     Shader& pbrModelTestShader = ShaderManager::GetShaderProgram("pbrModelTestShader");
     pbrModelTestShader.use();
@@ -290,6 +289,7 @@ void RenderSystem::Update(float deltaTime)
     pbrModelTestShader.setInt("prefilterMap", 7);
     pbrModelTestShader.setInt("brdfLUT", 8);
     pbrModelTestShader.setInt("dirShadowMap", 9);
+    pbrModelTestShader.setMat4("dirLightSpaceMatrix", dirLightSpaceMatrix);
 
     glActiveTexture(GL_TEXTURE6);
     glBindTexture(GL_TEXTURE_CUBE_MAP, RenderingUtil::mIrradianceCubemap);
@@ -330,7 +330,7 @@ void RenderSystem::Update(float deltaTime)
             solidColorShader.setMat4("projection", projection);
             solidColorShader.setMat4("view", player.viewMatrix);
             solidColorShader.setMat4("model", model);
-            solidColorShader.setVec3("color", ecs.GetComponent<CLight>(entity).diffuse * 1.5f);
+            solidColorShader.setVec3("color", light.color * light.strength);
 
             Util::renderSphere();
         }

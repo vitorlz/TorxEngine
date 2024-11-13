@@ -100,18 +100,17 @@ int main()
             .model = AssetManager::GetModel("debugCube")
         });
 
-    /*ecs.AddComponent<CLight>(
+    ecs.AddComponent<CLight>(
         playerEntity,
         CLight{
             .type = SPOT,
-            .ambient = glm::vec3(0.0f),
-            .diffuse = glm::vec3(0.2f, 0.2f, 0.2f),
-            .specular = glm::vec3(1.0f, 1.0f, 1.0f),
+            .color = glm::vec3(1.0f),
             .radius = 9.0f,
+            .strength = 1.0f,
             .direction = glm::vec3(0.0f, 0.0f, -1.0f),
             .innerCutoff = 12.5f,
             .outerCutoff = 17.5f,
-        });*/
+        });
 
     ecs.AddComponent<CPlayer>(
         playerEntity,
@@ -120,7 +119,7 @@ int main()
             .movementSpeed = 3.0f,
         });
 
-   Entity sponzaEntity = ecs.CreateEntity();
+    Entity sponzaEntity = ecs.CreateEntity();
 
     ecs.AddComponent<CTransform>(
         sponzaEntity,
@@ -156,8 +155,9 @@ int main()
         lampEntity1,
         CLight{
             .type = POINT,
-            .diffuse = glm::vec3(0.725f, 0.529f, 0.286f),
+            .color = glm::vec3(0.725f, 0.529f, 0.286f),
             .radius = 7.57993f,
+            .strength = 1.0f,
             .shadowCaster = true,
             .offset = glm::vec3(0.000f, -0.282f, 0.562f)
         });
@@ -182,34 +182,11 @@ int main()
         lampEntity2,
         CLight{
             .type = POINT,
-            .diffuse = glm::vec3(0.725f, 0.529f, 0.286f),
+            .color = glm::vec3(0.725f, 0.529f, 0.286f),
             .radius = 7.75744f,
+            .strength = 1.0f,
             .shadowCaster = true,
             .offset = glm::vec3(0.000f, -0.282f, -0.562f)
-        });
-
-    Entity directionalLight = ecs.CreateEntity();
-
-    ecs.AddComponent<CTransform>(
-        directionalLight,
-        CTransform{
-            .position = glm::vec3(-0.5f, 15.0f, -0.5f),
-            .scale = glm::vec3(0.1f),
-            .rotation = glm::vec3(0.0f, 0.0f, 0.0f),
-        });
-
-    ecs.AddComponent<CLight>(
-        directionalLight,
-        CLight{
-            .type = DIRECTIONAL,
-            .diffuse = glm::vec3(10.0f),
-            .shadowCaster = true,
-        });
-
-    ecs.AddComponent<CModel>(
-        directionalLight,
-        CModel{
-            .model = AssetManager::GetModel("debugCube")
         });
 
     UI gui;

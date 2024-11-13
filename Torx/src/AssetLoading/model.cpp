@@ -23,9 +23,9 @@ void Model::Draw(Shader& shader){
 	// to be set and the uniforms are never going to be reset.
 
 	shader.setInt("material.texture_diffuse1", 31);
-	shader.setInt("material.texture_specular1", 31);
 	shader.setInt("material.texture_emission1", 31);
 	shader.setInt("material.texture_normal1", 31);
+	shader.setInt("material.texture_roughness1", 31);
 }
 
 void Model::loadModel(std::string path) {
@@ -140,14 +140,10 @@ Mesh Model::processMesh(aiMesh* mesh, const aiScene* scene, glm::mat4 globalTran
 		aiMaterial* material = scene->mMaterials[mesh->mMaterialIndex];
 		
 		// materials store the texture locations in arrays for each texture type.
-		std::vector<Texture> diffuseMaps = loadMaterialTextures(material, aiTextureType_DIFFUSE, "texture_diffuse");
+	
 		// insert function is used to insert elements into a vector. textures.end() specified where to put the elements (at the end of the vector)
 		// diffuseMaps.begin() marks the start of the range of elements to be inserted into textures and diffuseMaps.end() marks the end. This is useful for inserting vectors into other vectors.
-		textures.insert(textures.end(), diffuseMaps.begin(), diffuseMaps.end());
-
 		// metallness because almost no model comes with specular textures
-		std::vector<Texture> specularMaps = loadMaterialTextures(material, aiTextureType_SPECULAR, "texture_specular");
-		textures.insert(textures.end(), specularMaps.begin(), specularMaps.end());
 
 		std::vector<Texture> emissionMaps = loadMaterialTextures(material, aiTextureType_EMISSIVE, "texture_emission");
 		textures.insert(textures.end(), emissionMaps.begin(), emissionMaps.end());
@@ -156,18 +152,12 @@ Mesh Model::processMesh(aiMesh* mesh, const aiScene* scene, glm::mat4 globalTran
 		std::vector<Texture> normalMaps = loadMaterialTextures(material, aiTextureType_NORMALS, "texture_normal");
 		textures.insert(textures.end(), normalMaps.begin(), normalMaps.end());
 
-
 		std::vector<Texture> albedoMaps = loadMaterialTextures(material, aiTextureType_BASE_COLOR, "texture_albedo");
 		textures.insert(textures.end(), albedoMaps.begin(), albedoMaps.end());
 
-		std::vector<Texture> roughnessMaps = loadMaterialTextures(material, aiTextureType_DIFFUSE_ROUGHNESS, "texture_roughness");
-		textures.insert(textures.end(), roughnessMaps.begin(), roughnessMaps.end());
+		std::vector<Texture> rmaMaps = loadMaterialTextures(material, aiTextureType_DIFFUSE_ROUGHNESS, "texture_rma");
+		textures.insert(textures.end(), rmaMaps.begin(), rmaMaps.end());
 
-		std::vector<Texture> matalnessMaps = loadMaterialTextures(material, aiTextureType_METALNESS, "texture_metalness");
-		textures.insert(textures.end(), matalnessMaps.begin(), matalnessMaps.end());
-
-		std::vector<Texture> aoMaps = loadMaterialTextures(material, aiTextureType_AMBIENT_OCCLUSION, "texture_ao");
-		textures.insert(textures.end(), aoMaps.begin(), aoMaps.end());
 	}
 
 	return Mesh(vertices, indices, textures);
@@ -195,7 +185,7 @@ std::vector<Texture> Model::loadMaterialTextures(aiMaterial* mat, aiTextureType 
 			// THIS FUNCTION ONLY WORKS IF THE TEXTURES ARE STORED IN THE SAME DIRECTORY AS THE MODEL ITSELF
 			// SOME MODELS STORE TEXTURES IN ABSOLUTE PATHS, WHICH WE NEED TO EDIT TO LOCAL IF WE WANT IT TO WORK
 
-			if (typeName == "texture_diffuse" || typeName == "texture_albedo")
+			if (typeName == "texture_albedo")
 			{
 				texture.id = TextureFromFile(str.C_Str(), directory, true);
 			}

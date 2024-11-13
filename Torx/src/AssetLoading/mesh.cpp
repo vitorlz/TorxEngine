@@ -45,20 +45,17 @@ void Mesh::setupMesh() {
 }
 
 // we have to pass the shader object by reference because that will prevent copying and we want to modify the original inside the function.
-void Mesh::Draw(Shader &shader) {
-
+void Mesh::Draw(Shader &shader) 
+{
 	shader.setInt("material.texture_diffuse1", 31);
-	shader.setInt("material.texture_specular1", 31);
 	shader.setInt("material.texture_emission1", 31);
 	shader.setInt("material.texture_normal1", 31);
-	unsigned int diffuseNr = 1;
-	unsigned int specularNr = 1;
+	shader.setInt("material.texture_roughness1", 31);
+
 	unsigned int emissionNr = 1;
 	unsigned int normalNr = 1;
 	unsigned int albedoNr = 1;
-	unsigned int roughnessNr = 1;
-	unsigned int metalnessNr = 1;
-	unsigned int aoNr = 1;
+	unsigned int rmaNr = 1;
 	
 	unsigned int i = 0;
 
@@ -71,22 +68,15 @@ void Mesh::Draw(Shader &shader) {
 		// retrieve texture number (the N in texture_diffuseN)
 		number;
 		name = textures[i].type;
-		if (name == "texture_diffuse")
-			number = std::to_string(diffuseNr++);
-		else if (name == "texture_specular")
-			number = std::to_string(specularNr++);
-		else if (name == "texture_emission")
+		
+		if (name == "texture_emission")
 			number = std::to_string(emissionNr++);
 		else if (name == "texture_normal")
 			number = std::to_string(normalNr++);
 		else if (name == "texture_albedo")
 			number = std::to_string(albedoNr++);
-		else if (name == "texture_roughness")
-			number = std::to_string(roughnessNr++);
-		else if (name == "texture_metalness")
-			number = std::to_string(metalnessNr++);
-		else if (name == "texture_ao")
-			number = std::to_string(aoNr++);
+		else if (name == "texture_rma")
+			number = std::to_string(rmaNr++);
 
 		shader.setInt(("material." + name + number).c_str(), i);
 		glBindTexture(GL_TEXTURE_2D, textures[i].id);

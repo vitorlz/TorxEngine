@@ -14,7 +14,6 @@ extern Coordinator ecs;
 CSingleton_Input& inputSing = CSingleton_Input::getInstance();
 void flashlightLogic(CPlayer& player, CLight& light);
 
-
 void PlayerInputSystem::Update(float deltaTime)
 {
     // maybe make this change settings in the player component that has like playerForward, playerPrimaryFire.
@@ -81,6 +80,7 @@ void PlayerInputSystem::Update(float deltaTime)
 }
 
 bool flashlightSwitch = false;
+float previousRadius;
 void flashlightLogic(CPlayer& player, CLight& light)
 {
     if (light.type == SPOT)
@@ -97,11 +97,12 @@ void flashlightLogic(CPlayer& player, CLight& light)
         {
             if (!player.flashlightOn)
             {
-                light.radius = 9.0f;
+                light.radius = previousRadius;
                 player.flashlightOn = true;
             }
             else if (player.flashlightOn)
             {
+                previousRadius = light.radius;
                 light.radius = 0.0f;
                 player.flashlightOn = false;
             }
