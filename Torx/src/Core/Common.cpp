@@ -13,6 +13,9 @@ bool  Common::lightPosDebug{ false };
 bool  Common::albedoDebug{ false };
 bool  Common::roughnessDebug{ false };
 bool  Common::metallicDebug{ false };
+bool  Common::bulletLinesDebug{ false };
+bool  Common::bulletLinesReady{ false };
+int   Common::debugLinesCount{};
 
 // ------------- TONE MAPPING ----------------------------------
 bool  Common::aces{ true };

@@ -17,7 +17,9 @@ public:
 	static unsigned int mPointLightShadowMapFBO;
 	static unsigned int mDirLightShadowMapFBO;
 	static unsigned int mScreenQuadVAO;
-	
+	static unsigned int mBulletDebugLinesVAO;
+	static unsigned int mBulletDebugLinesVBO;
+
 	// diffuse indirect lighting
 	static unsigned int mEnvironmentCubemap;
 	static unsigned int mIrradianceCubemap;
@@ -30,6 +32,7 @@ public:
 	static void CreateIrradianceCubemap();
 	static void CreatePrefilteredEnvMap();
 	static void CreateBRDFIntegrationMap();
+	static void CreateBulletDebugBuffers();
 
 private:
 	static void CreateCubeVAO();

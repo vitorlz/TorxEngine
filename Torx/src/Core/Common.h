@@ -32,6 +32,9 @@ public:
 	static bool wireframeDebug;
 	static bool worldPosDebug;
 	static bool lightPosDebug;
+	static bool bulletLinesDebug;
+	static bool bulletLinesReady;
+	static int debugLinesCount;
 	static bool aces;
 	static bool reinhard;
 	static bool uncharted;

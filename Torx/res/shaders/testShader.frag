@@ -4,17 +4,7 @@ out vec4 FragColor;
 in vec2 TexCoord;
 
 struct Material {
-	sampler2D texture_diffuse1;
-
-	sampler2D texture_specular1;
-
-	sampler2D texture_normal1;
-
-	sampler2D texture_emission1;
-
-	sampler2D texture_height1;
-
-	float shininess;
+	sampler2D texture_albedo1;
 };
 
 uniform Material material;
@@ -22,11 +12,7 @@ uniform Material material;
 void main()
 {
 	
-	float gamma = 2.2;
+	float color = texture(material.texture_albedo1, TexCoord).r;
 
-	vec3 color = texture(material.texture_diffuse1, TexCoord).rgb;
-
-	color = pow(color, vec3(1/gamma));
-
-    FragColor = vec4(color, 1.0);
+    FragColor = vec4(vec3(color), 1.0);
 }

@@ -310,6 +310,7 @@ void UI::Update()
         ImGui::Checkbox("Show albedo ", &Common::albedoDebug);
         ImGui::Checkbox("Show roughness", &Common::roughnessDebug);
         ImGui::Checkbox("Show metalness", &Common::metallicDebug);
+        ImGui::Checkbox("Show physics debug lines", &Common::bulletLinesDebug);
 
         ImGui::TreePop();
     }

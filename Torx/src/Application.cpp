@@ -20,11 +20,13 @@
 #include "Components/CModel.h"
 #include "Components/CSingleton_Input.h"
 #include "Components/CPlayer.h"
+#include "Components/CRigidBody.h"
 
 #include "Systems/RenderSystem.h"
 #include "Systems/LightSystem.h"
 #include "Systems/GeneralInputSystem.h"
 #include "Systems/playerInputSystem.h"
+#include "Systems/PhysicsSystem.h"
 
 #include <iostream>
 
@@ -50,6 +52,7 @@ int main()
     ecs.RegisterComponent<CModel>();
     ecs.RegisterComponent<CLight>();
     ecs.RegisterComponent<CPlayer>();
+    ecs.RegisterComponent<CRigidBody>();
 
     auto renderSystem = ecs.RegisterSystem<RenderSystem>();
     {
@@ -57,6 +60,14 @@ int main()
         signature.set(ecs.GetComponentType<CTransform>());
         signature.set(ecs.GetComponentType<CModel>());
         ecs.SetSystemSignature<RenderSystem>(signature);
+    }
+
+    auto physicsSystem = ecs.RegisterSystem<PhysicsSystem>();
+    {
+        Signature signature;
+        signature.set(ecs.GetComponentType<CTransform>());
+        signature.set(ecs.GetComponentType<CRigidBody>());
+        ecs.SetSystemSignature<PhysicsSystem>(signature);
     }
 
     auto lightSystem = ecs.RegisterSystem<LightSystem>();
@@ -83,6 +94,7 @@ int main()
     renderSystem->Init();
     lightSystem->Init();
     generalInputSystem->Init();
+
 
     Entity playerEntity = ecs.CreateEntity();
 
@@ -119,7 +131,39 @@ int main()
             .movementSpeed = 3.0f,
         });
 
-    Entity sponzaEntity = ecs.CreateEntity();
+
+    for (int k = 0; k < 5; k++)
+    {
+        for (int i = 0; i < 5; i++)
+        {
+            for (int j = 0; j < 5; j++)
+            {
+                Entity testCube = ecs.CreateEntity();
+
+                ecs.AddComponent<CTransform>(
+                    testCube,
+                    CTransform{
+                        .position = glm::vec3(0.2f * i, 10.0f + 0.2f * k, 0.2f * j),
+                        .scale = glm::vec3(0.1f, 0.1f, 0.1f),
+                        .rotation = glm::vec3(0.0f, 0.0f, 0.0f),
+                    });
+
+                ecs.AddComponent<CModel>(
+                    testCube,
+                    CModel{
+                        .model = AssetManager::GetModel("dirtBlock")
+                    });
+
+                ecs.AddComponent<CRigidBody>(
+                    testCube,
+                    CRigidBody{
+
+                    });
+            }
+        }
+    }
+       
+    /*Entity sponzaEntity = ecs.CreateEntity();
 
     ecs.AddComponent<CTransform>(
         sponzaEntity,
@@ -187,13 +231,14 @@ int main()
             .strength = 1.0f,
             .shadowCaster = true,
             .offset = glm::vec3(0.000f, -0.282f, -0.562f)
-        });
+        });*/
 
     UI gui;
 
     gui.Init(window.GetWindow());
 
     lightSystem->Init();
+    physicsSystem->Init();
 
     while (!glfwWindowShouldClose(window.GetWindow()))
     {
@@ -204,6 +249,8 @@ int main()
         gui.NewFrame();
 
         generalInputSystem->Update(deltaTime, window.GetWindow());
+
+        physicsSystem->Update(deltaTime);
 
         renderSystem->Update(deltaTime);
 

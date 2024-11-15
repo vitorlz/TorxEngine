@@ -11,6 +11,7 @@
 #include "../Components/CLight.h"
 #include "../Components/CModel.h"
 #include "../Components/CPlayer.h"
+#include "../Components/CRigidBody.h"
 #include "../Util/ShaderManager.h"
 #include "../Util/TextureLoader.h"
 #include "../Util/Util.h"
@@ -308,14 +309,17 @@ void RenderSystem::Update(float deltaTime)
         glm::mat4 model = glm::mat4(1.0f);
         model = glm::translate(model, transform.position);
      
-        model = glm::rotate(model, glm::radians(transform.rotation.y), glm::vec3(0.0f, 1.0, 0.0));
-        model = glm::rotate(model, glm::radians(transform.rotation.x), glm::vec3(1.0f, 0.0, 0.0));
-        model = glm::rotate(model, glm::radians(transform.rotation.z), glm::vec3(0.0f, 0.0, 1.0));
+        //model = glm::rotate(model, glm::radians(transform.rotation.y), glm::vec3(0.0f, 1.0, 0.0));
+        //model = glm::rotate(model, glm::radians(transform.rotation.x), glm::vec3(1.0f, 0.0, 0.0));
+        //model = glm::rotate(model, glm::radians(transform.rotation.z), glm::vec3(0.0f, 0.0, 1.0));
+
+        model *= transform.rotationMatrix;
+
         model = glm::scale(model, transform.scale);
 
         glm::mat3 normalMatrix = glm::transpose(glm::inverse(model));
 
-        if (ecs.HasComponent<CLight>(entity) && Common::lightPosDebug) 
+        if (ecs.HasComponent<CLight>(entity) && Common::lightPosDebug)
         {
             auto& light = ecs.GetComponent<CLight>(entity);
 
@@ -334,6 +338,23 @@ void RenderSystem::Update(float deltaTime)
 
             Util::renderSphere();
         }
+
+        if (ecs.HasComponent<CRigidBody>(entity))
+        {
+            
+
+            Shader& testShader = ShaderManager::GetShaderProgram("ourShader");
+
+            testShader.use();
+     
+            testShader.setMat4("projection", projection);
+            testShader.setMat4("view", player.viewMatrix);
+            testShader.setMat4("model", model);
+       
+            model3d.model.Draw(testShader);
+
+            continue;
+        }
         
         pbrModelTestShader.use();
 
@@ -351,6 +372,24 @@ void RenderSystem::Update(float deltaTime)
 
         model3d.model.Draw(pbrModelTestShader);
     }
+
+   if (Common::bulletLinesDebug)
+   {
+        glDisable(GL_CULL_FACE);
+        Shader& lineDebugShader = ShaderManager::GetShaderProgram("lineDebugShader");
+
+        lineDebugShader.use();
+
+        lineDebugShader.setMat4("projection", projection);
+        lineDebugShader.setMat4("view", player.viewMatrix);
+
+        glBindVertexArray(RenderingUtil::mBulletDebugLinesVAO);
+        glDrawArrays(GL_LINES, 0, Common::debugLinesCount * 2);
+        glBindVertexArray(0);
+
+        glEnable(GL_CULL_FACE);
+        Common::debugLinesCount = 0;
+   }
 
     // ----------------------------- PBR TESTING -----------------------------------------------------------------------------------------
 

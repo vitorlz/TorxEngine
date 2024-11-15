@@ -57,14 +57,14 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>vendor/GLFW/include;vendor/glad/include;vendor/glm/include;vendor/stb_image;vendor/assimp/include;imgui;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>vendor/GLFW/include;vendor/glad/include;vendor/glm/include;vendor/stb_image;vendor/assimp/include;vendor/bulletphysics/include;imgui;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp20</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>vendor/GLFW/lib;vendor/assimp/lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>glfw3.lib;opengl32.lib;assimp-vc143-mtd.lib;$(CoreLibraryDependencies);%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>vendor/GLFW/lib;vendor/assimp/lib;vendor/bulletphysics/lib/Debug;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>glfw3.lib;opengl32.lib;assimp-vc143-mtd.lib;BulletCollision_Debug.lib;BulletDynamics_Debug.lib;LinearMath_Debug.lib;$(CoreLibraryDependencies);%(AdditionalDependencies)</AdditionalDependencies>
       <Profile>true</Profile>
     </Link>
   </ItemDefinitionGroup>
@@ -76,16 +76,17 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>vendor/GLFW/include;vendor/glad/include;vendor/glm/include;vendor/stb_image;vendor/assimp/include;imgui;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>vendor/GLFW/include;vendor/glad/include;vendor/glm/include;vendor/stb_image;vendor/assimp/include;vendor/bulletphysics/include;imgui;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp20</LanguageStandard>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>vendor/GLFW/lib;vendor/assimp/lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>glfw3.lib;opengl32.lib;assimp-vc143-mt.lib;$(CoreLibraryDependencies);%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>vendor/GLFW/lib;vendor/assimp/lib;vendor/bulletphysics/lib/Release;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>glfw3.lib;opengl32.lib;assimp-vc143-mt.lib;BulletCollision.lib;BulletDynamics.lib;LinearMath.lib;$(CoreLibraryDependencies);%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
@@ -94,9 +95,11 @@
     <ClCompile Include="src\AssetLoading\AssetManager.cpp" />
     <ClCompile Include="src\Components\CSingleton_Input.h" />
     <ClCompile Include="src\Core\Common.cpp" />
+    <ClCompile Include="src\Physics\BulletDebugDrawer.cpp" />
     <ClCompile Include="src\Rendering\RenderingUtil.cpp" />
     <ClCompile Include="src\Systems\GeneralInputSystem.cpp" />
     <ClCompile Include="src\Systems\LightSystem.cpp" />
+    <ClCompile Include="src\Systems\PhysicsSystem.cpp" />
     <ClCompile Include="src\Systems\PlayerInputSystem.cpp" />
     <ClCompile Include="src\Systems\RenderSystem.cpp" />
     <ClCompile Include="src\UI\UI.cpp" />
@@ -124,10 +127,13 @@
     <ClInclude Include="src\AssetLoading\model.h" />
     <ClInclude Include="src\Components\CModel.h" />
     <ClInclude Include="src\Components\CPlayer.h" />
+    <ClInclude Include="src\Components\CRigidBody.h" />
     <ClInclude Include="src\Core\Common.h" />
+    <ClInclude Include="src\Physics\BulletDebugDrawer.h" />
     <ClInclude Include="src\Rendering\RenderingUtil.h" />
     <ClInclude Include="src\Systems\GeneralInputSystem.h" />
     <ClInclude Include="src\Systems\LightSystem.h" />
+    <ClInclude Include="src\Systems\PhysicsSystem.h" />
     <ClInclude Include="src\Systems\PlayerInputSystem.h" />
     <ClInclude Include="src\Systems\RenderSystem.h" />
     <ClInclude Include="src\UI\UI.h" />
@@ -169,6 +175,8 @@
     <None Include="res\shaders\irradianceConvolution.frag" />
     <None Include="res\shaders\lighting.frag" />
     <None Include="res\shaders\lighting.vert" />
+    <None Include="res\shaders\line.frag" />
+    <None Include="res\shaders\line.vert" />
     <None Include="res\shaders\pbrLightingTest.frag" />
     <None Include="res\shaders\pbrTestModelLoading.frag" />
     <None Include="res\shaders\pointShadowMap.frag" />

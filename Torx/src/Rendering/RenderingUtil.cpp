@@ -24,6 +24,8 @@ unsigned int RenderingUtil::mPrefilteredEnvMap;
 unsigned int RenderingUtil::mBrdfLUT;
 unsigned int RenderingUtil::mDirLightShadowMapFBO;
 unsigned int RenderingUtil::mDirLightShadowMap;
+unsigned int RenderingUtil::mBulletDebugLinesVAO;
+unsigned int RenderingUtil::mBulletDebugLinesVBO;
 
 void RenderingUtil::Init()
 {
@@ -37,7 +39,7 @@ void RenderingUtil::Init()
     RenderingUtil::CreateScreenQuadVAO();
     RenderingUtil::CreatePingPongFBOs();
     
-    RenderingUtil::EquirectangularToCubemap("res/textures/hdr/sunset_jhbcentral_2k.hdr");
+    RenderingUtil::EquirectangularToCubemap("res/textures/hdr/pretville_cinema_2k.hdr");
     RenderingUtil::CreateIrradianceCubemap();
 
     RenderingUtil::CreatePrefilteredEnvMap();
@@ -620,4 +622,18 @@ void RenderingUtil::CreateDirLightShadowMapFBO(unsigned int shadowWidth, unsigne
     glDrawBuffer(GL_NONE);
     glReadBuffer(GL_NONE);
     glBindBuffer(GL_FRAMEBUFFER, 0);
+}
+
+void RenderingUtil::CreateBulletDebugBuffers() 
+{
+    glGenBuffers(1, &RenderingUtil::mBulletDebugLinesVBO);
+    glGenVertexArrays(1, &RenderingUtil::mBulletDebugLinesVAO);
+    glBindVertexArray(RenderingUtil::mBulletDebugLinesVAO);
+    glBindBuffer(GL_ARRAY_BUFFER, RenderingUtil::mBulletDebugLinesVBO);
+    glBufferData(GL_ARRAY_BUFFER, 10000 * 6 * sizeof(float), nullptr, GL_DYNAMIC_DRAW);
+    glEnableVertexAttribArray(0);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), 0);
+    glEnableVertexAttribArray(1);
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)(3 * sizeof(float)));
+    glBindVertexArray(0);
 }
