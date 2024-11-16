@@ -1,11 +1,11 @@
 Model Information:
-* title:	Minecraft-stone-block
-* source:	https://sketchfab.com/3d-models/minecraft-stone-block-3678d5fd71c2413d82b8891282945510
-* author:	momo (https://sketchfab.com/momo_Ernst)
+* title:	Crafting_table
+* source:	https://sketchfab.com/3d-models/crafting-table-7e4df51960cc4204be1e1d1cb7b17ad0
+* author:	tvdn164 (https://sketchfab.com/tvdn164)
 
 Model License:
 * license type:	CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)
 * requirements:	Author must be credited. Commercial use is allowed.
 
 If you use this 3D model in your project be sure to copy paste this credit wherever you share it:
-This work is based on "Minecraft-stone-block" (https://sketchfab.com/3d-models/minecraft-stone-block-3678d5fd71c2413d82b8891282945510) by momo (https://sketchfab.com/momo_Ernst) licensed under CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)
+This work is based on "Crafting_table" (https://sketchfab.com/3d-models/crafting-table-7e4df51960cc4204be1e1d1cb7b17ad0) by tvdn164 (https://sketchfab.com/tvdn164) licensed under CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)

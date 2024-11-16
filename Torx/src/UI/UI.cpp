@@ -11,6 +11,8 @@
 #include "../Components/CTransform.h"
 #include "../Components/CSingleton_Input.h"
 #include "../Components/CPlayer.h"
+#include <iomanip>
+#include <sstream>
 
 bool UI::isOpen{ false };
 bool UI::firstMouseUpdateAfterMenu{ false };
@@ -38,6 +40,24 @@ void UI::Update()
 {
     ImGui::Begin("Menu");
     ImGui::Shortcut(ImGuiKey_Tab, ImGuiInputFlags_None);
+
+    if (ImGui::TreeNode("Stats"))
+    {
+        CSingleton_Input& inputSing = CSingleton_Input::getInstance();
+      
+        std::stringstream mouseXstream;
+        mouseXstream << std::fixed << std::setprecision(2) << inputSing.mouseX;
+        std::string mouseX = "Mouse X: " + mouseXstream.str();
+
+        std::stringstream mouseYstream;
+        mouseYstream << std::fixed << std::setprecision(2) << inputSing.mouseY;
+        std::string mouseY = "Mouse Y: " + mouseYstream.str();
+
+        ImGui::Text(mouseX.c_str());
+        ImGui::Text(mouseY.c_str());
+
+        ImGui::TreePop();
+    }
 
     if (ImGui::TreeNode("Entities"))
     {

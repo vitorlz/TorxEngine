@@ -144,7 +144,7 @@ int main()
                     testCube,
                     CTransform{
                         .position = glm::vec3(0.2f * i, 10.0f + 0.2f * k, 0.2f * j),
-                        .scale = glm::vec3(0.1f, 0.1f, 0.1f),
+                        .scale = glm::vec3(0.2f),
                         .rotation = glm::vec3(0.0f, 0.0f, 0.0f),
                     });
 
@@ -250,9 +250,9 @@ int main()
 
         generalInputSystem->Update(deltaTime, window.GetWindow());
 
-        physicsSystem->Update(deltaTime);
-
         renderSystem->Update(deltaTime);
+
+        physicsSystem->Update(deltaTime);
 
         playerInputSystem->Update(deltaTime);
 

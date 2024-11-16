@@ -3,6 +3,8 @@
 #include <numbers>
 #include <glad/glad.h>
 #include <glm/glm.hpp>
+#include <sstream>
+
 
 std::vector<float> Util::gaussian_weights(int kernel_size, float stdDeviation, float intervalMultiplier)
 {
@@ -116,4 +118,11 @@ void Util::renderSphere()
 
     glBindVertexArray(sphereVAO);
     glDrawElements(GL_TRIANGLE_STRIP, indexCount, GL_UNSIGNED_INT, 0);
+}
+
+std::string Util::vec3ToString(glm::vec3 vec)
+{
+    std::stringstream ss;
+    ss << vec.x << ", " <<  vec.y << ", " << vec.z << "\n"; 
+    return ss.str();
 }

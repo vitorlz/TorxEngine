@@ -10,7 +10,8 @@
 #include "../Components/CRigidBody.h"
 #include "../Components/CSingleton_Input.h"
 #include "../Physics/BulletDebugDrawer.h"
-
+#include "../Physics/Raycast.h"
+#include "../UI/UI.h"
 
 #include "btBulletDynamicsCommon.h"
 #define ARRAY_SIZE_Y 5
@@ -41,6 +42,9 @@ btDiscreteDynamicsWorld* dynamicsWorld = new btDiscreteDynamicsWorld(dispatcher,
 BulletDebugDrawer debugDrawer;
 void PhysicsSystem::Init() 
 {
+
+	Raycast::setDynamicsWorld(dynamicsWorld);
+
 	dynamicsWorld->setGravity(btVector3(0, -9.81, 0));
 
 	dynamicsWorld->setDebugDrawer(&debugDrawer);
@@ -81,7 +85,7 @@ void PhysicsSystem::Init()
 		{
 			//create a few dynamic rigidbodies
 			// Re-using the same collision is better for memory usage and performance
-			btBoxShape* colShape = new btBoxShape(btVector3(btScalar(transform.scale.x), btScalar(transform.scale.y), btScalar(transform.scale.z)));
+			btBoxShape* colShape = new btBoxShape(btVector3(btScalar(transform.scale.x) * 0.5, btScalar(transform.scale.y) * 0.5, btScalar(transform.scale.z) * 0.5));
 
 			collisionShapes.push_back(colShape);
 
@@ -112,6 +116,8 @@ void PhysicsSystem::Init()
 			btRigidBody::btRigidBodyConstructionInfo rbInfo(mass, myMotionState, colShape, localInertia);
 			rigidBody.body = new btRigidBody(rbInfo);
 
+			rigidBody.body->setUserIndex(entity);
+
 			//add the body to the dynamics world
 			dynamicsWorld->addRigidBody(rigidBody.body);
 		}
@@ -141,6 +147,25 @@ void PhysicsSystem::Update(float deltaTime)
 			transform.position = glm::vec3(float(trans.getOrigin().getX()), float(trans.getOrigin().getY()), float(trans.getOrigin().getZ()));
 
 			transform.rotationMatrix = glm::mat4_cast(glm::quat(rotation.w(), rotation.x(), rotation.y(), rotation.z()));	
+		}
+	}
+
+	if (UI::isOpen)
+	{
+		int entityHit = Raycast::mouseRaycast();
+
+		
+
+		glm::vec3 mouseRayDir = Raycast::getMouseRayDir();
+
+		std::cout << "entity hit: " << entityHit << "\n";
+
+		if (entityHit != -1)
+		{
+			std::cout << Util::vec3ToString(mouseRayDir);
+			btRigidBody* entityHitRb = ecs.GetComponent<CRigidBody>(entityHit).body;
+			entityHitRb->activate();
+			entityHitRb->applyCentralImpulse(btVector3(mouseRayDir.x, mouseRayDir.y, mouseRayDir.z));
 		}
 	}
 	

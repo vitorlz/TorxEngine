@@ -12,7 +12,7 @@ uniform Material material;
 void main()
 {
 	
-	float color = texture(material.texture_albedo1, TexCoord).r;
+	vec3 color = texture(material.texture_albedo1, TexCoord).rgb;
 
-    FragColor = vec4(vec3(color), 1.0);
+    FragColor = vec4(color, 1.0);
 }

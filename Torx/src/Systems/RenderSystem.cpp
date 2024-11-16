@@ -17,6 +17,8 @@
 #include "../Util/Util.h"
 #include "../Rendering/RenderingUtil.h"
 #include "../AssetLoading/AssetManager.h"
+#include "../Physics/Raycast.h"
+#include "../UI/UI.h"
 
 extern Coordinator ecs;
 
@@ -167,10 +169,6 @@ void RenderSystem::Update(float deltaTime)
 
         glClear(GL_DEPTH_BUFFER_BIT);
 
-        /*Shader& pbrModelTestShader = ShaderManager::GetShaderProgram("pbrModelTestShader");
-        
-        pbrModelTestShader.use();*/
-
         Shader& pointShadowMapShader = ShaderManager::GetShaderProgram("pointShadowMapShader");
 
         pointShadowMapShader.use();
@@ -263,6 +261,8 @@ void RenderSystem::Update(float deltaTime)
     projection = glm::perspective(
         glm::radians(45.0f), (float)Window::screenWidth / (float)Window::screenHeight, 0.1f, 200.0f);
 
+   
+
     // get player
     Entity playerEntity{};
     for (const auto& entity : mEntities)
@@ -274,6 +274,12 @@ void RenderSystem::Update(float deltaTime)
     }
 
     auto& player = ecs.GetComponent<CPlayer>(playerEntity);
+
+    if (UI::isOpen)
+    {
+        Raycast::calculateMouseRaycast(projection* player.viewMatrix);
+    }
+
     Shader& pbrModelTestShader = ShaderManager::GetShaderProgram("pbrModelTestShader");
     pbrModelTestShader.use();
 

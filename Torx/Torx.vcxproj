@@ -96,6 +96,7 @@
     <ClCompile Include="src\Components\CSingleton_Input.h" />
     <ClCompile Include="src\Core\Common.cpp" />
     <ClCompile Include="src\Physics\BulletDebugDrawer.cpp" />
+    <ClCompile Include="src\Physics\Raycast.cpp" />
     <ClCompile Include="src\Rendering\RenderingUtil.cpp" />
     <ClCompile Include="src\Systems\GeneralInputSystem.cpp" />
     <ClCompile Include="src\Systems\LightSystem.cpp" />
@@ -130,6 +131,7 @@
     <ClInclude Include="src\Components\CRigidBody.h" />
     <ClInclude Include="src\Core\Common.h" />
     <ClInclude Include="src\Physics\BulletDebugDrawer.h" />
+    <ClInclude Include="src\Physics\Raycast.h" />
     <ClInclude Include="src\Rendering\RenderingUtil.h" />
     <ClInclude Include="src\Systems\GeneralInputSystem.h" />
     <ClInclude Include="src\Systems\LightSystem.h" />

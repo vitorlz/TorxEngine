@@ -8,8 +8,6 @@
 void BulletDebugDrawer::drawLine(const btVector3& from, const btVector3& to, const btVector3& color)
 {
 
-	//std::cout << "debug lines count: " << Common::debugLinesCount << "\n";
-
 	if (Common::debugLinesCount == 0)
 	{
 		m_points.clear();
@@ -17,7 +15,6 @@ void BulletDebugDrawer::drawLine(const btVector3& from, const btVector3& to, con
 		glBufferData(GL_ARRAY_BUFFER, 10000 * 6 * sizeof(float), nullptr, GL_DYNAMIC_DRAW);
 	}
 	
-
 	m_points.push_back(from.x());
 	m_points.push_back(from.y());
 	m_points.push_back(from.z());
@@ -34,13 +31,8 @@ void BulletDebugDrawer::drawLine(const btVector3& from, const btVector3& to, con
 	
 	glBindBuffer(GL_ARRAY_BUFFER, RenderingUtil::mBulletDebugLinesVBO);
 
-	//GLint bufferSize = 0;
-	//glGetBufferParameteriv(GL_ARRAY_BUFFER, GL_BUFFER_SIZE, &bufferSize);
-	//std::cout << "Buffer size in bytes: " << bufferSize << "\n";
-	//std::cout << "Points size in bytes: " << m_points.size() * sizeof(float) << "\n";
 	glBufferSubData(GL_ARRAY_BUFFER, 0, m_points.size() * sizeof(float), m_points.data());
 
-	
 	Common::debugLinesCount++;
 }
 
