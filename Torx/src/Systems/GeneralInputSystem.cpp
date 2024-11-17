@@ -144,6 +144,22 @@ void GeneralInputSystem::Update(float deltaTime, GLFWwindow* window)
 	{
 		inputSing.pressedKeys[TAB] = false;
 	}
+	if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS)
+	{
+		inputSing.pressedKeys[MOUSE_LEFT] = true;
+	}
+	else if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_RELEASE)
+	{
+		inputSing.pressedKeys[MOUSE_LEFT] = false;
+	}
+	if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_RIGHT) == GLFW_PRESS)
+	{
+		inputSing.pressedKeys[MOUSE_RIGHT] = true;
+	}
+	else if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_RIGHT) == GLFW_RELEASE)
+	{
+		inputSing.pressedKeys[MOUSE_RIGHT] = false;
+	}
 
 	// mouse input
 

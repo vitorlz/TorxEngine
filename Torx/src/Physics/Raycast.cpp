@@ -4,6 +4,7 @@
 
 glm::vec3 Raycast::m_MouseRayStartWorld{};
 glm::vec3 Raycast::m_MouseRayDirWorld{};
+btVector3 Raycast::m_MouseHitPointWorld{};
 CSingleton_Input& Raycast::m_inputSing{ CSingleton_Input::getInstance() };
 btDiscreteDynamicsWorld* Raycast::m_dynamicsWorld{};
 
@@ -51,7 +52,7 @@ unsigned int Raycast::mouseRaycast()
 
 	if (RayCallback.hasHit())
 	{
-		//std::cout << "mesh " << (int)RayCallback.m_collisionObject->getUserIndex() << "\n";
+		m_MouseHitPointWorld = RayCallback.m_hitPointWorld;
 		return (int)RayCallback.m_collisionObject->getUserIndex();
 	}
 }
@@ -69,4 +70,8 @@ glm::vec3 Raycast::getMouseRayDir()
 glm::vec3 Raycast::getMouseRayStart()
 {
 	return m_MouseRayStartWorld;
+}
+btVector3 Raycast::getMouseHitPointWorld()
+{
+	return m_MouseHitPointWorld;
 }

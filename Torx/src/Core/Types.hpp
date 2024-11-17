@@ -21,8 +21,6 @@ const ComponentType MAX_COMPONENTS = 32;
 // the correspond to.
 using Signature = std::bitset<MAX_COMPONENTS>;
 
-// ------------------- Input -----------------------
-
 
 
 

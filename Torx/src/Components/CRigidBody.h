@@ -5,4 +5,5 @@
 struct CRigidBody
 {
 	btRigidBody* body;
+	btScalar mass;
 };

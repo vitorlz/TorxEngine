@@ -132,19 +132,19 @@ int main()
         });
 
 
-    for (int k = 0; k < 5; k++)
+    for (int k = 0; k < 3; k++)
     {
-        for (int i = 0; i < 5; i++)
+        for (int i = 0; i < 3; i++)
         {
-            for (int j = 0; j < 5; j++)
+            for (int j = 0; j < 3; j++)
             {
                 Entity testCube = ecs.CreateEntity();
 
                 ecs.AddComponent<CTransform>(
                     testCube,
                     CTransform{
-                        .position = glm::vec3(0.2f * i, 10.0f + 0.2f * k, 0.2f * j),
-                        .scale = glm::vec3(0.2f),
+                        .position = glm::vec3(0.5f * i, 2.0f + 0.5f * k, 0.5f * j),
+                        .scale = glm::vec3(0.5f),
                         .rotation = glm::vec3(0.0f, 0.0f, 0.0f),
                     });
 
@@ -157,13 +157,13 @@ int main()
                 ecs.AddComponent<CRigidBody>(
                     testCube,
                     CRigidBody{
-
+                        .mass = 1.f
                     });
             }
         }
     }
        
-    /*Entity sponzaEntity = ecs.CreateEntity();
+    Entity sponzaEntity = ecs.CreateEntity();
 
     ecs.AddComponent<CTransform>(
         sponzaEntity,
@@ -171,6 +171,7 @@ int main()
             .position = glm::vec3(0.0f, 0.0f, 0.0f),
             .scale = glm::vec3(1.0f, 1.0f, 1.0f),
             .rotation = glm::vec3(0.0f, 90.0f, 0.0f),
+            .rotationMatrix = glm::mat4_cast(glm::quat(glm::vec3(0.0f, 90.0f, 0.0f))),
         });
 
     ecs.AddComponent<CModel>(
@@ -179,7 +180,13 @@ int main()
             .model = AssetManager::GetModel("sponza")
         });
 
-    Entity lampEntity1 = ecs.CreateEntity();
+    ecs.AddComponent<CRigidBody>(
+        sponzaEntity,
+        CRigidBody{
+            .mass = 0.f
+        });
+
+   /*Entity lampEntity1 = ecs.CreateEntity();
 
     ecs.AddComponent<CTransform>(
         lampEntity1,

@@ -20,6 +20,8 @@ enum InputKey {
 	TAB,
 	LEFT_CONTROL,
 	ESC,
+	MOUSE_LEFT,
+	MOUSE_RIGHT
 };
 
 class Common
