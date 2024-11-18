@@ -57,7 +57,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>vendor/GLFW/include;vendor/glad/include;vendor/glm/include;vendor/stb_image;vendor/assimp/include;vendor/bulletphysics/include;imgui;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>vendor/GLFW/include;vendor/glad/include;vendor/glm/include;vendor/stb_image;vendor/assimp/include;vendor/bulletphysics/include;imgui;vendor/imguizmo;vendor/imgui;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp20</LanguageStandard>
     </ClCompile>
     <Link>
@@ -76,7 +76,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>vendor/GLFW/include;vendor/glad/include;vendor/glm/include;vendor/stb_image;vendor/assimp/include;vendor/bulletphysics/include;imgui;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>vendor/GLFW/include;vendor/glad/include;vendor/glm/include;vendor/stb_image;vendor/assimp/include;vendor/bulletphysics/include;imgui;vendor/imguizmo;vendor/imgui;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp20</LanguageStandard>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
     </ClCompile>
@@ -95,6 +95,7 @@
     <ClCompile Include="src\AssetLoading\AssetManager.cpp" />
     <ClCompile Include="src\Components\CSingleton_Input.h" />
     <ClCompile Include="src\Core\Common.cpp" />
+    <ClCompile Include="src\Editor\Editor.cpp" />
     <ClCompile Include="src\Physics\BulletDebugDrawer.cpp" />
     <ClCompile Include="src\Physics\Raycast.cpp" />
     <ClCompile Include="src\Rendering\RenderingUtil.cpp" />
@@ -112,6 +113,11 @@
     <ClCompile Include="src\Util\Window.cpp" />
     <ClCompile Include="src\Util\Shader.cpp" />
     <ClCompile Include="vendor\glad\src\glad.c" />
+    <ClCompile Include="vendor\imguizmo\GraphEditor.cpp" />
+    <ClCompile Include="vendor\imguizmo\ImCurveEdit.cpp" />
+    <ClCompile Include="vendor\imguizmo\ImGradient.cpp" />
+    <ClCompile Include="vendor\imguizmo\ImGuizmo.cpp" />
+    <ClCompile Include="vendor\imguizmo\ImSequencer.cpp" />
     <ClCompile Include="vendor\imgui\imgui.cpp" />
     <ClCompile Include="vendor\imgui\imgui_demo.cpp" />
     <ClCompile Include="vendor\imgui\imgui_draw.cpp" />
@@ -130,6 +136,7 @@
     <ClInclude Include="src\Components\CPlayer.h" />
     <ClInclude Include="src\Components\CRigidBody.h" />
     <ClInclude Include="src\Core\Common.h" />
+    <ClInclude Include="src\Editor\Editor.h" />
     <ClInclude Include="src\Physics\BulletDebugDrawer.h" />
     <ClInclude Include="src\Physics\Raycast.h" />
     <ClInclude Include="src\Rendering\RenderingUtil.h" />
@@ -153,6 +160,12 @@
     <ClInclude Include="src\Util\Util.h" />
     <ClInclude Include="src\Util\Window.h" />
     <ClInclude Include="src\Util\Shader.h" />
+    <ClInclude Include="vendor\imguizmo\GraphEditor.h" />
+    <ClInclude Include="vendor\imguizmo\ImCurveEdit.h" />
+    <ClInclude Include="vendor\imguizmo\ImGradient.h" />
+    <ClInclude Include="vendor\imguizmo\ImGuizmo.h" />
+    <ClInclude Include="vendor\imguizmo\ImSequencer.h" />
+    <ClInclude Include="vendor\imguizmo\ImZoomSlider.h" />
     <ClInclude Include="vendor\imgui\imconfig.h" />
     <ClInclude Include="vendor\imgui\imgui.h" />
     <ClInclude Include="vendor\imgui\imgui_impl_glfw.h" />

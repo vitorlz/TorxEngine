@@ -31,5 +31,9 @@ float Common::bloomStdDeviation{ 1.0f };
 float Common::bloomIntervalMultiplier{ 0.2f };
 std::vector<float> Common::bloomWeights;
 
+// ------------- TEMPORARY STUFF -------------------------------
+
+glm::mat4 Common::playerViewMatrix;
+bool Common::usingGuizmo{ false };
 
 

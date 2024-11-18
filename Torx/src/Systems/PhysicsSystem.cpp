@@ -87,8 +87,6 @@ void PhysicsSystem::Init()
 					for (const Vertex& vertex : mesh.vertices) {
 						convexHullShape->addPoint(btVector3(vertex.Position.x, vertex.Position.y, vertex.Position.z), false);
 					}
-					
-					
 				}
 			
 				convexHullShape->setLocalScaling(btVector3(transform.scale.x, transform.scale.y, transform.scale.z));
@@ -164,9 +162,12 @@ void PhysicsSystem::Init()
 	}
 }
 
-bool shotFired{ false };
 void PhysicsSystem::Update(float deltaTime)
 {
+	if (Common::usingGuizmo)
+	{
+		return;
+	}
 	dynamicsWorld->stepSimulation(deltaTime, 20, 1.0f/165.0f);
 
 	for (const auto& entity : mEntities)
@@ -197,14 +198,14 @@ void PhysicsSystem::Update(float deltaTime)
 
 	CSingleton_Input& inputSing = CSingleton_Input::getInstance();
 
+	static bool shotFired{ false };
 	if (UI::isOpen)
 	{
-		int entityHit = Raycast::mouseRaycast();
-
-		glm::vec3 mouseRayDir = glm::normalize(Raycast::getMouseRayDir());
-
-		if (entityHit != -1 && inputSing.pressedKeys[MOUSE_LEFT] && !shotFired)
+		if (inputSing.pressedKeys[MOUSE_RIGHT] && !shotFired)
 		{
+			int entityHit = Raycast::mouseRaycast();
+
+			glm::vec3 mouseRayDir = glm::normalize(Raycast::getMouseRayDir());
 			shotFired = true;
 			//std::cout << Util::vec3ToString(mouseRayDir);
 			btRigidBody* entityHitRb = ecs.GetComponent<CRigidBody>(entityHit).body;
@@ -215,9 +216,9 @@ void PhysicsSystem::Update(float deltaTime)
 			std::cout << "Center of mass position: " << entityHitRb->getCenterOfMassPosition().x() << ", " << entityHitRb->getCenterOfMassPosition().y() << ", " << entityHitRb->getCenterOfMassPosition().z() << "\n";
 			std::cout << "Offset: " << offset.x() << ", " << offset.y() << ", " << offset.z() << "\n";
 			entityHitRb->activate();
-			entityHitRb->applyImpulse(btVector3(mouseRayDir.x, mouseRayDir.y, mouseRayDir.z) * 10, offset);
+			entityHitRb->applyImpulse(btVector3(mouseRayDir.x, mouseRayDir.y, mouseRayDir.z), offset);
 		}
-		else if (!inputSing.pressedKeys[MOUSE_LEFT])
+		else if (!inputSing.pressedKeys[MOUSE_RIGHT])
 		{
 			shotFired = false;
 		}

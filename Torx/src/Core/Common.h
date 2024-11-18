@@ -1,6 +1,7 @@
 #pragma once 
 
 #include <vector>
+#include <glm/glm.hpp>
 
 enum InputKey {
 	NONE,
@@ -27,7 +28,6 @@ enum InputKey {
 class Common
 {
 public:
-
 	static const unsigned int SCR_WIDTH;
 	static const unsigned int SCR_HEIGHT;
 	static bool normalsDebug;
@@ -50,4 +50,6 @@ public:
 	static bool roughnessDebug;
 	static bool metallicDebug;
 	static std::vector<float> bloomWeights;
+	static glm::mat4 playerViewMatrix;
+	static bool usingGuizmo;
 };

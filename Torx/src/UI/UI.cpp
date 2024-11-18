@@ -1,7 +1,8 @@
 #include "UI.h"
-#include "../vendor/imgui/imgui.h"
-#include "../vendor/imgui/imgui_impl_glfw.h"
-#include "../vendor/imgui/imgui_impl_opengl3.h"
+#include "imgui.h"
+#include "imgui_impl_glfw.h"
+#include "imgui_impl_opengl3.h"
+#include "ImGuizmo.h"
 #include "../Rendering/RenderingUtil.h"
 #include "../Core/Common.h"
 #include "../Core/Coordinator.hpp"
@@ -11,6 +12,8 @@
 #include "../Components/CTransform.h"
 #include "../Components/CSingleton_Input.h"
 #include "../Components/CPlayer.h"
+#include "../Components/CRigidBody.h"
+#include "../Physics/Raycast.h"
 #include <iomanip>
 #include <sstream>
 
@@ -34,17 +37,18 @@ void UI::NewFrame()
     ImGui_ImplOpenGL3_NewFrame();
     ImGui_ImplGlfw_NewFrame();
     ImGui::NewFrame();
+    ImGuizmo::BeginFrame();
 }
 
 void UI::Update() 
 {
     ImGui::Begin("Menu");
     ImGui::Shortcut(ImGuiKey_Tab, ImGuiInputFlags_None);
+    
+    CSingleton_Input& inputSing = CSingleton_Input::getInstance();
 
     if (ImGui::TreeNode("Stats"))
-    {
-        CSingleton_Input& inputSing = CSingleton_Input::getInstance();
-      
+    { 
         std::stringstream mouseXstream;
         mouseXstream << std::fixed << std::setprecision(2) << inputSing.mouseX;
         std::string mouseX = "Mouse X: " + mouseXstream.str();
@@ -153,7 +157,7 @@ void UI::Update()
                     if (ImGui::CollapsingHeader("Player Component", ImGuiTreeNodeFlags_AllowItemOverlap))
                     {
                         CPlayer& player = ecs.GetComponent<CPlayer>(livingEntities[i]);
-                        
+
                         ImGui::InputFloat3("Front", &player.front.x);
                         ImGui::InputFloat3("Right", &player.right.x);
                         ImGui::InputFloat3("Up", &player.up.x);
@@ -164,6 +168,8 @@ void UI::Update()
                     {
                         ecs.RemoveComponent<CPlayer>(livingEntities[i]);
                     }
+
+
                 }
 
                 if (ImGui::Button("Destroy Entity"))
@@ -334,6 +340,70 @@ void UI::Update()
 
         ImGui::TreePop();
     }
+
+    // Gizmos
+    
+    static int selectedEntity{ -1 };
+    
+    if (!ImGuizmo::IsOver())
+    {
+        selectedEntity = Raycast::getSelectedEntity();
+    }
+   
+    if (selectedEntity >= 0)
+    {
+        ImGuizmo::SetOrthographic(false);
+
+        ImGuizmo::SetRect(0, 0, Common::SCR_WIDTH, Common::SCR_HEIGHT);
+
+        auto& transform = ecs.GetComponent<CTransform>(selectedEntity);
+        auto& rigidbody = ecs.GetComponent<CRigidBody>(selectedEntity);
+
+        // you need to create a camera component and give it to the player and store the projection and view matrix inside it.
+        // the way we are getting the view and projection matrix right now is just ugly.
+
+        glm::mat4 view = Common::playerViewMatrix;
+
+        glm::mat4 model = glm::mat4(1.0f);
+        model = glm::translate(model, transform.position);
+        glm::mat4 rotMatrix = glm::mat4_cast(glm::quat(glm::vec3(glm::radians(transform.rotation.x), glm::radians(transform.rotation.y), glm::radians(transform.rotation.z))));
+        model *= rotMatrix;
+        model = glm::scale(model, transform.scale);
+
+        glm::mat4 projection = glm::perspective(
+            glm::radians(45.0f), (float)Common::SCR_WIDTH / (float)Common::SCR_HEIGHT, 0.1f, 200.0f);
+
+        ImGuizmo::Manipulate(glm::value_ptr(view), glm::value_ptr(projection), ImGuizmo::OPERATION::TRANSLATE, ImGuizmo::LOCAL, glm::value_ptr(model));
+
+        if (ImGuizmo::IsUsing())
+        {
+            Common::usingGuizmo = true;
+            transform.position = glm::vec3(model[3]);
+
+            btTransform physicsTransform;
+
+            physicsTransform.setIdentity();
+
+            physicsTransform.setOrigin(btVector3(
+                btScalar(transform.position.x),
+                btScalar(transform.position.y),
+                btScalar(transform.position.z)));
+
+            btQuaternion quatRot(glm::radians(transform.rotation.y), glm::radians(transform.rotation.x), glm::radians(transform.rotation.z));
+
+            physicsTransform.setRotation(quatRot);
+            
+            rigidbody.body->getMotionState()->setWorldTransform(physicsTransform);
+            rigidbody.body->setWorldTransform(physicsTransform);
+        }
+        else 
+        {
+            Common::usingGuizmo = false;
+        }
+    }
+
+
+   
 
     ImGui::End();
     

@@ -131,7 +131,6 @@ int main()
             .movementSpeed = 3.0f,
         });
 
-
     for (int k = 0; k < 3; k++)
     {
         for (int i = 0; i < 3; i++)

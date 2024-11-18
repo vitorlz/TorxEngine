@@ -20,6 +20,7 @@
 #include "../Physics/Raycast.h"
 #include "../Physics/BulletDebugDrawer.h"
 #include "../UI/UI.h"
+#include "../Editor/Editor.h"
 
 extern Coordinator ecs;
 
@@ -261,8 +262,6 @@ void RenderSystem::Update(float deltaTime)
     projection = glm::perspective(
         glm::radians(45.0f), (float)Window::screenWidth / (float)Window::screenHeight, 0.1f, 200.0f);
 
-   
-
     // get player
     Entity playerEntity{};
     for (const auto& entity : mEntities)
@@ -274,6 +273,8 @@ void RenderSystem::Update(float deltaTime)
     }
 
     auto& player = ecs.GetComponent<CPlayer>(playerEntity);
+
+    Common::playerViewMatrix = player.viewMatrix;
 
     if (UI::isOpen)
     {

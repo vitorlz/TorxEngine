@@ -1,5 +1,6 @@
 #include "Raycast.h"
 #include "../Core/Common.h"
+#include "../UI/UI.h"
 #include <iostream>
 
 glm::vec3 Raycast::m_MouseRayStartWorld{};
@@ -60,6 +61,27 @@ unsigned int Raycast::mouseRaycast()
 void Raycast::setDynamicsWorld(btDiscreteDynamicsWorld* dynamicsWorld)
 {
 	m_dynamicsWorld = dynamicsWorld;
+}
+
+int Raycast::getSelectedEntity()
+{
+	CSingleton_Input& inputSing = CSingleton_Input::getInstance();
+
+	static bool rayFired{ false };
+	static int entityHit{-1};
+	if (UI::isOpen)
+	{
+		if (inputSing.pressedKeys[MOUSE_LEFT] && !rayFired)
+		{
+			entityHit = mouseRaycast();
+			rayFired = true;
+		}
+		else if (!inputSing.pressedKeys[MOUSE_LEFT])
+		{
+			rayFired = false;
+		}
+	}
+	return entityHit;
 }
 
 glm::vec3 Raycast::getMouseRayDir() 
