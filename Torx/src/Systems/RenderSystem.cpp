@@ -18,6 +18,7 @@
 #include "../Rendering/RenderingUtil.h"
 #include "../AssetLoading/AssetManager.h"
 #include "../Physics/Raycast.h"
+#include "../Physics/BulletDebugDrawer.h"
 #include "../UI/UI.h"
 
 extern Coordinator ecs;
@@ -223,7 +224,6 @@ void RenderSystem::Update(float deltaTime)
 
                 pointShadowMapShader.setMat4("model", model);
 
-                std::cout << "before rendering" << "\n";
                 model3d.model.Draw(pointShadowMapShader);
             }
         }
@@ -314,14 +314,10 @@ void RenderSystem::Update(float deltaTime)
 
         glm::mat4 model = glm::mat4(1.0f);
         model = glm::translate(model, transform.position);
-     
 
+        glm::mat4 rotMatrix = glm::mat4_cast(glm::quat(glm::vec3(glm::radians(transform.rotation.x), glm::radians(transform.rotation.y), glm::radians(transform.rotation.z))));
 
-        //model = glm::rotate(model, glm::radians(transform.rotation.y), glm::vec3(0.0f, 1.0, 0.0));
-        //model = glm::rotate(model, glm::radians(transform.rotation.x), glm::vec3(1.0f, 0.0, 0.0));
-        //model = glm::rotate(model, glm::radians(transform.rotation.z), glm::vec3(0.0f, 0.0, 1.0));
-
-        model *= transform.rotationMatrix;
+        model *= rotMatrix;
 
         model = glm::scale(model, transform.scale);
 
@@ -366,20 +362,14 @@ void RenderSystem::Update(float deltaTime)
 
    if (Common::bulletLinesDebug)
    {
-        glDisable(GL_CULL_FACE);
         Shader& lineDebugShader = ShaderManager::GetShaderProgram("lineDebugShader");
 
         lineDebugShader.use();
 
         lineDebugShader.setMat4("projection", projection);
         lineDebugShader.setMat4("view", player.viewMatrix);
-
-        glBindVertexArray(RenderingUtil::mBulletDebugLinesVAO);
-        glDrawArrays(GL_LINES, 0, Common::debugLinesCount * 2);
-        glBindVertexArray(0);
-
-        glEnable(GL_CULL_FACE);
-        Common::debugLinesCount = 0;
+       
+        BulletDebugDrawer::drawLines();
    }
 
     // ----------------------------- PBR TESTING -----------------------------------------------------------------------------------------

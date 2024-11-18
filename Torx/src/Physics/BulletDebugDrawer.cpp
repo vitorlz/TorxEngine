@@ -5,16 +5,10 @@
 #include <vector>
 #include <iostream>
 
+std::vector<float> BulletDebugDrawer::m_points;
+
 void BulletDebugDrawer::drawLine(const btVector3& from, const btVector3& to, const btVector3& color)
 {
-
-	if (Common::debugLinesCount == 0)
-	{
-		m_points.clear();
-		glBindBuffer(GL_ARRAY_BUFFER, RenderingUtil::mBulletDebugLinesVBO);
-		glBufferData(GL_ARRAY_BUFFER, 10000 * 6 * sizeof(float), nullptr, GL_DYNAMIC_DRAW);
-	}
-	
 	m_points.push_back(from.x());
 	m_points.push_back(from.y());
 	m_points.push_back(from.z());
@@ -28,10 +22,6 @@ void BulletDebugDrawer::drawLine(const btVector3& from, const btVector3& to, con
 	m_points.push_back(color.x());
 	m_points.push_back(color.y());
 	m_points.push_back(color.z());
-	
-	glBindBuffer(GL_ARRAY_BUFFER, RenderingUtil::mBulletDebugLinesVBO);
-
-	glBufferSubData(GL_ARRAY_BUFFER, 0, m_points.size() * sizeof(float), m_points.data());
 
 	Common::debugLinesCount++;
 }
@@ -48,3 +38,17 @@ int BulletDebugDrawer::getDebugMode(void) const
 { 
 	return m_debugMode;
 }
+
+void BulletDebugDrawer::drawLines()
+{
+	glNamedBufferSubData(RenderingUtil::mBulletDebugLinesVBO, 0, BulletDebugDrawer::m_points.size() * sizeof(btScalar), BulletDebugDrawer::m_points.data());
+
+	glBindVertexArray(RenderingUtil::mBulletDebugLinesVAO);
+	glDrawArrays(GL_LINES, 0, Common::debugLinesCount * 2);
+	glBindVertexArray(0);
+
+	m_points.clear();
+	Common::debugLinesCount = 0;
+}
+
+

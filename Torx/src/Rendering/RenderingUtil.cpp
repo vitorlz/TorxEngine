@@ -7,6 +7,7 @@
 #include <glm/gtc/type_ptr.hpp>
 #include "../Util/ShaderManager.h"
 #include "../Util/TextureLoader.h"
+#include <LinearMath/btScalar.h>
 
 unsigned int RenderingUtil::mScreenQuadTexture;
 unsigned int RenderingUtil::mBloomBrightnessTexture;
@@ -630,10 +631,10 @@ void RenderingUtil::CreateBulletDebugBuffers()
     glGenVertexArrays(1, &RenderingUtil::mBulletDebugLinesVAO);
     glBindVertexArray(RenderingUtil::mBulletDebugLinesVAO);
     glBindBuffer(GL_ARRAY_BUFFER, RenderingUtil::mBulletDebugLinesVBO);
-    glBufferData(GL_ARRAY_BUFFER, 10000 * 6 * sizeof(float), nullptr, GL_DYNAMIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, 10000000 * 6 * sizeof(btScalar), nullptr, GL_DYNAMIC_DRAW);
     glEnableVertexAttribArray(0);
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), 0);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(btScalar), 0);
     glEnableVertexAttribArray(1);
-    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)(3 * sizeof(float)));
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(btScalar), (void*)(3 * sizeof(btScalar)));
     glBindVertexArray(0);
 }

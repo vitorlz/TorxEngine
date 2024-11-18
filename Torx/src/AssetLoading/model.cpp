@@ -59,7 +59,6 @@ void Model::processNode(aiNode* node, const aiScene* scene, glm::mat4 parentTran
 		meshes.push_back(processMesh(mesh, scene, globalTransform));
 	}
 
-
 	for (unsigned int i = 0; i < node->mNumChildren; i++) {
 
 		// we recursively pass the globalTransform (which in the first iteration is the transform of the root node) to each child node.

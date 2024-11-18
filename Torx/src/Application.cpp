@@ -169,11 +169,10 @@ int main()
         sponzaEntity,
         CTransform{
             .position = glm::vec3(0.0f, 0.0f, 0.0f),
-            .scale = glm::vec3(1.0f, 1.0f, 1.0f),
-            .rotation = glm::vec3(0.0f, 90.0f, 0.0f),
-            .rotationMatrix = glm::mat4_cast(glm::quat(glm::vec3(0.0f, 90.0f, 0.0f))),
+            .scale = glm::vec3(1.0f),
+            .rotation = glm::vec3(0.0f, 90.0f, 0.0f),   
         });
-
+    
     ecs.AddComponent<CModel>(
         sponzaEntity,
         CModel{
@@ -186,7 +185,7 @@ int main()
             .mass = 0.f
         });
 
-   /*Entity lampEntity1 = ecs.CreateEntity();
+   Entity lampEntity1 = ecs.CreateEntity();
 
     ecs.AddComponent<CTransform>(
         lampEntity1,
@@ -211,6 +210,12 @@ int main()
             .strength = 1.0f,
             .shadowCaster = true,
             .offset = glm::vec3(0.000f, -0.282f, 0.562f)
+        });
+
+    ecs.AddComponent<CRigidBody>(
+        lampEntity1,
+        CRigidBody{
+            .mass = 0.f
         });
 
     Entity lampEntity2 = ecs.CreateEntity();
@@ -238,7 +243,13 @@ int main()
             .strength = 1.0f,
             .shadowCaster = true,
             .offset = glm::vec3(0.000f, -0.282f, -0.562f)
-        });*/
+        });
+
+    ecs.AddComponent<CRigidBody>(
+        lampEntity2,
+        CRigidBody{
+            .mass = 0.f
+        });
 
     UI gui;
 

@@ -8,7 +8,8 @@
 class BulletDebugDrawer : public btIDebugDraw
 {
 public:
-	std::vector<float> m_points;
+	static std::vector<float> m_points;
+	static void drawLines();
 	void drawLine(const btVector3& from, const btVector3& to, const btVector3& color);
 	void drawContactPoint(const btVector3&, const btVector3&, btScalar, int, const btVector3&);
 	void reportErrorWarning(const char*);

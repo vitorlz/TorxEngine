@@ -14,6 +14,7 @@
 #include "../UI/UI.h"
 
 #include "btBulletDynamicsCommon.h"
+#include <BulletCollision/CollisionShapes/btShapeHull.h>
 #define ARRAY_SIZE_Y 5
 #define ARRAY_SIZE_X 5
 #define ARRAY_SIZE_Z 5
@@ -45,36 +46,12 @@ void PhysicsSystem::Init()
 
 	Raycast::setDynamicsWorld(dynamicsWorld);
 
+	RenderingUtil::CreateBulletDebugBuffers();
+
 	dynamicsWorld->setGravity(btVector3(0, -9.81, 0));
 
 	dynamicsWorld->setDebugDrawer(&debugDrawer);
-	
-
-	RenderingUtil::CreateBulletDebugBuffers();
-
-	///create a few basic rigid bodies
-	//btBoxShape* groundShape = new btBoxShape(btVector3(btScalar(50.), btScalar(50.), btScalar(50.)));
-	//collisionShapes.push_back(groundShape);
-
-	//btTransform groundTransform;
-	//groundTransform.setIdentity();
-	//groundTransform.setOrigin(btVector3(0, -50, 0));
-	//{
-	//	btScalar mass(0.);
-	//	bool isDynamic = (mass != 0.f);
-
-	//	btVector3 localInertia(0, 0, 0);
-	//	if (isDynamic)
-	//		groundShape->calculateLocalInertia(mass, localInertia);
-
-	//	//using motionstate is optional, it provides interpolation capabilities, and only synchronizes 'active' objects
-	//	btDefaultMotionState* myMotionState = new btDefaultMotionState(groundTransform);
-	//	btRigidBody::btRigidBodyConstructionInfo rbInfo(mass, myMotionState, groundShape, localInertia);
-	//	btRigidBody* body = new btRigidBody(rbInfo);
-
-	//	//add the body to the dynamics world
-	//	dynamicsWorld->addRigidBody(body);
-	//}
+	dynamicsWorld->getDebugDrawer()->setDebugMode(btIDebugDraw::DBG_DrawWireframe);
 
 	for (const auto& entity : mEntities)
 	{
@@ -98,7 +75,30 @@ void PhysicsSystem::Init()
 
 			if (isDynamic)
 			{
-				colShapeDynamic = new btBoxShape(btVector3(btScalar(transform.scale.x) * 0.5, btScalar(transform.scale.y) * 0.5, btScalar(transform.scale.z) * 0.5));
+				/*colShapeDynamic = new btBoxShape(btVector3(btScalar(transform.scale.x) * 0.5, btScalar(transform.scale.y) * 0.5, btScalar(transform.scale.z) * 0.5));
+				collisionShapes.push_back(colShapeDynamic);*/
+				//btTriangleIndexVertexArray* triangleIndexVertex = new btTriangleIndexVertexArray();
+
+				btConvexHullShape* convexHullShape = new btConvexHullShape();
+
+
+				for (const Mesh& mesh : model.model.meshes)
+				{
+					for (const Vertex& vertex : mesh.vertices) {
+						convexHullShape->addPoint(btVector3(vertex.Position.x, vertex.Position.y, vertex.Position.z), false);
+					}
+					
+					
+				}
+			
+				convexHullShape->setLocalScaling(btVector3(transform.scale.x, transform.scale.y, transform.scale.z));
+
+				convexHullShape->recalcLocalAabb();
+				convexHullShape->optimizeConvexHull();
+				convexHullShape->setMargin(0.005f);
+			
+				colShapeDynamic = convexHullShape;
+
 				collisionShapes.push_back(colShapeDynamic);
 			}
 			else
@@ -117,13 +117,17 @@ void PhysicsSystem::Init()
 					indexedMesh.m_numTriangles = mesh.indices.size() / 3;
 					indexedMesh.m_indexType = PHY_INTEGER;
 
-					std::cout << mesh.indices.size() << "\n";
+					//std::cout << mesh.indices.size() << "\n";
 
 					triangleIndexVertex->addIndexedMesh(indexedMesh, PHY_INTEGER);
 					
 				}
 
 				colShapeStatic = new btBvhTriangleMeshShape(triangleIndexVertex, false);
+
+				colShapeStatic->setLocalScaling(btVector3(transform.scale.x, transform.scale.y, transform.scale.z));
+				colShapeStatic->recalcLocalAabb();
+
 				collisionShapes.push_back(colShapeStatic);
 			}
 		
@@ -136,7 +140,7 @@ void PhysicsSystem::Init()
 				btScalar(transform.position.y),
 				btScalar(transform.position.z)));
 
-			btQuaternion quatRot(transform.rotation.y, transform.rotation.x, transform.rotation.z);
+			btQuaternion quatRot(glm::radians(transform.rotation.y), glm::radians(transform.rotation.x), glm::radians(transform.rotation.z));
 
 			startTransform.setRotation(quatRot);
 
@@ -182,7 +186,12 @@ void PhysicsSystem::Update(float deltaTime)
 
 			transform.position = glm::vec3(float(trans.getOrigin().getX()), float(trans.getOrigin().getY()), float(trans.getOrigin().getZ()));
 
-			transform.rotationMatrix = glm::mat4_cast(glm::quat(rotation.w(), rotation.x(), rotation.y(), rotation.z()));	
+			//transform.rotationMatrix = glm::mat4_cast(glm::quat(rotation.w(), rotation.x(), rotation.y(), rotation.z()));	
+
+			glm::vec3 eulerRot = glm::eulerAngles(glm::quat(rotation.w(), rotation.x(), rotation.y(), rotation.z()));
+
+
+			transform.rotation = glm::vec3(glm::degrees(eulerRot.x), glm::degrees(eulerRot.y), glm::degrees(eulerRot.z));
 		}
 	}
 
@@ -194,8 +203,6 @@ void PhysicsSystem::Update(float deltaTime)
 
 		glm::vec3 mouseRayDir = glm::normalize(Raycast::getMouseRayDir());
 
-		//std::cout << "entity hit: " << entityHit << "\n";
-
 		if (entityHit != -1 && inputSing.pressedKeys[MOUSE_LEFT] && !shotFired)
 		{
 			shotFired = true;
@@ -203,6 +210,7 @@ void PhysicsSystem::Update(float deltaTime)
 			btRigidBody* entityHitRb = ecs.GetComponent<CRigidBody>(entityHit).body;
 			btVector3 offset = Raycast::getMouseHitPointWorld() - entityHitRb->getCenterOfMassPosition() ;
 
+			std::cout << "entity hit: " << entityHit << "\n";
 			std::cout << "Hitpoint World: " << Raycast::getMouseHitPointWorld().x() << ", " << Raycast::getMouseHitPointWorld().y() << ", " << Raycast::getMouseHitPointWorld().z() << "\n";
 			std::cout << "Center of mass position: " << entityHitRb->getCenterOfMassPosition().x() << ", " << entityHitRb->getCenterOfMassPosition().y() << ", " << entityHitRb->getCenterOfMassPosition().z() << "\n";
 			std::cout << "Offset: " << offset.x() << ", " << offset.y() << ", " << offset.z() << "\n";
@@ -217,42 +225,6 @@ void PhysicsSystem::Update(float deltaTime)
 	
 	if (Common::bulletLinesDebug)
 	{
-		dynamicsWorld->getDebugDrawer()->setDebugMode(btIDebugDraw::DBG_DrawWireframe);
 		dynamicsWorld->debugDrawWorld();
 	} 
-
-	if (inputSing.pressedKeys[V])
-	{
-		for (int i = dynamicsWorld->getNumCollisionObjects() - 1; i >= 0; i--)
-		{
-			btCollisionObject* obj = dynamicsWorld->getCollisionObjectArray()[i];
-			btRigidBody* body = btRigidBody::upcast(obj);
-
-			if (body->getMass() > 0)
-			{
-				if (body && body->getMotionState())
-				{
-					delete body->getMotionState();
-				}
-				dynamicsWorld->removeCollisionObject(obj);
-				delete obj;
-			}	
-		}
-
-		for (const auto& entity : mEntities)
-		{
-			auto& rigidBody = ecs.GetComponent<CRigidBody>(entity);
-
-			if (rigidBody.mass > 0)
-			{
-				auto& transform = ecs.GetComponent<CTransform>(entity);
-
-				transform.position = glm::vec3(0.0f, 20.0f, 0.0f);
-				transform.scale = glm::vec3(0.5f, 0.5f, 0.5f);
-				transform.rotation = glm::vec3(0.0f, 0.0f, 0.0f);
-			}
-		}
-
-		PhysicsSystem::Init();
-	}
 }
