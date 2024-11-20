@@ -56,6 +56,8 @@ unsigned int Raycast::mouseRaycast()
 		m_MouseHitPointWorld = RayCallback.m_hitPointWorld;
 		return (int)RayCallback.m_collisionObject->getUserIndex();
 	}
+	
+	return -1;
 }
 
 void Raycast::setDynamicsWorld(btDiscreteDynamicsWorld* dynamicsWorld)

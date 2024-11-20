@@ -11,6 +11,7 @@
 #include "../Components/CLight.h"
 #include "../Components/CModel.h"
 #include "../Components/CPlayer.h"
+#include "../Components/CMesh.h"
 #include "../Components/CRigidBody.h"
 #include "../Util/ShaderManager.h"
 #include "../Util/TextureLoader.h"
@@ -310,8 +311,14 @@ void RenderSystem::Update(float deltaTime)
 
     for (const auto& entity : mEntities) 
     {
+
+        if (!ecs.HasComponent<CModel>(entity) && !ecs.HasComponent<CMesh>(entity))
+        {
+            continue;
+        }
+
         auto& transform = ecs.GetComponent<CTransform>(entity);
-        auto& model3d = ecs.GetComponent<CModel>(entity);
+       
 
         glm::mat4 model = glm::mat4(1.0f);
         model = glm::translate(model, transform.position);
@@ -358,7 +365,16 @@ void RenderSystem::Update(float deltaTime)
         pbrModelTestShader.setMat4("model", model);
         pbrModelTestShader.setMat3("normalMatrix", normalMatrix);
 
-        model3d.model.Draw(pbrModelTestShader);
+        if (ecs.HasComponent<CModel>(entity))
+        {
+            auto& model3d = ecs.GetComponent<CModel>(entity);
+            model3d.model.Draw(pbrModelTestShader);
+        }
+        else
+        {
+            auto& meshComponent = ecs.GetComponent<CMesh>(entity);
+            meshComponent.mesh.Draw(pbrModelTestShader);
+        }
     }
 
    if (Common::bulletLinesDebug)

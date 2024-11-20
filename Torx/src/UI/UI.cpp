@@ -14,11 +14,14 @@
 #include "../Components/CPlayer.h"
 #include "../Components/CRigidBody.h"
 #include "../Physics/Raycast.h"
+#include "../Editor/Editor.h"
 #include <iomanip>
 #include <sstream>
 
 bool UI::isOpen{ false };
 bool UI::firstMouseUpdateAfterMenu{ false };
+
+void showComponents(Entity entity);
 
 extern Coordinator ecs;
 
@@ -75,107 +78,7 @@ void UI::Update()
             ImGui::PushID(i);
             if (ImGui::TreeNode("", "Entity %d", livingEntities[i]))
             {  
-                if (ecs.HasComponent<CLight>(livingEntities[i]))
-                {
-                    CLight& light = ecs.GetComponent<CLight>(livingEntities[i]);
-                    if (ImGui::CollapsingHeader("Light Component", ImGuiTreeNodeFlags_AllowItemOverlap))
-                    {
-                        if (light.type == DIRECTIONAL)
-                        {
-                            ImGui::TextColored(ImVec4(1.0f, 1.0f, 0.0f, 1.0f), "Type: directional light");
-                        }
-                        else if (light.type == POINT)
-                        {
-                            ImGui::TextColored(ImVec4(1.0f, 1.0f, 0.0f, 1.0f), "Type: point light");
-                        }
-                        else if (light.type == SPOT)
-                        {
-                            ImGui::TextColored(ImVec4(1.0f, 1.0f, 0.0f, 1.0f), "Type: spotlight");
-
-                            ImGui::InputFloat3("Direction", &light.direction.x);
-                            ImGui::SliderFloat("Inner Cutoff", &light.innerCutoff, 0.1f, light.outerCutoff, "angle = %.1f");
-                            ImGui::SliderFloat("Outer Cutoff", &light.outerCutoff, light.innerCutoff, 90.0f, "angle = %.1f");
-                        }
-                       
-                        ImGui::ColorEdit3("Color", &light.color.x);
-                        ImGui::SliderFloat("Radius", &light.radius, 0.001f, 100.0f, "%.5f");
-                        ImGui::SliderFloat("Strength", &light.strength, 0.001f, 100.0f, "%.2f");
-                        if (light.type == POINT || light.type == SPOT)
-                        {
-                            ImGui::SliderFloat3("Offset", &light.offset.x, -10.0f, 10.0f);
-                        }
-                        ImGui::Checkbox("Cast Shadows", (bool*)&light.shadowCaster);
-
-                        light.isDirty = true;
-                       
-                    }
-                    ImGui::SameLine();
-                    if (ImGui::Button("Delete##xx0"))
-                    {
-                        ecs.RemoveComponent<CLight>(livingEntities[i]);
-                    }
-                }
-               
-                if (ecs.HasComponent<CTransform>(livingEntities[i]))
-                {                
-                    if (ImGui::CollapsingHeader("Transform Component", ImGuiTreeNodeFlags_AllowItemOverlap))
-                    {
-                        CTransform& transform = ecs.GetComponent<CTransform>(livingEntities[i]);
-                        
-                        ImGui::SliderFloat3("Position", &transform.position.x, -20.0f, 20.0f, "%.3f");
-                        ImGui::SliderFloat3("Scale", &transform.scale.x, -10.0f, 10.0f, "%.3f");
-                        ImGui::SliderFloat3("Rotation", &transform.rotation.x, -360.0f, 360.0f, "%.3f");
-
-                        if (ecs.HasComponent<CLight>(livingEntities[i]))
-                        {
-                            CLight& light = ecs.GetComponent<CLight>(livingEntities[i]);
-                            light.isDirty = true;
-                        }
-                    }
-                    ImGui::SameLine();
-                    if (ImGui::Button("Delete##xx1"))
-                    {
-                        ecs.RemoveComponent<CTransform>(livingEntities[i]);
-                    }
-                }
-
-                if (ecs.HasComponent<CModel>(livingEntities[i]))
-                {
-                    if (ImGui::CollapsingHeader("Model Component", ImGuiTreeNodeFlags_AllowItemOverlap))
-                    {
-                        ImGui::TextColored(ImVec4(1.0f, 1.0f, 0.0f, 1.0f), "Has model component");
-                    }
-                    ImGui::SameLine();
-                    if (ImGui::Button("Delete##xx2"))
-                    {
-                        ecs.RemoveComponent<CModel>(livingEntities[i]);
-                    }
-                }
-
-                if (ecs.HasComponent<CPlayer>(livingEntities[i]))
-                {
-                    if (ImGui::CollapsingHeader("Player Component", ImGuiTreeNodeFlags_AllowItemOverlap))
-                    {
-                        CPlayer& player = ecs.GetComponent<CPlayer>(livingEntities[i]);
-
-                        ImGui::InputFloat3("Front", &player.front.x);
-                        ImGui::InputFloat3("Right", &player.right.x);
-                        ImGui::InputFloat3("Up", &player.up.x);
-                        ImGui::SliderFloat("Movement Speed", &player.movementSpeed, 1.0f, 10.0f, "%.2f");
-                    }
-                    ImGui::SameLine();
-                    if (ImGui::Button("Delete##xx3"))
-                    {
-                        ecs.RemoveComponent<CPlayer>(livingEntities[i]);
-                    }
-
-
-                }
-
-                if (ImGui::Button("Destroy Entity"))
-                {   
-                    ecs.DestroyEntity(livingEntities[i]);
-                }
+                showComponents(livingEntities[i]);
                 ImGui::TreePop();
             }
             ImGui::PopID();
@@ -341,72 +244,45 @@ void UI::Update()
         ImGui::TreePop();
     }
 
+    ImGui::End();
+
     // Gizmos
     
+    ImGui::Begin("Editor");
+
+    if (ImGui::RadioButton("Translate", Editor::GetCurrentGizmoOperation() == ImGuizmo::TRANSLATE))
+        Editor::SetCurrentGizmoOperation(ImGuizmo::TRANSLATE);
+    ImGui::SameLine();
+    if (ImGui::RadioButton("Rotate", Editor::GetCurrentGizmoOperation() == ImGuizmo::ROTATE))
+        Editor::SetCurrentGizmoOperation(ImGuizmo::ROTATE);
+    ImGui::SameLine();
+    if (ImGui::RadioButton("Scale", Editor::GetCurrentGizmoOperation() == ImGuizmo::SCALE))
+        Editor::SetCurrentGizmoOperation(ImGuizmo::SCALE);
+
+    ImGui::Separator();
+
     static int selectedEntity{ -1 };
-    
-    if (!ImGuizmo::IsOver())
+
+    if (!ImGuizmo::IsOver() && !ImGui::IsWindowHovered(ImGuiHoveredFlags_AnyWindow) && !ImGui::IsAnyItemHovered())
     {
+        
         selectedEntity = Raycast::getSelectedEntity();
     }
-   
-    if (selectedEntity >= 0)
+
+    if (selectedEntity >= 0 && ecs.isAlive(selectedEntity))
     {
-        ImGuizmo::SetOrthographic(false);
+        std::cout << "selected entity: " << selectedEntity << "\n";
+        Editor::RenderGizmo(selectedEntity);
 
-        ImGuizmo::SetRect(0, 0, Common::SCR_WIDTH, Common::SCR_HEIGHT);
-
-        auto& transform = ecs.GetComponent<CTransform>(selectedEntity);
-        auto& rigidbody = ecs.GetComponent<CRigidBody>(selectedEntity);
-
-        // you need to create a camera component and give it to the player and store the projection and view matrix inside it.
-        // the way we are getting the view and projection matrix right now is just ugly.
-
-        glm::mat4 view = Common::playerViewMatrix;
-
-        glm::mat4 model = glm::mat4(1.0f);
-        model = glm::translate(model, transform.position);
-        glm::mat4 rotMatrix = glm::mat4_cast(glm::quat(glm::vec3(glm::radians(transform.rotation.x), glm::radians(transform.rotation.y), glm::radians(transform.rotation.z))));
-        model *= rotMatrix;
-        model = glm::scale(model, transform.scale);
-
-        glm::mat4 projection = glm::perspective(
-            glm::radians(45.0f), (float)Common::SCR_WIDTH / (float)Common::SCR_HEIGHT, 0.1f, 200.0f);
-
-        ImGuizmo::Manipulate(glm::value_ptr(view), glm::value_ptr(projection), ImGuizmo::OPERATION::TRANSLATE, ImGuizmo::LOCAL, glm::value_ptr(model));
-
-        if (ImGuizmo::IsUsing())
-        {
-            Common::usingGuizmo = true;
-            transform.position = glm::vec3(model[3]);
-
-            btTransform physicsTransform;
-
-            physicsTransform.setIdentity();
-
-            physicsTransform.setOrigin(btVector3(
-                btScalar(transform.position.x),
-                btScalar(transform.position.y),
-                btScalar(transform.position.z)));
-
-            btQuaternion quatRot(glm::radians(transform.rotation.y), glm::radians(transform.rotation.x), glm::radians(transform.rotation.z));
-
-            physicsTransform.setRotation(quatRot);
-            
-            rigidbody.body->getMotionState()->setWorldTransform(physicsTransform);
-            rigidbody.body->setWorldTransform(physicsTransform);
-        }
-        else 
-        {
-            Common::usingGuizmo = false;
-        }
+        std::stringstream ss;
+        ss << "Selected Entity: " << selectedEntity;
+        std::string selectedEntityText = ss.str();
+        ImGui::TextColored(ImVec4(1.0f, 1.0f, 0.0f, 1.0f), selectedEntityText.c_str());
+        showComponents(selectedEntity);
     }
 
-
-   
-
     ImGui::End();
-    
+
     ImGui::Render();
     ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 }
@@ -418,4 +294,132 @@ void UI::Terminate()
     ImGui::DestroyContext();
 }
 
+void showComponents(Entity entity)
+{
+    if (ecs.HasComponent<CLight>(entity))
+    {
+        CLight& light = ecs.GetComponent<CLight>(entity);
+        if (ImGui::CollapsingHeader("Light Component", ImGuiTreeNodeFlags_AllowItemOverlap))
+        {
+            if (light.type == DIRECTIONAL)
+            {
+                ImGui::TextColored(ImVec4(1.0f, 1.0f, 0.0f, 1.0f), "Type: directional light");
+            }
+            else if (light.type == POINT)
+            {
+                ImGui::TextColored(ImVec4(1.0f, 1.0f, 0.0f, 1.0f), "Type: point light");
+            }
+            else if (light.type == SPOT)
+            {
+                ImGui::TextColored(ImVec4(1.0f, 1.0f, 0.0f, 1.0f), "Type: spotlight");
+
+                ImGui::InputFloat3("Direction", &light.direction.x);
+                ImGui::SliderFloat("Inner Cutoff", &light.innerCutoff, 0.1f, light.outerCutoff, "angle = %.1f");
+                ImGui::SliderFloat("Outer Cutoff", &light.outerCutoff, light.innerCutoff, 90.0f, "angle = %.1f");
+            }
+
+            ImGui::ColorEdit3("Color", &light.color.x);
+            ImGui::SliderFloat("Radius", &light.radius, 0.001f, 100.0f, "%.5f");
+            ImGui::SliderFloat("Strength", &light.strength, 0.001f, 100.0f, "%.2f");
+            if (light.type == POINT || light.type == SPOT)
+            {
+                ImGui::SliderFloat3("Offset", &light.offset.x, -10.0f, 10.0f);
+            }
+            ImGui::Checkbox("Cast Shadows", (bool*)&light.shadowCaster);
+
+            light.isDirty = true;
+
+        }
+        ImGui::SameLine();
+        if (ImGui::Button("Delete##xx0"))
+        {
+            ecs.RemoveComponent<CLight>(entity);
+        }
+    }
+
+    if (ecs.HasComponent<CTransform>(entity))
+    {
+        if (ImGui::CollapsingHeader("Transform Component", ImGuiTreeNodeFlags_AllowItemOverlap))
+        {
+            CTransform& transform = ecs.GetComponent<CTransform>(entity);
+
+            ImGui::SliderFloat3("Position", &transform.position.x, -20.0f, 20.0f, "%.3f");
+            ImGui::SliderFloat3("Scale", &transform.scale.x, -10.0f, 10.0f, "%.3f");
+            ImGui::SliderFloat3("Rotation", &transform.rotation.x, -360.0f, 360.0f, "%.3f");
+
+            if (ecs.HasComponent<CLight>(entity))
+            {
+                CLight& light = ecs.GetComponent<CLight>(entity);
+                light.isDirty = true;
+            }
+        }
+        ImGui::SameLine();
+        if (ImGui::Button("Delete##xx1"))
+        {
+            ecs.RemoveComponent<CTransform>(entity);
+        }
+    }
+
+    if (ecs.HasComponent<CModel>(entity))
+    {
+        if (ImGui::CollapsingHeader("Model Component", ImGuiTreeNodeFlags_AllowItemOverlap))
+        {
+            ImGui::TextColored(ImVec4(1.0f, 1.0f, 0.0f, 1.0f), "Has model component");
+        }
+        ImGui::SameLine();
+        if (ImGui::Button("Delete##xx2"))
+        {
+            ecs.RemoveComponent<CModel>(entity);
+        }
+    }
+
+    if (ecs.HasComponent<CPlayer>(entity))
+    {
+        if (ImGui::CollapsingHeader("Player Component", ImGuiTreeNodeFlags_AllowItemOverlap))
+        {
+            CPlayer& player = ecs.GetComponent<CPlayer>(entity);
+
+            ImGui::InputFloat3("Front", &player.front.x);
+            ImGui::InputFloat3("Right", &player.right.x);
+            ImGui::InputFloat3("Up", &player.up.x);
+            ImGui::SliderFloat("Movement Speed", &player.movementSpeed, 1.0f, 10.0f, "%.2f");
+        }
+        ImGui::SameLine();
+        if (ImGui::Button("Delete##xx3"))
+        {
+            ecs.RemoveComponent<CPlayer>(entity);
+        }
+    }
+
+    if (ecs.HasComponent<CRigidBody>(entity))
+    {
+        if (ImGui::CollapsingHeader("RigidBody Component", ImGuiTreeNodeFlags_AllowItemOverlap))
+        {
+            auto& rigidBody = ecs.GetComponent<CRigidBody>(entity);
+
+            float& mass = (float&)rigidBody.mass;
+
+            if (rigidBody.mass > 0)
+            {
+                ImGui::TextColored(ImVec4(1.0f, 1.0f, 0.0f, 1.0f), "Dynamic body");
+            }
+            else 
+            {
+                ImGui::TextColored(ImVec4(1.0f, 1.0f, 0.0f, 1.0f), "Static Body");
+            }
+            ImGui::SliderFloat("Mass", &mass, 1.0f, 10.0f, "%.2f");
+
+        }
+        ImGui::SameLine();
+        if (ImGui::Button("Delete##xx4"))
+        {
+            ecs.RemoveComponent<CRigidBody>(entity);
+        }
+    }
+
+    if (ImGui::Button("Destroy Entity"))
+    {
+        ecs.DestroyEntity(entity);
+    }
+}
 

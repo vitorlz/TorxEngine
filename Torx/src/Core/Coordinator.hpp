@@ -106,6 +106,11 @@ public:
 		return mEntityManager->GetLivingEntities();
 	}
 
+	bool isAlive(Entity entity)
+	{
+		return mEntityManager->isAlive(entity);
+	}
+
 private:
 	std::unique_ptr<ComponentManager> mComponentManager;
 	std::unique_ptr<EntityManager> mEntityManager;

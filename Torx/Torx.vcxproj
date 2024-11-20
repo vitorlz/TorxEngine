@@ -132,6 +132,7 @@
     <ClInclude Include="src\Components\CLight.h" />
     <ClInclude Include="src\AssetLoading\mesh.h" />
     <ClInclude Include="src\AssetLoading\model.h" />
+    <ClInclude Include="src\Components\CMesh.h" />
     <ClInclude Include="src\Components\CModel.h" />
     <ClInclude Include="src\Components\CPlayer.h" />
     <ClInclude Include="src\Components\CRigidBody.h" />

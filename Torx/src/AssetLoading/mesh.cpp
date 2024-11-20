@@ -3,6 +3,8 @@
 #include <string>
 #include <glad/glad.h>
 
+Mesh::Mesh() {};
+
 Mesh::Mesh(std::vector<Vertex> vertices, std::vector<unsigned int> indices, std::vector<Texture> textures) {
 	this->vertices = vertices;
 	this->indices = indices;
@@ -47,10 +49,10 @@ void Mesh::setupMesh() {
 // we have to pass the shader object by reference because that will prevent copying and we want to modify the original inside the function.
 void Mesh::Draw(Shader &shader) 
 {
-	shader.setInt("material.texture_diffuse1", 31);
+	shader.setInt("material.texture_albedo1", 31);
 	shader.setInt("material.texture_emission1", 31);
 	shader.setInt("material.texture_normal1", 31);
-	shader.setInt("material.texture_roughness1", 31);
+	shader.setInt("material.texture_rma1", 31);
 
 	unsigned int emissionNr = 1;
 	unsigned int normalNr = 1;

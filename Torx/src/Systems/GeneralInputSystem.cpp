@@ -160,6 +160,47 @@ void GeneralInputSystem::Update(float deltaTime, GLFWwindow* window)
 	{
 		inputSing.pressedKeys[MOUSE_RIGHT] = false;
 	}
+	if (glfwGetKey(window, GLFW_KEY_1) == GLFW_PRESS)
+	{
+		std::cout << "1 pressed \n";
+		inputSing.pressedKeys[NUMBER_1] = true;
+	}
+	else if (glfwGetKey(window, GLFW_KEY_1) == GLFW_RELEASE)
+	{
+		inputSing.pressedKeys[NUMBER_1] = false;
+	}
+	if (glfwGetKey(window, GLFW_KEY_2) == GLFW_PRESS)
+	{
+		inputSing.pressedKeys[NUMBER_2] = true;
+	}
+	else if (glfwGetKey(window, GLFW_KEY_2) == GLFW_RELEASE)
+	{
+		inputSing.pressedKeys[NUMBER_2] = false;
+	}
+	if (glfwGetKey(window, GLFW_KEY_3) == GLFW_PRESS)
+	{
+		inputSing.pressedKeys[NUMBER_3] = true;
+	}
+	else if (glfwGetKey(window, GLFW_KEY_3) == GLFW_RELEASE)
+	{
+		inputSing.pressedKeys[NUMBER_3] = false;
+	}
+	if (glfwGetKey(window, GLFW_KEY_4) == GLFW_PRESS)
+	{
+		inputSing.pressedKeys[NUMBER_4] = true;
+	}
+	else if (glfwGetKey(window, GLFW_KEY_4) == GLFW_RELEASE)
+	{
+		inputSing.pressedKeys[NUMBER_4] = false;
+	}
+	if (glfwGetKey(window, GLFW_KEY_5) == GLFW_PRESS)
+	{
+		inputSing.pressedKeys[NUMBER_5] = true;
+	}
+	else if (glfwGetKey(window, GLFW_KEY_5) == GLFW_RELEASE)
+	{
+		inputSing.pressedKeys[NUMBER_5] = false;
+	}
 
 	// mouse input
 

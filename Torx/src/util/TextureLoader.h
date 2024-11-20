@@ -10,4 +10,5 @@ public:
 		const std::string& faceTop, const std::string& faceBottom,
 		const std::string& faceBack, const  std::string& faceFront);
 	static unsigned int LoadTextureHDR(const char* path);
+	static unsigned int LoadRMATexture(const char* tag);
 };

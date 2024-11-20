@@ -92,7 +92,7 @@ vec3 F0;
 void main()
 {
 	vec4 albedoSample = texture(material.texture_albedo1, TexCoords).rgba;
-	vec3 RMA = texture(material.texture_rma1, TexCoords).gba;
+	vec3 RMA = texture(material.texture_rma1, TexCoords).gbr;
 	emission = texture(material.texture_emission1, TexCoords).rgb;
 
 	roughness = RMA.r;

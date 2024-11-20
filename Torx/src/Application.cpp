@@ -21,6 +21,7 @@
 #include "Components/CSingleton_Input.h"
 #include "Components/CPlayer.h"
 #include "Components/CRigidBody.h"
+#include "Components/CMesh.h"
 
 #include "Systems/RenderSystem.h"
 #include "Systems/LightSystem.h"
@@ -46,6 +47,7 @@ int main()
     float lastFrame{};
 
     AssetManager::LoadModels();
+    AssetManager::LoadMeshes();
     ShaderManager::LoadShaders();
 
     ecs.RegisterComponent<CTransform>();
@@ -53,12 +55,12 @@ int main()
     ecs.RegisterComponent<CLight>();
     ecs.RegisterComponent<CPlayer>();
     ecs.RegisterComponent<CRigidBody>();
+    ecs.RegisterComponent<CMesh>();
 
     auto renderSystem = ecs.RegisterSystem<RenderSystem>();
     {
         Signature signature;
         signature.set(ecs.GetComponentType<CTransform>());
-        signature.set(ecs.GetComponentType<CModel>());
         ecs.SetSystemSignature<RenderSystem>(signature);
     }
 
@@ -94,7 +96,6 @@ int main()
     renderSystem->Init();
     lightSystem->Init();
     generalInputSystem->Init();
-
 
     Entity playerEntity = ecs.CreateEntity();
 
@@ -246,6 +247,50 @@ int main()
 
     ecs.AddComponent<CRigidBody>(
         lampEntity2,
+        CRigidBody{
+            .mass = 0.f
+        });
+
+    Entity cubeMesh1 = ecs.CreateEntity();
+
+    ecs.AddComponent<CTransform>(
+        cubeMesh1,
+        CTransform{
+            .position = glm::vec3(-1.0f, 3.0f, -2.0f),
+            .scale = glm::vec3(1.0f),
+            .rotation = glm::vec3(0.0f, 0.0f, 0.0f),
+        });
+
+    ecs.AddComponent<CMesh>(
+        cubeMesh1,
+        CMesh{
+            .mesh = AssetManager::GetMesh("cube")
+        });
+
+    ecs.AddComponent<CRigidBody>(
+        cubeMesh1,
+        CRigidBody{
+            .mass = 0.f
+        });
+
+    Entity quadMesh1 = ecs.CreateEntity();
+
+    ecs.AddComponent<CTransform>(
+        quadMesh1,
+        CTransform{
+            .position = glm::vec3(1.0f, 3.0f, -2.0f),
+            .scale = glm::vec3(1.0f),
+            .rotation = glm::vec3(0.0f, 0.0f, 0.0f),
+        });
+
+    ecs.AddComponent<CMesh>(
+        quadMesh1,
+        CMesh{
+            .mesh = AssetManager::GetMesh("quad")
+        });
+
+    ecs.AddComponent<CRigidBody>(
+        quadMesh1,
         CRigidBody{
             .mass = 0.f
         });

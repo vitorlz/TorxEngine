@@ -7,7 +7,11 @@ class AssetManager
 {
 public:
 	static Model& GetModel(std::string name);
+	static Mesh& GetMesh(std::string name);
+	static std::vector<Texture> LoadMeshTextures(const char* tag);
 	static void LoadModels();
+	static void LoadMeshes();
 private:
-	static std::unordered_map<std::string, Model> mModels;
+	static std::unordered_map<std::string, Model> m_Models;
+	static std::unordered_map<std::string, Mesh> m_Meshes;
 };

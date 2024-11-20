@@ -20,6 +20,9 @@ struct Texture {
 
 class Mesh {
 public:
+
+	Mesh();
+
 	// mesh data
 	std::vector<Vertex> vertices; 
 	std::vector<unsigned int> indices; // the indices of the vertices (can render via an index buffer for efficiency)

@@ -50,6 +50,63 @@ unsigned int TextureLoader::LoadTexture(const char* path, const bool srgb) {
 	return textureID;
 }
 
+unsigned int TextureLoader::LoadRMATexture(const char* tag) {
+
+	unsigned int textureID;
+	glGenTextures(1, &textureID);
+
+	std::string tagString(tag);
+
+	std::string roughnessPath = "res/textures/pbr/" + tagString + "/" + tagString + "_roughness.png";
+	std::string metallicPath = "res/textures/pbr/" + tagString + "/" + tagString + "_metallic.png";
+	std::string aoPath = "res/textures/pbr/" + tagString + "/" + tagString + "_ao.png";
+
+	int width, height, channels;
+	unsigned char* roughnessData = stbi_load(roughnessPath.c_str(), &width, &height, &channels, 1);
+	unsigned char* metallicData = stbi_load(metallicPath.c_str(), &width, &height, &channels, 1);
+	unsigned char* aoData = stbi_load(aoPath.c_str(), &width, &height, &channels, 1);
+
+	unsigned char* rmaData = new unsigned char[width * height * 3]; // RGB texture
+
+	for (int i = 0; i < width * height; ++i) {
+		rmaData[i * 3 + 0] = aoData[i];       // Red channel (ambient occlusion)
+		rmaData[i * 3 + 1] = roughnessData[i]; // Green channel (roughness)
+		rmaData[i * 3 + 2] = metallicData[i]; // Blue channel (metallic)
+	}
+
+	if (!roughnessData || !metallicData || !aoData) {
+		std::cerr << "Failed to load one or more textures!" << std::endl;
+		return -1;
+	}
+	
+	if (rmaData) {	
+		
+		glBindTexture(GL_TEXTURE_2D, textureID);
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, rmaData);
+		glGenerateMipmap(GL_TEXTURE_2D);
+
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+		delete[] rmaData;
+		stbi_image_free(roughnessData);
+		stbi_image_free(metallicData);
+		stbi_image_free(aoData);
+	}
+	else {
+		std::cout << "Texture failed to load: " << tag << std::endl;
+		
+		delete[] rmaData;
+		stbi_image_free(roughnessData);
+		stbi_image_free(metallicData);
+		stbi_image_free(aoData);
+	}
+
+	return textureID;
+}
+
 unsigned int TextureLoader::LoadTextureHDR(const char* path) {
 
 	stbi_set_flip_vertically_on_load(true);

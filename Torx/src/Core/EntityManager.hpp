@@ -76,6 +76,18 @@ public:
 		return mLivingEntityIDs;
 	}
 
+	bool isAlive(Entity entity)
+	{
+		for (Entity e : mLivingEntityIDs)
+		{
+			if (e == entity)
+			{
+				return true;
+			}
+		}
+		return false;
+	}
+
 private:
 	// Queue of unused entity IDs
 	std::queue<Entity> mAvailableEntities{};

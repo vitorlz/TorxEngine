@@ -1,7 +1,9 @@
 #include "AssetManager.h"
 #include "stb_image.h"
+#include "../Util/TextureLoader.h"
 
-std::unordered_map<std::string, Model> AssetManager::mModels{};
+std::unordered_map<std::string, Model> AssetManager::m_Models{};
+std::unordered_map<std::string, Mesh> AssetManager::m_Meshes{};
 
 void AssetManager::LoadModels()
 {
@@ -20,9 +22,9 @@ void AssetManager::LoadModels()
 
 	//mModels.insert({ "backpack", backpack });
     //mModels.insert({ "debugCube", debugCube });
-	mModels.insert({ "sponza", sponza });
-	mModels.insert({ "victorianLamp", victorianLamp });
-	mModels.insert({ "dirtBlock", dirtBlock });
+	m_Models.insert({ "sponza", sponza });
+	m_Models.insert({ "victorianLamp", victorianLamp });
+	m_Models.insert({ "dirtBlock", dirtBlock });
 	//mModels.insert({ "deagle", deagle });
 	//mModels.insert({ "camera", camera });
 	//mModels.insert({ "adamhead", adamhead });
@@ -30,7 +32,106 @@ void AssetManager::LoadModels()
 
 }
 
+std::vector<Vertex> quadVertices = {
+	// Position           // Normal          // TexCoords    // Tangent           // Bitangent
+	{{-0.5f, -0.5f, 0.0f}, {0.0f, 0.0f, 1.0f}, {0.0f, 0.0f}, {1.0f, 0.0f, 0.0f}, {0.0f, 1.0f, 0.0f}}, // Bottom-left
+	{{ 0.5f, -0.5f, 0.0f}, {0.0f, 0.0f, 1.0f}, {1.0f, 0.0f}, {1.0f, 0.0f, 0.0f}, {0.0f, 1.0f, 0.0f}}, // Bottom-right
+	{{ 0.5f,  0.5f, 0.0f}, {0.0f, 0.0f, 1.0f}, {1.0f, 1.0f}, {1.0f, 0.0f, 0.0f}, {0.0f, 1.0f, 0.0f}}, // Top-right
+	{{-0.5f,  0.5f, 0.0f}, {0.0f, 0.0f, 1.0f}, {0.0f, 1.0f}, {1.0f, 0.0f, 0.0f}, {0.0f, 1.0f, 0.0f}}  // Top-left
+};
+
+std::vector<unsigned int> quadIndices = {
+	0, 1, 2,  // First triangle
+	2, 3, 0   // Second triangle
+};
+
+std::vector<Vertex> cubeVertices = {
+	// Position           // Normal              // TexCoords    // Tangent           // Bitangent
+	// Front face
+	{{-0.5f, -0.5f,  0.5f}, {0.0f,  0.0f,  1.0f}, {0.0f, 0.0f}, {1.0f, 0.0f, 0.0f}, {0.0f, 1.0f, 0.0f}}, // Bottom-left
+	{{ 0.5f, -0.5f,  0.5f}, {0.0f,  0.0f,  1.0f}, {1.0f, 0.0f}, {1.0f, 0.0f, 0.0f}, {0.0f, 1.0f, 0.0f}}, // Bottom-right
+	{{ 0.5f,  0.5f,  0.5f}, {0.0f,  0.0f,  1.0f}, {1.0f, 1.0f}, {1.0f, 0.0f, 0.0f}, {0.0f, 1.0f, 0.0f}}, // Top-right
+	{{-0.5f,  0.5f,  0.5f}, {0.0f,  0.0f,  1.0f}, {0.0f, 1.0f}, {1.0f, 0.0f, 0.0f}, {0.0f, 1.0f, 0.0f}}, // Top-left
+
+	// Back face
+	{{ 0.5f, -0.5f, -0.5f}, {0.0f,  0.0f, -1.0f}, {0.0f, 0.0f}, {-1.0f, 0.0f, 0.0f}, {0.0f, 1.0f, 0.0f}}, // Bottom-left
+	{{-0.5f, -0.5f, -0.5f}, {0.0f,  0.0f, -1.0f}, {1.0f, 0.0f}, {-1.0f, 0.0f, 0.0f}, {0.0f, 1.0f, 0.0f}}, // Bottom-right
+	{{-0.5f,  0.5f, -0.5f}, {0.0f,  0.0f, -1.0f}, {1.0f, 1.0f}, {-1.0f, 0.0f, 0.0f}, {0.0f, 1.0f, 0.0f}}, // Top-right
+	{{ 0.5f,  0.5f, -0.5f}, {0.0f,  0.0f, -1.0f}, {0.0f, 1.0f}, {-1.0f, 0.0f, 0.0f}, {0.0f, 1.0f, 0.0f}}, // Top-left
+
+	// Left face
+	{{-0.5f, -0.5f, -0.5f}, {-1.0f,  0.0f,  0.0f}, {0.0f, 0.0f}, {0.0f, 0.0f, 1.0f}, {0.0f, 1.0f, 0.0f}}, // Bottom-left
+	{{-0.5f, -0.5f,  0.5f}, {-1.0f,  0.0f,  0.0f}, {1.0f, 0.0f}, {0.0f, 0.0f, 1.0f}, {0.0f, 1.0f, 0.0f}}, // Bottom-right
+	{{-0.5f,  0.5f,  0.5f}, {-1.0f,  0.0f,  0.0f}, {1.0f, 1.0f}, {0.0f, 0.0f, 1.0f}, {0.0f, 1.0f, 0.0f}}, // Top-right
+	{{-0.5f,  0.5f, -0.5f}, {-1.0f,  0.0f,  0.0f}, {0.0f, 1.0f}, {0.0f, 0.0f, 1.0f}, {0.0f, 1.0f, 0.0f}}, // Top-left
+
+	// Right face
+	{{ 0.5f, -0.5f,  0.5f}, { 1.0f,  0.0f,  0.0f}, {0.0f, 0.0f}, {0.0f, 0.0f, -1.0f}, {0.0f, 1.0f, 0.0f}}, // Bottom-left
+	{{ 0.5f, -0.5f, -0.5f}, { 1.0f,  0.0f,  0.0f}, {1.0f, 0.0f}, {0.0f, 0.0f, -1.0f}, {0.0f, 1.0f, 0.0f}}, // Bottom-right
+	{{ 0.5f,  0.5f, -0.5f}, { 1.0f,  0.0f,  0.0f}, {1.0f, 1.0f}, {0.0f, 0.0f, -1.0f}, {0.0f, 1.0f, 0.0f}}, // Top-right
+	{{ 0.5f,  0.5f,  0.5f}, { 1.0f,  0.0f,  0.0f}, {0.0f, 1.0f}, {0.0f, 0.0f, -1.0f}, {0.0f, 1.0f, 0.0f}}, // Top-left
+
+	// Top face
+	{{-0.5f,  0.5f,  0.5f}, { 0.0f,  1.0f,  0.0f}, {0.0f, 0.0f}, {1.0f,  0.0f, 0.0f}, {0.0f,  0.0f, -1.0f}}, // Bottom-left
+	{{ 0.5f,  0.5f,  0.5f}, { 0.0f,  1.0f,  0.0f}, {1.0f, 0.0f}, {1.0f,  0.0f, 0.0f}, {0.0f,  0.0f, -1.0f}}, // Bottom-right
+	{{ 0.5f,  0.5f, -0.5f}, { 0.0f,  1.0f,  0.0f}, {1.0f, 1.0f}, {1.0f,  0.0f, 0.0f}, {0.0f,  0.0f, -1.0f}}, // Top-right
+	{{-0.5f,  0.5f, -0.5f}, { 0.0f,  1.0f,  0.0f}, {0.0f, 1.0f}, {1.0f,  0.0f, 0.0f}, {0.0f,  0.0f, -1.0f}}, // Top-left
+
+	// Bottom face
+	{{-0.5f, -0.5f, -0.5f}, { 0.0f, -1.0f,  0.0f}, {0.0f, 0.0f}, {1.0f,  0.0f, 0.0f}, {0.0f,  0.0f,  1.0f}}, // Bottom-left
+	{{ 0.5f, -0.5f, -0.5f}, { 0.0f, -1.0f,  0.0f}, {1.0f, 0.0f}, {1.0f,  0.0f, 0.0f}, {0.0f,  0.0f,  1.0f}}, // Bottom-right
+	{{ 0.5f, -0.5f,  0.5f}, { 0.0f, -1.0f,  0.0f}, {1.0f, 1.0f}, {1.0f,  0.0f, 0.0f}, {0.0f,  0.0f,  1.0f}}, // Top-right
+	{{-0.5f, -0.5f,  0.5f}, { 0.0f, -1.0f,  0.0f}, {0.0f, 1.0f}, {1.0f,  0.0f, 0.0f}, {0.0f,  0.0f,  1.0f}}, // Top-left
+};
+
+std::vector<unsigned int> cubeIndices = {
+	// Front face
+	0, 1, 2, 2, 3, 0,
+	// Back face
+	4, 5, 6, 6, 7, 4,
+	// Left face
+	8, 9, 10, 10, 11, 8,
+	// Right face
+	12, 13, 14, 14, 15, 12,
+	// Top face
+	16, 17, 18, 18, 19, 16,
+	// Bottom face
+	20, 21, 22, 22, 23, 20
+};
+
+std::vector<Texture> AssetManager::LoadMeshTextures(const char* tag)
+{
+	std::string tagString(tag);
+
+	std::string albedoPath = "res/textures/pbr/" + tagString + "/" + tagString + "_albedo.png";
+	std::string normalPath = "res/textures/pbr/" + tagString + "/" + tagString + "_normal.png";
+
+	std::vector<Texture> textures
+	{
+		{TextureLoader::LoadRMATexture(tag), "texture_rma", " "},
+		{TextureLoader::LoadTexture(albedoPath.c_str(), true), "texture_albedo", " "},
+		{TextureLoader::LoadTexture(normalPath.c_str(), false), "texture_normal", " "}
+	};
+
+	return textures;
+}
+
+void AssetManager::LoadMeshes()
+{	
+	Mesh cube(cubeVertices, cubeIndices, LoadMeshTextures("darkmarble"));
+	Mesh quad(quadVertices, quadIndices, LoadMeshTextures("darkmarble"));
+
+	m_Meshes.insert({ "cube", cube });
+	m_Meshes.insert({ "quad", quad });
+}
+
 Model& AssetManager::GetModel(std::string name)
 {
-	return mModels[name];
+	return m_Models[name];
 }
+
+Mesh& AssetManager::GetMesh(std::string name)
+{
+	return m_Meshes[name];
+}
+

@@ -9,6 +9,7 @@
 #include "../Components/CPlayer.h"
 #include "../Components/CRigidBody.h"
 #include "../Components/CSingleton_Input.h"
+#include "../Components/CMesh.h"
 #include "../Physics/BulletDebugDrawer.h"
 #include "../Physics/Raycast.h"
 #include "../UI/UI.h"
@@ -58,7 +59,6 @@ void PhysicsSystem::Init()
 
 		auto& rigidBody = ecs.GetComponent<CRigidBody>(entity);
 		auto& transform = ecs.GetComponent<CTransform>(entity);
-		auto& model = ecs.GetComponent<CModel>(entity);
 
 		{
 			btTransform startTransform;
@@ -75,58 +75,116 @@ void PhysicsSystem::Init()
 
 			if (isDynamic)
 			{
-				/*colShapeDynamic = new btBoxShape(btVector3(btScalar(transform.scale.x) * 0.5, btScalar(transform.scale.y) * 0.5, btScalar(transform.scale.z) * 0.5));
-				collisionShapes.push_back(colShapeDynamic);*/
-				//btTriangleIndexVertexArray* triangleIndexVertex = new btTriangleIndexVertexArray();
 
-				btConvexHullShape* convexHullShape = new btConvexHullShape();
-
-
-				for (const Mesh& mesh : model.model.meshes)
+				if (ecs.HasComponent<CModel>(entity))
 				{
-					for (const Vertex& vertex : mesh.vertices) {
+					auto& model = ecs.GetComponent<CModel>(entity);
+
+					btConvexHullShape* convexHullShape = new btConvexHullShape();
+
+
+					for (const Mesh& mesh : model.model.meshes)
+					{
+						for (const Vertex& vertex : mesh.vertices) {
+							convexHullShape->addPoint(btVector3(vertex.Position.x, vertex.Position.y, vertex.Position.z), false);
+						}
+					}
+
+					convexHullShape->setLocalScaling(btVector3(transform.scale.x, transform.scale.y, transform.scale.z));
+
+					convexHullShape->recalcLocalAabb();
+					convexHullShape->optimizeConvexHull();
+					convexHullShape->setMargin(0.005f);
+
+					colShapeDynamic = convexHullShape;
+
+					collisionShapes.push_back(colShapeDynamic);
+				}
+				else if (ecs.HasComponent<CMesh>(entity))
+				{
+					auto& meshComponent = ecs.GetComponent<CMesh>(entity);
+
+					btConvexHullShape* convexHullShape = new btConvexHullShape();
+
+
+					
+					for (const Vertex& vertex : meshComponent.mesh.vertices) {
 						convexHullShape->addPoint(btVector3(vertex.Position.x, vertex.Position.y, vertex.Position.z), false);
 					}
+					convexHullShape->setLocalScaling(btVector3(transform.scale.x, transform.scale.y, transform.scale.z));
+
+					convexHullShape->recalcLocalAabb();
+					convexHullShape->optimizeConvexHull();
+					convexHullShape->setMargin(0.005f);
+
+					colShapeDynamic = convexHullShape;
+
+					collisionShapes.push_back(colShapeDynamic);
 				}
-			
-				convexHullShape->setLocalScaling(btVector3(transform.scale.x, transform.scale.y, transform.scale.z));
-
-				convexHullShape->recalcLocalAabb();
-				convexHullShape->optimizeConvexHull();
-				convexHullShape->setMargin(0.005f);
-			
-				colShapeDynamic = convexHullShape;
-
-				collisionShapes.push_back(colShapeDynamic);
+				
 			}
 			else
 			{
-				btTriangleIndexVertexArray* triangleIndexVertex = new btTriangleIndexVertexArray();
 
-				for (const Mesh& mesh : model.model.meshes)
+				if (ecs.HasComponent<CModel>(entity))
 				{
+					auto& model = ecs.GetComponent<CModel>(entity);
+
+					btTriangleIndexVertexArray* triangleIndexVertex = new btTriangleIndexVertexArray();
+
+					for (const Mesh& mesh : model.model.meshes)
+					{
+						btIndexedMesh indexedMesh;
+
+						indexedMesh.m_vertexBase = (const unsigned char*)mesh.vertices.data();
+						indexedMesh.m_vertexStride = sizeof(mesh.vertices[0]);
+						indexedMesh.m_numVertices = mesh.vertices.size();
+						indexedMesh.m_triangleIndexBase = (const unsigned char*)mesh.indices.data();
+						indexedMesh.m_triangleIndexStride = sizeof(unsigned int) * 3;
+						indexedMesh.m_numTriangles = mesh.indices.size() / 3;
+						indexedMesh.m_indexType = PHY_INTEGER;
+
+						//std::cout << mesh.indices.size() << "\n";
+
+						triangleIndexVertex->addIndexedMesh(indexedMesh, PHY_INTEGER);
+
+					}
+
+					colShapeStatic = new btBvhTriangleMeshShape(triangleIndexVertex, false);
+
+					colShapeStatic->setLocalScaling(btVector3(transform.scale.x, transform.scale.y, transform.scale.z));
+					colShapeStatic->recalcLocalAabb();
+
+					collisionShapes.push_back(colShapeStatic);
+				}
+				else if (ecs.HasComponent<CMesh>(entity))
+				{
+					auto& meshComponent = ecs.GetComponent<CMesh>(entity);
+
+					btTriangleIndexVertexArray* triangleIndexVertex = new btTriangleIndexVertexArray();
+
 					btIndexedMesh indexedMesh;
-					
-					indexedMesh.m_vertexBase = (const unsigned char*)mesh.vertices.data();
-					indexedMesh.m_vertexStride = sizeof(mesh.vertices[0]);
-					indexedMesh.m_numVertices = mesh.vertices.size();
-					indexedMesh.m_triangleIndexBase = (const unsigned char*)mesh.indices.data();
+
+					indexedMesh.m_vertexBase = (const unsigned char*)meshComponent.mesh.vertices.data();
+					indexedMesh.m_vertexStride = sizeof(meshComponent.mesh.vertices[0]);
+					indexedMesh.m_numVertices = meshComponent.mesh.vertices.size();
+					indexedMesh.m_triangleIndexBase = (const unsigned char*)meshComponent.mesh.indices.data();
 					indexedMesh.m_triangleIndexStride = sizeof(unsigned int) * 3;
-					indexedMesh.m_numTriangles = mesh.indices.size() / 3;
+					indexedMesh.m_numTriangles = meshComponent.mesh.indices.size() / 3;
 					indexedMesh.m_indexType = PHY_INTEGER;
 
 					//std::cout << mesh.indices.size() << "\n";
 
 					triangleIndexVertex->addIndexedMesh(indexedMesh, PHY_INTEGER);
-					
+
+					colShapeStatic = new btBvhTriangleMeshShape(triangleIndexVertex, false);
+
+					colShapeStatic->setLocalScaling(btVector3(transform.scale.x, transform.scale.y, transform.scale.z));
+					colShapeStatic->recalcLocalAabb();
+
+					collisionShapes.push_back(colShapeStatic);
 				}
-
-				colShapeStatic = new btBvhTriangleMeshShape(triangleIndexVertex, false);
-
-				colShapeStatic->setLocalScaling(btVector3(transform.scale.x, transform.scale.y, transform.scale.z));
-				colShapeStatic->recalcLocalAabb();
-
-				collisionShapes.push_back(colShapeStatic);
+				
 			}
 		
 			btVector3 localInertia(0, 0, 0);
@@ -164,11 +222,11 @@ void PhysicsSystem::Init()
 
 void PhysicsSystem::Update(float deltaTime)
 {
-	if (Common::usingGuizmo)
+	dynamicsWorld->stepSimulation(deltaTime, 20, 1.0f / 165.0f);
+	if (Common::bulletLinesDebug)
 	{
-		return;
+		dynamicsWorld->debugDrawWorld();
 	}
-	dynamicsWorld->stepSimulation(deltaTime, 20, 1.0f/165.0f);
 
 	for (const auto& entity : mEntities)
 	{
@@ -176,8 +234,35 @@ void PhysicsSystem::Update(float deltaTime)
 
 		auto& transform = ecs.GetComponent<CTransform>(entity);
 
+		if (Common::usingGuizmo && rigidBody.body)
+		{
+			btTransform physicsTransform;
+
+			physicsTransform.setIdentity();
+
+			physicsTransform.setOrigin(btVector3(
+				btScalar(transform.position.x),
+				btScalar(transform.position.y),
+				btScalar(transform.position.z)));
+
+			btQuaternion quatRot;
+
+			quatRot.setEulerZYX(glm::radians(transform.rotation.z), glm::radians(transform.rotation.y), glm::radians(transform.rotation.x));
+
+			physicsTransform.setRotation(quatRot);
+
+			rigidBody.body->getCollisionShape()->setLocalScaling(btVector3(transform.scale.x, transform.scale.y, transform.scale.z));
+
+			rigidBody.body->getMotionState()->setWorldTransform(physicsTransform);
+			rigidBody.body->setWorldTransform(physicsTransform);
+
+			dynamicsWorld->updateSingleAabb(rigidBody.body);
+
+			continue;
+		}
+
 		btTransform trans;
-		if (rigidBody.body && rigidBody.body->getMotionState() && rigidBody.mass > 0)
+		if (rigidBody.body && rigidBody.body->getMotionState() && rigidBody.mass > 0 && !Common::usingGuizmo)
 		{
 			rigidBody.body->getMotionState()->getWorldTransform(trans);
 
@@ -187,10 +272,7 @@ void PhysicsSystem::Update(float deltaTime)
 
 			transform.position = glm::vec3(float(trans.getOrigin().getX()), float(trans.getOrigin().getY()), float(trans.getOrigin().getZ()));
 
-			//transform.rotationMatrix = glm::mat4_cast(glm::quat(rotation.w(), rotation.x(), rotation.y(), rotation.z()));	
-
 			glm::vec3 eulerRot = glm::eulerAngles(glm::quat(rotation.w(), rotation.x(), rotation.y(), rotation.z()));
-
 
 			transform.rotation = glm::vec3(glm::degrees(eulerRot.x), glm::degrees(eulerRot.y), glm::degrees(eulerRot.z));
 		}
@@ -223,9 +305,24 @@ void PhysicsSystem::Update(float deltaTime)
 			shotFired = false;
 		}
 	}
-	
-	if (Common::bulletLinesDebug)
+
+	if (mEntities.size() < dynamicsWorld->getNumCollisionObjects())
 	{
-		dynamicsWorld->debugDrawWorld();
-	} 
+		for (int i = dynamicsWorld->getNumCollisionObjects() - 1; i >= 0; i--)
+		{
+			Entity entity = dynamicsWorld->getCollisionObjectArray()[i]->getUserIndex();
+			if (!ecs.isAlive(entity) || !ecs.HasComponent<CRigidBody>(entity))
+			{
+				btCollisionObject* obj = dynamicsWorld->getCollisionObjectArray()[i];
+				btRigidBody* body = btRigidBody::upcast(obj);
+				if (body && body->getMotionState())
+				{
+					delete body->getMotionState();
+				}
+				dynamicsWorld->removeCollisionObject(obj);
+				delete obj->getCollisionShape();
+				delete obj;
+			};
+		}
+	}
 }
