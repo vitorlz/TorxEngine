@@ -8,6 +8,7 @@ glm::vec3 Raycast::m_MouseRayDirWorld{};
 btVector3 Raycast::m_MouseHitPointWorld{};
 CSingleton_Input& Raycast::m_inputSing{ CSingleton_Input::getInstance() };
 btDiscreteDynamicsWorld* Raycast::m_dynamicsWorld{};
+int Raycast::m_SelectedEntity;
 
 void Raycast::calculateMouseRaycast(glm::mat4 projView)
 {
@@ -70,12 +71,11 @@ int Raycast::getSelectedEntity()
 	CSingleton_Input& inputSing = CSingleton_Input::getInstance();
 
 	static bool rayFired{ false };
-	static int entityHit{-1};
 	if (UI::isOpen)
 	{
 		if (inputSing.pressedKeys[MOUSE_LEFT] && !rayFired)
 		{
-			entityHit = mouseRaycast();
+			m_SelectedEntity = mouseRaycast();
 			rayFired = true;
 		}
 		else if (!inputSing.pressedKeys[MOUSE_LEFT])
@@ -83,7 +83,13 @@ int Raycast::getSelectedEntity()
 			rayFired = false;
 		}
 	}
-	return entityHit;
+
+	return m_SelectedEntity;
+}
+
+void Raycast::setSelectedEntity(int entity)
+{
+	m_SelectedEntity == entity;
 }
 
 glm::vec3 Raycast::getMouseRayDir() 

@@ -14,6 +14,7 @@ public:
 	static glm::vec3 getMouseRayStart();
 	static btVector3 getMouseHitPointWorld();
 	static int getSelectedEntity();
+	static void setSelectedEntity(int entity);
 	static void setDynamicsWorld(btDiscreteDynamicsWorld* dynamicsWorld);
 private: 
 	static glm::vec3 m_MouseRayStartWorld;
@@ -21,4 +22,5 @@ private:
 	static btVector3 m_MouseHitPointWorld;
 	static btDiscreteDynamicsWorld* m_dynamicsWorld;
 	static CSingleton_Input& m_inputSing;
+	static int m_SelectedEntity;
 };

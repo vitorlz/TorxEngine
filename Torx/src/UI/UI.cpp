@@ -13,6 +13,7 @@
 #include "../Components/CSingleton_Input.h"
 #include "../Components/CPlayer.h"
 #include "../Components/CRigidBody.h"
+#include "../Components/CMesh.h"
 #include "../Physics/Raycast.h"
 #include "../Editor/Editor.h"
 #include <iomanip>
@@ -22,6 +23,7 @@ bool UI::isOpen{ false };
 bool UI::firstMouseUpdateAfterMenu{ false };
 
 void showComponents(Entity entity);
+void showEntityOptions(Entity entity);
 
 extern Coordinator ecs;
 
@@ -79,6 +81,7 @@ void UI::Update()
             if (ImGui::TreeNode("", "Entity %d", livingEntities[i]))
             {  
                 showComponents(livingEntities[i]);
+                showEntityOptions(livingEntities[i]);
                 ImGui::TreePop();
             }
             ImGui::PopID();
@@ -259,11 +262,11 @@ void UI::Update()
     if (ImGui::RadioButton("Scale", Editor::GetCurrentGizmoOperation() == ImGuizmo::SCALE))
         Editor::SetCurrentGizmoOperation(ImGuizmo::SCALE);
 
-    ImGui::Separator();
-
     static int selectedEntity{ -1 };
+    static bool addingNewEntity{ false };
+    static Entity newEntity;
 
-    if (!ImGuizmo::IsOver() && !ImGui::IsWindowHovered(ImGuiHoveredFlags_AnyWindow) && !ImGui::IsAnyItemHovered())
+    if (!ImGuizmo::IsOver() && !ImGui::IsWindowHovered(ImGuiHoveredFlags_AnyWindow) && !ImGui::IsAnyItemHovered() && !addingNewEntity)
     {
         
         selectedEntity = Raycast::getSelectedEntity();
@@ -271,14 +274,47 @@ void UI::Update()
 
     if (selectedEntity >= 0 && ecs.isAlive(selectedEntity))
     {
-        std::cout << "selected entity: " << selectedEntity << "\n";
-        Editor::RenderGizmo(selectedEntity);
+        if (!addingNewEntity)
+        {
+            ImGui::Separator();
 
+            Editor::RenderGizmo(selectedEntity);
+
+            std::stringstream ss;
+            ss << "Selected Entity: " << selectedEntity;
+            std::string selectedEntityText = ss.str();
+            ImGui::TextColored(ImVec4(1.0f, 1.0f, 0.0f, 1.0f), selectedEntityText.c_str());
+            showComponents(selectedEntity);
+            showEntityOptions(selectedEntity);
+        }
+    }
+
+    ImGui::Separator();
+ 
+    if (!addingNewEntity)
+    {
+        if (ImGui::Button("Add Entity"))
+        {
+            addingNewEntity = true;
+            newEntity = ecs.CreateEntity();
+        }
+    }
+
+    if (addingNewEntity) 
+    {
         std::stringstream ss;
-        ss << "Selected Entity: " << selectedEntity;
-        std::string selectedEntityText = ss.str();
-        ImGui::TextColored(ImVec4(1.0f, 1.0f, 0.0f, 1.0f), selectedEntityText.c_str());
-        showComponents(selectedEntity);
+        ss << "Adding Entity: " << newEntity;
+        std::string addingEntityText = ss.str();
+        
+        ImGui::TextColored(ImVec4(1.0f, 1.0f, 0.0f, 1.0f), addingEntityText.c_str());
+
+        showComponents(newEntity);
+        showEntityOptions(newEntity);
+
+        if (ImGui::Button("Done"))
+        {
+            addingNewEntity = false;
+        }
     }
 
     ImGui::End();
@@ -417,9 +453,77 @@ void showComponents(Entity entity)
         }
     }
 
+}
+
+void showEntityOptions(Entity entity)
+{
+
+    static int selectedComponent = -1;
+    const char* Components[] = { "Transform", "Mesh", "Model", "Static Rigid body", "Dynamic Rigid body", "Light" };
+
+    if (ImGui::Button("Add Component"))
+        ImGui::OpenPopup("my_select_popup");
+    
+    if (ImGui::BeginPopup("my_select_popup"))
+    {
+        ImGui::SeparatorText("Select a component");
+        for (int i = 0; i < IM_ARRAYSIZE(Components); i++)
+            if (ImGui::Selectable(Components[i]))
+                selectedComponent = i;
+
+        ImGui::EndPopup();
+    }
+    else if (Components[selectedComponent] == "Transform" && !ecs.HasComponent<CTransform>(entity))
+    {
+        ecs.AddComponent<CTransform>(
+            entity,
+            CTransform{
+                .position = glm::vec3(0.0f, 5.0f, 0.0f),
+                .scale = glm::vec3(1.0f),
+                .rotation = glm::vec3(0.0f, 0.0f, 0.0f),
+            });
+
+        selectedComponent = -1;
+    }
+    else if (Components[selectedComponent] == "Mesh" && !ecs.HasComponent<CMesh>(entity))
+    {
+        ecs.AddComponent<CMesh>(
+            entity,
+            CMesh{
+                .mesh = AssetManager::GetMesh("cube"),
+            });
+
+        selectedComponent = -1;
+    }
+    else if (Components[selectedComponent] == "Static Rigid body" && !ecs.HasComponent<CRigidBody>(entity))
+    {
+        ecs.AddComponent<CRigidBody>(
+            entity,
+            CRigidBody{
+                .mass = 0.f
+            });
+
+        selectedComponent = -1;
+    }
+    else if (Components[selectedComponent] == "Dynamic Rigid body" && !ecs.HasComponent<CRigidBody>(entity))
+    {
+        ecs.AddComponent<CRigidBody>(
+            entity,
+            CRigidBody{
+                .mass = 1.f
+            });
+
+        selectedComponent = -1;
+    }
+    else if (ImGui::BeginMenu("Sub-menu"))
+    {
+        ImGui::MenuItem("Click me");
+        ImGui::EndMenu();
+    }
+
+
     if (ImGui::Button("Destroy Entity"))
     {
         ecs.DestroyEntity(entity);
     }
 }
-

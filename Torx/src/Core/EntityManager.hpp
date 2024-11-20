@@ -68,7 +68,7 @@ public:
 		assert(entity < MAX_ENTITIES && "Entity out of range");
 
 		// Get this entity's signature from the array
-		return mSignatures[entity];
+ 		return mSignatures[entity];
 	}
 
 	std::vector<Entity> GetLivingEntities()
