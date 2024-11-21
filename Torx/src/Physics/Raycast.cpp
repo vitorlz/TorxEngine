@@ -73,12 +73,12 @@ int Raycast::getSelectedEntity()
 	static bool rayFired{ false };
 	if (UI::isOpen)
 	{
-		if (inputSing.pressedKeys[MOUSE_LEFT] && !rayFired)
+		if (inputSing.pressedKeys[MOUSE_RIGHT] && !rayFired)
 		{
 			m_SelectedEntity = mouseRaycast();
 			rayFired = true;
 		}
-		else if (!inputSing.pressedKeys[MOUSE_LEFT])
+		else if (!inputSing.pressedKeys[MOUSE_RIGHT])
 		{
 			rayFired = false;
 		}

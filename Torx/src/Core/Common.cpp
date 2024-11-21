@@ -13,6 +13,8 @@ bool  Common::lightPosDebug{ false };
 bool  Common::albedoDebug{ false };
 bool  Common::roughnessDebug{ false };
 bool  Common::metallicDebug{ false };
+bool  Common::aoDebug{ false };
+bool  Common::emissionDebug{ false };
 bool  Common::bulletLinesDebug{ false };
 bool  Common::bulletLinesReady{ false };
 int   Common::debugLinesCount{};

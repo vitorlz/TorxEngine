@@ -57,8 +57,6 @@ public:
 
 	template<typename T> void RemoveComponent(Entity entity)
 	{
-
-		std::cout << "remove called \n";
 		mComponentManager->RemoveComponent<T>(entity);
 
 		auto signature = mEntityManager->GetSignature(entity);

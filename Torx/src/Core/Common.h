@@ -54,6 +54,8 @@ public:
 	static bool albedoDebug;
 	static bool roughnessDebug;
 	static bool metallicDebug;
+	static bool aoDebug;
+	static bool emissionDebug;
 	static std::vector<float> bloomWeights;
 	static glm::mat4 playerViewMatrix;
 	static bool usingGuizmo;

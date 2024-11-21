@@ -22,10 +22,10 @@ void Model::Draw(Shader& shader){
 	// creating a model object like Model model("somepath") the textures are going to be loaded, and the uniforms are going
 	// to be set and the uniforms are never going to be reset.
 
-	shader.setInt("material.texture_diffuse1", 31);
+	shader.setInt("material.texture_albedo1", 31);
 	shader.setInt("material.texture_emission1", 31);
+	shader.setInt("material.texture_rma1", 31);
 	shader.setInt("material.texture_normal1", 31);
-	shader.setInt("material.texture_roughness1", 31);
 }
 
 void Model::loadModel(std::string path) {
@@ -156,7 +156,6 @@ Mesh Model::processMesh(aiMesh* mesh, const aiScene* scene, glm::mat4 globalTran
 
 		std::vector<Texture> rmaMaps = loadMaterialTextures(material, aiTextureType_DIFFUSE_ROUGHNESS, "texture_rma");
 		textures.insert(textures.end(), rmaMaps.begin(), rmaMaps.end());
-
 	}
 
 	return Mesh(vertices, indices, textures);
@@ -168,6 +167,7 @@ std::vector<Texture> Model::loadMaterialTextures(aiMaterial* mat, aiTextureType 
 	for (unsigned int i = 0; i < mat->GetTextureCount(type); i++) {
 		aiString str;
 		mat->GetTexture(type, i, &str);
+		
 		bool skip = false;
 		// check if texture has already been loaded
 		for (unsigned int j = 0; j < textures_loaded.size(); j++) {

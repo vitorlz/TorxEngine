@@ -87,6 +87,12 @@ void LightSystem::Init()
 
 		glNamedBufferSubData(mSsbo, EntityToLightIndexMap[entity] * sizeof(Light), sizeof(Light), (const void*)&lightData);
 	}
+
+	/*for (auto pair : EntityToLightIndexMap)
+	{
+		std::cout << "Entity: " << pair.first << "\n";
+		std::cout << "Light Index: " << pair.second << "\n";
+	}*/
 }
 
 void LightSystem::Update(float deltaTime)
@@ -94,12 +100,64 @@ void LightSystem::Update(float deltaTime)
 	// Here we fetch the light data for each entity and update it.
 	// We need this to send the updated light data to the ssbo. 
 
+	if (mEntities.size() > mLightIndex)
+	{
+
+		std::cout << "Entities before addition: " << mEntities.size() << "\n";
+
+		std::cout << "Light index before addition: " << mLightIndex << "\n";
+
+		mLightIndex++;
+
+		std::cout << "Light index after addition: " << mLightIndex << "\n";
+		std::cout << "Entities after addition: " << mEntities.size() << "\n";
+
+		Entity entityAdded{};
+		for (const auto& entity : mEntities)
+		{
+			/*std::cout << "Entity " << entity << " has light index? " << EntityToLightIndexMap.contains(entity) << "\n";
+			std::cout << "Entity " << entity << " light index: " << EntityToLightIndexMap[entity] << "\n";*/
+
+
+			if (!EntityToLightIndexMap.contains(entity))
+			{
+				entityAdded = entity;			
+			}
+		}
+
+		std::cout << "new light entity: " << entityAdded << "\n";
+
+		const auto& transform = ecs.GetComponent<CTransform>(entityAdded);
+		const auto& light = ecs.GetComponent<CLight>(entityAdded);
+
+		std::cout << "light type: " << light.type << "\n";
+
+		if (light.type == SPOT)
+		{
+			lightData.direction = glm::vec4(light.direction, 1.0f);
+			lightData.innerCutoff = glm::vec4(glm::cos(glm::radians(light.innerCutoff)));
+			lightData.outerCutoff = glm::vec4(glm::cos(glm::radians(light.outerCutoff)));
+		}
+
+		lightData.type = glm::vec4((float)light.type);
+		lightData.position = glm::vec4(transform.position + light.offset, 1.0f);
+		lightData.color = glm::vec4(light.color * light.strength, 1.0f);
+		lightData.radius = glm::vec4(light.radius);
+
+		EntityToLightMap[entityAdded] = lightData;
+		EntityToLightIndexMap[entityAdded] = mLightIndex - 1;
+
+		glNamedBufferSubData(mSsbo, EntityToLightIndexMap[entityAdded] * sizeof(Light), sizeof(Light), (const void*)&lightData);
+	}
+
+
 	for (const auto& entity : mEntities) 
 	{
 		auto& light = ecs.GetComponent<CLight>(entity);
 
 		if (light.isDirty) 
 		{	
+			
 			auto& transform = ecs.GetComponent<CTransform>(entity);
 			
 			//std::cout << "light is dirty \n";
@@ -127,6 +185,7 @@ void LightSystem::Update(float deltaTime)
 			glNamedBufferSubData(mSsbo, EntityToLightIndexMap[entity] * sizeof(Light), sizeof(Light), (const void*)&EntityToLightMap[entity]);
 
 			light.isDirty = false;
+
 		}
 	}
 
@@ -169,47 +228,5 @@ void LightSystem::Update(float deltaTime)
 
 	// check if any lights were added and update ssbo
 
-	if (mEntities.size() > mLightIndex)
-	{
-		std::cout << "Entities before addition: " << mEntities.size() << "\n";
-
-		std::cout << "Light index before addition: " << mLightIndex << "\n";
-
-		mLightIndex++;
-
-		std::cout << "Light index after addition: " << mLightIndex << "\n";
-		std::cout << "Entities after addition: " << mEntities.size() << "\n";
-
-		Entity entityAdded{};
-		for (const auto& entity : mEntities)
-		{
-			if (!EntityToLightIndexMap.contains(entity))
-			{
-				entityAdded = entity;
-				std::cout << "Entity Added:" << entityAdded << "\n";
-			}
-		}
-
-		const auto& transform = ecs.GetComponent<CTransform>(entityAdded);
-		const auto& light = ecs.GetComponent<CLight>(entityAdded);
-
-		std::cout << "light type: " << light.type << "\n";
-
-		if (light.type == SPOT)
-		{
-			lightData.direction = glm::vec4(light.direction, 1.0f);
-			lightData.innerCutoff = glm::vec4(glm::cos(glm::radians(light.innerCutoff)));
-			lightData.outerCutoff = glm::vec4(glm::cos(glm::radians(light.outerCutoff)));
-		}
-
-		lightData.type = glm::vec4((float)light.type);
-		lightData.position = glm::vec4(transform.position + light.offset, 1.0f);
-		lightData.color = glm::vec4(light.color * light.strength, 1.0f);
-		lightData.radius = glm::vec4(light.radius);
-
-		EntityToLightMap[entityAdded] = lightData;
-		EntityToLightIndexMap[entityAdded] = mLightIndex - 1;
-
-		glNamedBufferSubData(mSsbo, EntityToLightIndexMap[entityAdded] * sizeof(Light), sizeof(Light), (const void*)&lightData);
-	}
+	
 }

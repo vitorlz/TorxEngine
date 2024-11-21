@@ -28,6 +28,7 @@
 #include "Systems/GeneralInputSystem.h"
 #include "Systems/playerInputSystem.h"
 #include "Systems/PhysicsSystem.h"
+#include <filesystem>
 
 #include <iostream>
 
@@ -107,12 +108,6 @@ int main()
             .rotation = glm::vec3(0.0f, 0.0f, 0.0f),
         });
 
-    ecs.AddComponent<CModel>(
-        playerEntity,
-        CModel{
-            .model = AssetManager::GetModel("debugCube")
-        });
-
     ecs.AddComponent<CLight>(
         playerEntity,
         CLight{
@@ -131,37 +126,6 @@ int main()
             .flashlightOn = true,
             .movementSpeed = 3.0f,
         });
-
-    for (int k = 0; k < 3; k++)
-    {
-        for (int i = 0; i < 3; i++)
-        {
-            for (int j = 0; j < 3; j++)
-            {
-                Entity testCube = ecs.CreateEntity();
-
-                ecs.AddComponent<CTransform>(
-                    testCube,
-                    CTransform{
-                        .position = glm::vec3(0.5f * i, 2.0f + 0.5f * k, 0.5f * j),
-                        .scale = glm::vec3(0.5f),
-                        .rotation = glm::vec3(0.0f, 0.0f, 0.0f),
-                    });
-
-                ecs.AddComponent<CModel>(
-                    testCube,
-                    CModel{
-                        .model = AssetManager::GetModel("dirtBlock")
-                    });
-
-                ecs.AddComponent<CRigidBody>(
-                    testCube,
-                    CRigidBody{
-                        .mass = 1.f
-                    });
-            }
-        }
-    }
        
     Entity sponzaEntity = ecs.CreateEntity();
 
@@ -176,7 +140,8 @@ int main()
     ecs.AddComponent<CModel>(
         sponzaEntity,
         CModel{
-            .model = AssetManager::GetModel("sponza")
+            .model = AssetManager::GetModel("sponza"),
+            .hasAOTexture = false
         });
 
     ecs.AddComponent<CRigidBody>(

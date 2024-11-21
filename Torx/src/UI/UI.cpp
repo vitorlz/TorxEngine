@@ -16,6 +16,7 @@
 #include "../Components/CMesh.h"
 #include "../Physics/Raycast.h"
 #include "../Editor/Editor.h"
+#include <filesystem>
 #include <iomanip>
 #include <sstream>
 
@@ -27,8 +28,18 @@ void showEntityOptions(Entity entity);
 
 extern Coordinator ecs;
 
+Entity playerEntity;
+
 void UI::Init(GLFWwindow* window) 
 {
+    for (Entity entity : ecs.GetLivingEntities())
+    {
+        if (ecs.HasComponent<CPlayer>(entity))
+        {
+            playerEntity = entity;
+        }
+    }
+   
     IMGUI_CHECKVERSION();
     ImGui::CreateContext();
     ImGuiIO& io = ImGui::GetIO(); (void)io;
@@ -50,6 +61,11 @@ void UI::Update()
     ImGui::Begin("Menu");
     ImGui::Shortcut(ImGuiKey_Tab, ImGuiInputFlags_None);
     
+    
+    static bool editorMode{ false };
+    ImGui::Checkbox("Editor Mode", &editorMode);
+    Editor::setStatus(editorMode);
+
     CSingleton_Input& inputSing = CSingleton_Input::getInstance();
 
     if (ImGui::TreeNode("Stats"))
@@ -242,6 +258,8 @@ void UI::Update()
         ImGui::Checkbox("Show albedo ", &Common::albedoDebug);
         ImGui::Checkbox("Show roughness", &Common::roughnessDebug);
         ImGui::Checkbox("Show metalness", &Common::metallicDebug);
+        ImGui::Checkbox("Show ambient occlusion", &Common::aoDebug);
+        ImGui::Checkbox("Show emission", &Common::emissionDebug);
         ImGui::Checkbox("Show physics debug lines", &Common::bulletLinesDebug);
 
         ImGui::TreePop();
@@ -251,73 +269,64 @@ void UI::Update()
 
     // Gizmos
     
-    ImGui::Begin("Editor");
-
-    if (ImGui::RadioButton("Translate", Editor::GetCurrentGizmoOperation() == ImGuizmo::TRANSLATE))
-        Editor::SetCurrentGizmoOperation(ImGuizmo::TRANSLATE);
-    ImGui::SameLine();
-    if (ImGui::RadioButton("Rotate", Editor::GetCurrentGizmoOperation() == ImGuizmo::ROTATE))
-        Editor::SetCurrentGizmoOperation(ImGuizmo::ROTATE);
-    ImGui::SameLine();
-    if (ImGui::RadioButton("Scale", Editor::GetCurrentGizmoOperation() == ImGuizmo::SCALE))
-        Editor::SetCurrentGizmoOperation(ImGuizmo::SCALE);
-
-    static int selectedEntity{ -1 };
-    static bool addingNewEntity{ false };
-    static Entity newEntity;
-
-    if (!ImGuizmo::IsOver() && !ImGui::IsWindowHovered(ImGuiHoveredFlags_AnyWindow) && !ImGui::IsAnyItemHovered() && !addingNewEntity)
+    if (Editor::isOn())
     {
-        
-        selectedEntity = Raycast::getSelectedEntity();
-    }
+        ImGui::Begin("Editor");
 
-    if (selectedEntity >= 0 && ecs.isAlive(selectedEntity))
-    {
+        static int selectedEntity{ -1 };
+        static bool addingNewEntity{ false };
+        static Entity newEntity;
+
+        if (!ImGuizmo::IsOver() && !ImGui::IsWindowHovered(ImGuiHoveredFlags_AnyWindow) && !ImGui::IsAnyItemHovered() && !addingNewEntity)
+        {
+            selectedEntity = Raycast::getSelectedEntity();
+        }
+
+        if (selectedEntity >= 0 && ecs.isAlive(selectedEntity))
+        {
+            if (!addingNewEntity)
+            {
+                Editor::RenderGizmo(selectedEntity);
+
+                std::stringstream ss;
+                ss << "Selected Entity: " << selectedEntity;
+                std::string selectedEntityText = ss.str();
+                ImGui::TextColored(ImVec4(1.0f, 1.0f, 0.0f, 1.0f), selectedEntityText.c_str());
+                showComponents(selectedEntity);
+                showEntityOptions(selectedEntity);
+            }
+        }
+
+        ImGui::Separator();
+
         if (!addingNewEntity)
         {
-            ImGui::Separator();
+            if (ImGui::Button("Add Entity"))
+            {
+                addingNewEntity = true;
+                newEntity = ecs.CreateEntity();
+            }
+        }
 
-            Editor::RenderGizmo(selectedEntity);
-
+        if (addingNewEntity)
+        {
             std::stringstream ss;
-            ss << "Selected Entity: " << selectedEntity;
-            std::string selectedEntityText = ss.str();
-            ImGui::TextColored(ImVec4(1.0f, 1.0f, 0.0f, 1.0f), selectedEntityText.c_str());
-            showComponents(selectedEntity);
-            showEntityOptions(selectedEntity);
+            ss << "Adding Entity: " << newEntity;
+            std::string addingEntityText = ss.str();
+
+            ImGui::TextColored(ImVec4(1.0f, 1.0f, 0.0f, 1.0f), addingEntityText.c_str());
+
+            showComponents(newEntity);
+            showEntityOptions(newEntity);
+
+            if (ImGui::Button("Done"))
+            {
+                addingNewEntity = false;
+            }
         }
+
+        ImGui::End();
     }
-
-    ImGui::Separator();
- 
-    if (!addingNewEntity)
-    {
-        if (ImGui::Button("Add Entity"))
-        {
-            addingNewEntity = true;
-            newEntity = ecs.CreateEntity();
-        }
-    }
-
-    if (addingNewEntity) 
-    {
-        std::stringstream ss;
-        ss << "Adding Entity: " << newEntity;
-        std::string addingEntityText = ss.str();
-        
-        ImGui::TextColored(ImVec4(1.0f, 1.0f, 0.0f, 1.0f), addingEntityText.c_str());
-
-        showComponents(newEntity);
-        showEntityOptions(newEntity);
-
-        if (ImGui::Button("Done"))
-        {
-            addingNewEntity = false;
-        }
-    }
-
-    ImGui::End();
 
     ImGui::Render();
     ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
@@ -401,6 +410,23 @@ void showComponents(Entity entity)
         if (ImGui::CollapsingHeader("Model Component", ImGuiTreeNodeFlags_AllowItemOverlap))
         {
             ImGui::TextColored(ImVec4(1.0f, 1.0f, 0.0f, 1.0f), "Has model component");
+
+            if (ImGui::BeginCombo("", "Choose Model"))
+            {
+                auto& modelComponent = ecs.GetComponent<CModel>(entity);
+
+                std::vector<std::string> modelNames = AssetManager::GetModelNames();
+
+                for (int i = 0; i < modelNames.size(); i++)
+                {
+                    if (ImGui::Selectable(modelNames[i].c_str()))
+                    {
+                        modelComponent.model = AssetManager::GetModel(modelNames[i]);
+                    }
+
+                }
+                ImGui::EndCombo();
+            }
         }
         ImGui::SameLine();
         if (ImGui::Button("Delete##xx2"))
@@ -438,18 +464,55 @@ void showComponents(Entity entity)
             if (rigidBody.mass > 0)
             {
                 ImGui::TextColored(ImVec4(1.0f, 1.0f, 0.0f, 1.0f), "Dynamic body");
+                ImGui::SliderFloat("Mass", &mass, 0.01f, 100.0f, "%.2f");
             }
             else 
             {
                 ImGui::TextColored(ImVec4(1.0f, 1.0f, 0.0f, 1.0f), "Static Body");
             }
-            ImGui::SliderFloat("Mass", &mass, 1.0f, 10.0f, "%.2f");
-
         }
+
         ImGui::SameLine();
         if (ImGui::Button("Delete##xx4"))
         {
             ecs.RemoveComponent<CRigidBody>(entity);
+        }
+    }
+
+    if (ecs.HasComponent<CMesh>(entity))
+    {
+        if (ImGui::CollapsingHeader("Mesh Component", ImGuiTreeNodeFlags_AllowItemOverlap))
+        {
+            std::vector<std::string> textureTags;
+            std::string path = "res/textures/pbr";
+            for (const auto& entry : std::filesystem::directory_iterator(path))
+            {
+                std::cout << "Texture tags: " << entry.path().filename() << std::endl;
+                textureTags.push_back(entry.path().filename().string());
+            }
+
+            auto& meshComponent = ecs.GetComponent<CMesh>(entity);
+
+            if (ImGui::BeginCombo("", "Choose texture"))
+            {
+                for (int i = 0; i < textureTags.size(); i++)
+                {
+                    if (ImGui::Selectable(textureTags[i].c_str()))
+                    {     
+                        meshComponent.mesh.textures =  AssetManager::LoadMeshTextures(std::string(textureTags[i]).c_str());
+                    }
+
+                }
+                ImGui::EndCombo();
+            }
+
+            ImGui::SliderFloat2("Texture scaling factor", &meshComponent.textureScalingFactor.x, 0.1f, 100.0f, "%.3f");
+        }
+
+        ImGui::SameLine();
+        if (ImGui::Button("Delete##xx5"))
+        {
+            ecs.RemoveComponent<CMesh>(entity);
         }
     }
 
@@ -459,7 +522,8 @@ void showEntityOptions(Entity entity)
 {
 
     static int selectedComponent = -1;
-    const char* Components[] = { "Transform", "Mesh", "Model", "Static Rigid body", "Dynamic Rigid body", "Light" };
+    const char* singleChoiceComponents[] = { "Transform" };
+    const char* multipleChoiceComponents[] = { "Mesh", "Model", "Rigid body", "Light"};
 
     if (ImGui::Button("Add Component"))
         ImGui::OpenPopup("my_select_popup");
@@ -467,63 +531,195 @@ void showEntityOptions(Entity entity)
     if (ImGui::BeginPopup("my_select_popup"))
     {
         ImGui::SeparatorText("Select a component");
-        for (int i = 0; i < IM_ARRAYSIZE(Components); i++)
-            if (ImGui::Selectable(Components[i]))
+        for (int i = 0; i < IM_ARRAYSIZE(singleChoiceComponents); i++)
+        {
+            if (ImGui::Selectable(singleChoiceComponents[i]))
+            {
                 selectedComponent = i;
+            }       
+        }
+
+        for (int i = 0; i < IM_ARRAYSIZE(multipleChoiceComponents); i++)
+        {
+            if (ImGui::BeginMenu(multipleChoiceComponents[i]))
+            {
+                if (multipleChoiceComponents[i] == "Mesh" && !ecs.HasComponent<CMesh>(entity))
+                {
+                    if (ImGui::MenuItem("Cube"))
+                    {
+                        ecs.AddComponent<CMesh>(
+                            entity,
+                            CMesh{
+                                .mesh = AssetManager::GetMesh("cube"),
+                            });
+                    }
+
+                    if (ImGui::MenuItem("Quad"))
+                    {
+                        ecs.AddComponent<CMesh>(
+                            entity,
+                            CMesh{
+                                .mesh = AssetManager::GetMesh("quad"),
+                            });
+                    }
+                }
+                if (multipleChoiceComponents[i] == "Rigid body" && !ecs.HasComponent<CRigidBody>(entity))
+                {
+                    if (ImGui::MenuItem("Static"))
+                    {
+                        ecs.AddComponent<CRigidBody>(
+                            entity,
+                            CRigidBody{
+                                .mass = 0.f
+                            });
+                    }
+
+                    if (ImGui::MenuItem("Dynamic"))
+                    {
+                        ecs.AddComponent<CRigidBody>(
+                            entity,
+                            CRigidBody{
+                                .mass = 1.f
+                            });
+                    }
+                }
+
+                if (multipleChoiceComponents[i] == "Light" && !ecs.HasComponent<CLight>(entity))
+                {
+                    if (ImGui::MenuItem("Point"))
+                    {
+                        ecs.AddComponent<CLight>(
+                            entity,
+                            CLight{
+                                .type = POINT,
+                                .color = glm::vec3(1.0f),
+                                .radius = 8.0f,
+                                .strength = 1.0f,
+                                .shadowCaster = false,
+                                .offset = glm::vec3(0.000f, 0.000f, 0.000f)
+                            });
+                    }
+
+                    if (ImGui::MenuItem("Spot"))
+                    {
+                        ecs.AddComponent<CLight>(
+                            entity,
+                            CLight{
+                                .type = SPOT,
+                                .color = glm::vec3(1.0f),
+                                .radius = 9.0f,
+                                .strength = 1.0f,
+                                .direction = glm::vec3(0.0f, 0.0f, 0.0f),
+                                .innerCutoff = 12.5f,
+                                .outerCutoff = 17.5f,
+                            });
+                    }
+
+                    if (ImGui::MenuItem("Directional"))
+                    {
+                        ecs.AddComponent<CLight>(
+                            entity,
+                            CLight{
+                                .type = DIRECTIONAL,
+                                .color = glm::vec3(1.0f),
+                                .strength = 1.0f, 
+                            });
+                    }
+                }
+
+                if (multipleChoiceComponents[i] == "Model" && !ecs.HasComponent<CModel>(entity))
+                {
+                    std::vector<std::string> modelNames = AssetManager::GetModelNames();
+
+                    for (int i = 0; i < modelNames.size(); i++)
+                    {
+                        if (ImGui::MenuItem(modelNames[i].c_str()))
+                        {
+                            ecs.AddComponent<CModel>(
+                                entity,
+                                CModel{
+                                    .model = AssetManager::GetModel(modelNames[1])
+                                });
+                        }
+
+                    }
+                }
+                ImGui::EndMenu();
+            }
+        }
 
         ImGui::EndPopup();
     }
-    else if (Components[selectedComponent] == "Transform" && !ecs.HasComponent<CTransform>(entity))
+    else if (singleChoiceComponents[selectedComponent] == "Transform" && !ecs.HasComponent<CTransform>(entity))
     {
+
+        const auto& playerFront = ecs.GetComponent<CPlayer>(playerEntity).front;
+        auto& playerPosition = ecs.GetComponent<CTransform>(playerEntity).position;
+
         ecs.AddComponent<CTransform>(
             entity,
             CTransform{
-                .position = glm::vec3(0.0f, 5.0f, 0.0f),
+                .position = playerPosition + playerFront * 2.0f,
                 .scale = glm::vec3(1.0f),
                 .rotation = glm::vec3(0.0f, 0.0f, 0.0f),
             });
 
         selectedComponent = -1;
     }
-    else if (Components[selectedComponent] == "Mesh" && !ecs.HasComponent<CMesh>(entity))
-    {
-        ecs.AddComponent<CMesh>(
-            entity,
-            CMesh{
-                .mesh = AssetManager::GetMesh("cube"),
-            });
-
-        selectedComponent = -1;
-    }
-    else if (Components[selectedComponent] == "Static Rigid body" && !ecs.HasComponent<CRigidBody>(entity))
-    {
-        ecs.AddComponent<CRigidBody>(
-            entity,
-            CRigidBody{
-                .mass = 0.f
-            });
-
-        selectedComponent = -1;
-    }
-    else if (Components[selectedComponent] == "Dynamic Rigid body" && !ecs.HasComponent<CRigidBody>(entity))
-    {
-        ecs.AddComponent<CRigidBody>(
-            entity,
-            CRigidBody{
-                .mass = 1.f
-            });
-
-        selectedComponent = -1;
-    }
-    else if (ImGui::BeginMenu("Sub-menu"))
-    {
-        ImGui::MenuItem("Click me");
-        ImGui::EndMenu();
-    }
-
 
     if (ImGui::Button("Destroy Entity"))
     {
         ecs.DestroyEntity(entity);
+    }
+
+    if (ImGui::Button("Duplicate"))
+    {
+        Entity duplicateEntity = ecs.CreateEntity();
+        
+        if (ecs.HasComponent<CLight>(entity))
+        {
+
+            auto componentCopy = ecs.GetComponent<CLight>(entity);
+
+            ecs.AddComponent<CLight>(duplicateEntity,
+                componentCopy
+            );
+        }
+        if (ecs.HasComponent<CMesh>(entity))
+        {
+
+            auto componentCopy = ecs.GetComponent<CMesh>(entity);
+
+            ecs.AddComponent<CMesh>(duplicateEntity,
+                componentCopy
+            );
+        }
+        if (ecs.HasComponent<CModel>(entity))
+        {
+
+            auto componentCopy = ecs.GetComponent<CModel>(entity);
+
+            ecs.AddComponent<CModel>(duplicateEntity,
+                componentCopy
+            );
+        }
+        if (ecs.HasComponent<CRigidBody>(entity))
+        {
+
+            auto componentCopy = ecs.GetComponent<CRigidBody>(entity);
+
+            ecs.AddComponent<CRigidBody>(duplicateEntity,
+                componentCopy
+            );
+        }
+        if (ecs.HasComponent<CTransform>(entity))
+        {
+
+            auto componentCopy = ecs.GetComponent<CTransform>(entity);
+
+            ecs.AddComponent<CTransform>(duplicateEntity,
+                componentCopy
+            );
+        }
     }
 }

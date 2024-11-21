@@ -13,6 +13,7 @@
 #include "../Physics/BulletDebugDrawer.h"
 #include "../Physics/Raycast.h"
 #include "../UI/UI.h"
+#include "../Editor/Editor.h"
 
 #include "btBulletDynamicsCommon.h"
 #include <BulletCollision/CollisionShapes/btShapeHull.h>
@@ -283,7 +284,7 @@ void PhysicsSystem::Update(float deltaTime)
 	static bool shotFired{ false };
 	if (UI::isOpen)
 	{
-		if (inputSing.pressedKeys[MOUSE_RIGHT] && !shotFired)
+		if (inputSing.pressedKeys[MOUSE_LEFT] && !shotFired && !Editor::isOn())
 		{
 			int entityHit = Raycast::mouseRaycast();
 
@@ -298,7 +299,7 @@ void PhysicsSystem::Update(float deltaTime)
 			std::cout << "Center of mass position: " << entityHitRb->getCenterOfMassPosition().x() << ", " << entityHitRb->getCenterOfMassPosition().y() << ", " << entityHitRb->getCenterOfMassPosition().z() << "\n";
 			std::cout << "Offset: " << offset.x() << ", " << offset.y() << ", " << offset.z() << "\n";
 			entityHitRb->activate();
-			entityHitRb->applyImpulse(btVector3(mouseRayDir.x, mouseRayDir.y, mouseRayDir.z), offset);
+			entityHitRb->applyImpulse(btVector3(mouseRayDir.x, mouseRayDir.y, mouseRayDir.z) * 3, offset);
 		}
 		else if (!inputSing.pressedKeys[MOUSE_RIGHT])
 		{

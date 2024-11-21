@@ -36,12 +36,18 @@ uniform bool albedoDebug;
 uniform bool roughnessDebug;
 uniform bool metallicDebug;
 uniform bool aoDebug;
+uniform bool emissionDebug;
 
 // shadows
 uniform sampler2D dirShadowMap;
 uniform samplerCubeArray pointShadowMap;
 uniform float point_far_plane[10];
 int pointShadowCasterIndex = 0;
+
+// misc
+uniform bool hasAOTexture;
+uniform vec2 textureScalingFactor;
+vec2 scaledTexCoords;
 
 //lights
 struct Light
@@ -91,15 +97,25 @@ vec3 F0;
 
 void main()
 {
-	vec4 albedoSample = texture(material.texture_albedo1, TexCoords).rgba;
-	vec3 RMA = texture(material.texture_rma1, TexCoords).gbr;
-	emission = texture(material.texture_emission1, TexCoords).rgb;
 
+	scaledTexCoords = TexCoords * textureScalingFactor;
+
+	vec4 albedoSample = texture(material.texture_albedo1, scaledTexCoords).rgba;
+	vec3 RMA = texture(material.texture_rma1, scaledTexCoords).gbr;
+	emission = texture(material.texture_emission1, scaledTexCoords).rgb;
+
+	
 	roughness = RMA.r;
 	metallic = RMA.g;
-	ao = RMA.b;
-
-	ao = 1.0;
+	
+	if(hasAOTexture)
+	{
+		ao = RMA.b;
+	}
+	else
+	{
+		ao = 1.0;
+	}
 
 	if(albedoSample.a < 0.5)
 		discard;
@@ -158,7 +174,7 @@ void main()
 	vec3 specular = prefilteredColor * (F * envBRDF.x + envBRDF.y);
 	
 	//vec3 ambient = (kD * diffuse + specular) * ao;
-	vec3 ambient = ((kD * diffuse + specular) * ao);
+	vec3 ambient = ((kD * diffuse + specular) * ao) / 10;
 	
 	vec3 color = Lo + ambient;
 
@@ -182,9 +198,13 @@ void main()
 	{
 		FragColor = vec4(vec3(metallic), 1.0);
 	}
-	else if (false)
+	else if (aoDebug)
 	{
 		FragColor = vec4(vec3(ao), 1.0);
+	}
+	else if (emissionDebug)
+	{
+		FragColor = vec4(emission, 1.0);
 	}
 	else 
 	{
@@ -460,7 +480,7 @@ float DirShadowCalculation(vec4 fragPosLightSpace, vec3 normal, vec3 lightDir)
 
 vec3 getNormalFromMap()
 {
-    vec3 tangentNormal = texture(material.texture_normal1, TexCoords).xyz * 2.0 - 1.0;
+    vec3 tangentNormal = texture(material.texture_normal1, scaledTexCoords).xyz * 2.0 - 1.0;
 
     vec3 Q1  = dFdx(FragPos);
     vec3 Q2  = dFdy(FragPos);

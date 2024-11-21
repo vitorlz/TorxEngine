@@ -4,7 +4,16 @@
 #include <glad/glad.h>
 #include <glm/glm.hpp>
 #include <sstream>
+#include "../Components/CTransform.h"
+#include "../Components/CLight.h"
+#include "../Components/CModel.h"
+#include "../Components/CSingleton_Input.h"
+#include "../Components/CPlayer.h"
+#include "../Components/CRigidBody.h"
+#include "../Components/CMesh.h"
+#include "../Core/Coordinator.hpp"
 
+extern Coordinator ecs;
 
 std::vector<float> Util::gaussian_weights(int kernel_size, float stdDeviation, float intervalMultiplier)
 {
@@ -125,4 +134,57 @@ std::string Util::vec3ToString(glm::vec3 vec)
     std::stringstream ss;
     ss << vec.x << ", " <<  vec.y << ", " << vec.z << "\n"; 
     return ss.str();
+}
+
+Entity Util::duplicateEntity(Entity entity)
+{
+    Entity duplicateEntity = ecs.CreateEntity();
+
+    if (ecs.HasComponent<CLight>(entity))
+    {
+
+        auto componentCopy = ecs.GetComponent<CLight>(entity);
+
+        ecs.AddComponent<CLight>(duplicateEntity,
+            componentCopy
+        );
+    }
+    if (ecs.HasComponent<CMesh>(entity))
+    {
+
+        auto componentCopy = ecs.GetComponent<CMesh>(entity);
+
+        ecs.AddComponent<CMesh>(duplicateEntity,
+            componentCopy
+        );
+    }
+    if (ecs.HasComponent<CModel>(entity))
+    {
+
+        auto componentCopy = ecs.GetComponent<CModel>(entity);
+
+        ecs.AddComponent<CModel>(duplicateEntity,
+            componentCopy
+        );
+    }
+    if (ecs.HasComponent<CRigidBody>(entity))
+    {
+
+        auto componentCopy = ecs.GetComponent<CRigidBody>(entity);
+
+        ecs.AddComponent<CRigidBody>(duplicateEntity,
+            componentCopy
+        );
+    }
+    if (ecs.HasComponent<CTransform>(entity))
+    {
+
+        auto componentCopy = ecs.GetComponent<CTransform>(entity);
+
+        ecs.AddComponent<CTransform>(duplicateEntity,
+            componentCopy
+        );
+    }
+
+    return duplicateEntity;
 }

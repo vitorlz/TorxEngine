@@ -9,4 +9,6 @@ namespace Editor
 	int GetCurrentGizmoOperation();
 	void SetCurrentGizmoMode(int gizmoMode);
 	void SetCurrentGizmoOperation(int gizmoOperation);
+	bool isOn();
+	void setStatus(bool status);
 }

@@ -6,5 +6,5 @@ struct CMesh
 	Mesh mesh;
 	std::string meshType;
 	std::string texture;
-	bool isTextureDirty;
+	glm::vec2 textureScalingFactor{ 1.0f };
 };

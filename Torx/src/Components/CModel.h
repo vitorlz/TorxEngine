@@ -5,4 +5,5 @@
 struct CModel
 {
 	Model model;
+	bool hasAOTexture{ true };
 };

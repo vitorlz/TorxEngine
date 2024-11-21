@@ -209,13 +209,13 @@ void RenderSystem::Update(float deltaTime)
             for (const auto& entity : mEntities)
             {
 
-                if (ecs.HasComponent<CLight>(entity))
+                if (ecs.HasComponent<CLight>(entity) || (!ecs.HasComponent<CModel>(entity) && !ecs.HasComponent<CMesh>(entity)))
                 {
                     continue;
-                }
-                auto& transform = ecs.GetComponent<CTransform>(entity);
-                auto& model3d = ecs.GetComponent<CModel>(entity);
+                }            
 
+                auto& transform = ecs.GetComponent<CTransform>(entity);
+               
                 glm::mat4 model = glm::mat4(1.0f);
                 model = glm::translate(model, transform.position);
 
@@ -226,7 +226,17 @@ void RenderSystem::Update(float deltaTime)
 
                 pointShadowMapShader.setMat4("model", model);
 
-                model3d.model.Draw(pointShadowMapShader);
+                if (ecs.HasComponent<CModel>(entity))
+                {
+                    auto& modelComponent = ecs.GetComponent<CModel>(entity);
+                    modelComponent.model.Draw(pointShadowMapShader);
+                }
+                else
+                {
+                    auto& meshComponent = ecs.GetComponent<CMesh>(entity);
+                    meshComponent.mesh.Draw(pointShadowMapShader);
+                    
+                }
             }
         }
     }
@@ -293,6 +303,8 @@ void RenderSystem::Update(float deltaTime)
     pbrModelTestShader.setBool("albedoDebug", Common::albedoDebug);
     pbrModelTestShader.setBool("roughnessDebug", Common::roughnessDebug);
     pbrModelTestShader.setBool("metallicDebug", Common::metallicDebug);
+    pbrModelTestShader.setBool("aoDebug", Common::aoDebug);
+    pbrModelTestShader.setBool("emissionDebug", Common::emissionDebug);
     pbrModelTestShader.setBool("bloom", Common::bloomOn);
     pbrModelTestShader.setInt("irradianceMap", 6);
     pbrModelTestShader.setInt("prefilterMap", 7);
@@ -312,24 +324,7 @@ void RenderSystem::Update(float deltaTime)
     for (const auto& entity : mEntities) 
     {
 
-        if (!ecs.HasComponent<CModel>(entity) && !ecs.HasComponent<CMesh>(entity))
-        {
-            continue;
-        }
-
         auto& transform = ecs.GetComponent<CTransform>(entity);
-       
-
-        glm::mat4 model = glm::mat4(1.0f);
-        model = glm::translate(model, transform.position);
-
-        glm::mat4 rotMatrix = glm::mat4_cast(glm::quat(glm::vec3(glm::radians(transform.rotation.x), glm::radians(transform.rotation.y), glm::radians(transform.rotation.z))));
-
-        model *= rotMatrix;
-
-        model = glm::scale(model, transform.scale);
-
-        glm::mat3 normalMatrix = glm::transpose(glm::inverse(model));
 
         if (ecs.HasComponent<CLight>(entity) && Common::lightPosDebug)
         {
@@ -338,7 +333,7 @@ void RenderSystem::Update(float deltaTime)
             Shader& solidColorShader = ShaderManager::GetShaderProgram("solidColorShader");
 
             solidColorShader.use();
-           
+
             glm::mat4 model = glm::mat4(1.0f);
             model = glm::translate(model, transform.position + light.offset);
             model = glm::scale(model, glm::vec3(0.1f));
@@ -350,6 +345,22 @@ void RenderSystem::Update(float deltaTime)
 
             Util::renderSphere();
         }
+
+        if (!ecs.HasComponent<CModel>(entity) && !ecs.HasComponent<CMesh>(entity))
+        {
+            continue;
+        }
+
+        glm::mat4 model = glm::mat4(1.0f);
+        model = glm::translate(model, transform.position);
+
+        glm::mat4 rotMatrix = glm::mat4_cast(glm::quat(glm::vec3(glm::radians(transform.rotation.x), glm::radians(transform.rotation.y), glm::radians(transform.rotation.z))));
+
+        model *= rotMatrix;
+
+        model = glm::scale(model, transform.scale);
+
+        glm::mat3 normalMatrix = glm::transpose(glm::inverse(model));
         
         pbrModelTestShader.use();
 
@@ -368,12 +379,17 @@ void RenderSystem::Update(float deltaTime)
         if (ecs.HasComponent<CModel>(entity))
         {
             auto& model3d = ecs.GetComponent<CModel>(entity);
+            pbrModelTestShader.setVec2("textureScalingFactor", glm::vec2(1.0f));
+            pbrModelTestShader.setBool("hasAOTexture", model3d.hasAOTexture);
             model3d.model.Draw(pbrModelTestShader);
         }
         else
         {
+            glDisable(GL_CULL_FACE);
             auto& meshComponent = ecs.GetComponent<CMesh>(entity);
+            pbrModelTestShader.setVec2("textureScalingFactor", meshComponent.textureScalingFactor);
             meshComponent.mesh.Draw(pbrModelTestShader);
+            glEnable(GL_CULL_FACE);
         }
     }
 

@@ -162,7 +162,6 @@ void GeneralInputSystem::Update(float deltaTime, GLFWwindow* window)
 	}
 	if (glfwGetKey(window, GLFW_KEY_1) == GLFW_PRESS)
 	{
-		std::cout << "1 pressed \n";
 		inputSing.pressedKeys[NUMBER_1] = true;
 	}
 	else if (glfwGetKey(window, GLFW_KEY_1) == GLFW_RELEASE)

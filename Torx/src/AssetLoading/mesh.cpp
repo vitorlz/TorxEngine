@@ -49,15 +49,17 @@ void Mesh::setupMesh() {
 // we have to pass the shader object by reference because that will prevent copying and we want to modify the original inside the function.
 void Mesh::Draw(Shader &shader) 
 {
+
 	shader.setInt("material.texture_albedo1", 31);
 	shader.setInt("material.texture_emission1", 31);
-	shader.setInt("material.texture_normal1", 31);
 	shader.setInt("material.texture_rma1", 31);
+	shader.setInt("material.texture_normal1", 31);
 
 	unsigned int emissionNr = 1;
 	unsigned int normalNr = 1;
 	unsigned int albedoNr = 1;
 	unsigned int rmaNr = 1;
+	unsigned int ambientNr = 1;
 	
 	unsigned int i = 0;
 
@@ -78,7 +80,7 @@ void Mesh::Draw(Shader &shader)
 		else if (name == "texture_albedo")
 			number = std::to_string(albedoNr++);
 		else if (name == "texture_rma")
-			number = std::to_string(rmaNr++);
+			number = std::to_string(rmaNr++);	
 
 		shader.setInt(("material." + name + number).c_str(), i);
 		glBindTexture(GL_TEXTURE_2D, textures[i].id);
@@ -88,5 +90,4 @@ void Mesh::Draw(Shader &shader)
 	glBindVertexArray(VAO);
 	glDrawElements(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, 0);
 	glBindVertexArray(0);
-
 }

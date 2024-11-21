@@ -4,6 +4,7 @@
 
 std::unordered_map<std::string, Model> AssetManager::m_Models{};
 std::unordered_map<std::string, Mesh> AssetManager::m_Meshes{};
+std::vector<Texture> AssetManager::m_LoadedMeshTextures{};
 
 void AssetManager::LoadModels()
 {
@@ -101,19 +102,37 @@ std::vector<unsigned int> cubeIndices = {
 
 std::vector<Texture> AssetManager::LoadMeshTextures(const char* tag)
 {
+	std::vector<Texture> textures;
+	bool texturesAlreadyLoaded{ false };
+
+	for (Texture texture : m_LoadedMeshTextures)
+	{
+		if (texture.path == tag)
+		{
+			texturesAlreadyLoaded = true;
+			textures.push_back(texture);
+		}
+	}
+
+	
+	if (texturesAlreadyLoaded)
+	{
+		return textures;
+	}
+
 	std::string tagString(tag);
 
 	std::string albedoPath = "res/textures/pbr/" + tagString + "/" + tagString + "_albedo.png";
 	std::string normalPath = "res/textures/pbr/" + tagString + "/" + tagString + "_normal.png";
 
-	std::vector<Texture> textures
-	{
-		{TextureLoader::LoadRMATexture(tag), "texture_rma", " "},
-		{TextureLoader::LoadTexture(albedoPath.c_str(), true), "texture_albedo", " "},
-		{TextureLoader::LoadTexture(normalPath.c_str(), false), "texture_normal", " "}
-	};
+	textures.push_back({ TextureLoader::LoadRMATexture(tag), "texture_rma", tag });
+	textures.push_back({ TextureLoader::LoadTexture(albedoPath.c_str(), true), "texture_albedo", tag });
+	textures.push_back({ TextureLoader::LoadTexture(normalPath.c_str(), false), "texture_normal", tag });
+
+	m_LoadedMeshTextures.insert(m_LoadedMeshTextures.end(), textures.begin(), textures.end());
 
 	return textures;
+	
 }
 
 void AssetManager::LoadMeshes()
@@ -135,3 +154,19 @@ Mesh& AssetManager::GetMesh(std::string name)
 	return m_Meshes[name];
 }
 
+std::unordered_map<std::string, Model>& AssetManager::GetModelMap()
+{
+	return m_Models;
+}
+
+std::vector<std::string> AssetManager::GetModelNames()
+{
+	std::vector<std::string> names{};
+	for (auto& pair : m_Models)
+	{
+		names.push_back(pair.first);
+
+		
+	}
+	return names;
+}
