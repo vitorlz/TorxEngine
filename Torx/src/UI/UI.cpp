@@ -20,6 +20,7 @@
 #include <filesystem>
 #include <iomanip>
 #include <sstream>
+#include "../Util/Util.h"
 
 bool UI::isOpen{ false };
 bool UI::firstMouseUpdateAfterMenu{ false };
@@ -268,7 +269,7 @@ void UI::Update()
 
     if (ImGui::Button("Save scene")) 
     {
-        Scene::SaveSceneToJson();
+        Scene::SaveSceneToJson("sponzascene.json");
     }
 
     ImGui::End();
@@ -683,52 +684,6 @@ void showEntityOptions(Entity entity)
 
     if (ImGui::Button("Duplicate"))
     {
-        Entity duplicateEntity = ecs.CreateEntity();
-        
-        if (ecs.HasComponent<CLight>(entity))
-        {
-
-            auto componentCopy = ecs.GetComponent<CLight>(entity);
-
-            ecs.AddComponent<CLight>(duplicateEntity,
-                componentCopy
-            );
-        }
-        if (ecs.HasComponent<CMesh>(entity))
-        {
-
-            auto componentCopy = ecs.GetComponent<CMesh>(entity);
-
-            ecs.AddComponent<CMesh>(duplicateEntity,
-                componentCopy
-            );
-        }
-        if (ecs.HasComponent<CModel>(entity))
-        {
-
-            auto componentCopy = ecs.GetComponent<CModel>(entity);
-
-            ecs.AddComponent<CModel>(duplicateEntity,
-                componentCopy
-            );
-        }
-        if (ecs.HasComponent<CRigidBody>(entity))
-        {
-
-            auto componentCopy = ecs.GetComponent<CRigidBody>(entity);
-
-            ecs.AddComponent<CRigidBody>(duplicateEntity,
-                componentCopy
-            );
-        }
-        if (ecs.HasComponent<CTransform>(entity))
-        {
-
-            auto componentCopy = ecs.GetComponent<CTransform>(entity);
-
-            ecs.AddComponent<CTransform>(duplicateEntity,
-                componentCopy
-            );
-        }
+        Util::duplicateEntity(entity);
     }
 }

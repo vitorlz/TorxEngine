@@ -176,7 +176,7 @@ void main()
 	//vec3 ambient = (kD * diffuse + specular) * ao;
 	vec3 ambient = ((kD * diffuse + specular) * ao) / 10;
 	
-	vec3 color = Lo + ambient;
+	vec3 color = Lo;
 
 	if(showNormals) 
 	{

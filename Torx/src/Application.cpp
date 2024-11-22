@@ -96,18 +96,17 @@ int main()
         ecs.SetSystemSignature<PlayerInputSystem>(signature);
     }
 
-    renderSystem->Init();
-    lightSystem->Init();
-    generalInputSystem->Init();
+
+    Scene::LoadSceneFromJson("res/scenes/sponzascene.json");
 
     UI gui;
 
     gui.Init(window.GetWindow());
 
+    renderSystem->Init();
+    generalInputSystem->Init();
     lightSystem->Init();
     physicsSystem->Init();
-
-    Scene::LoadSceneFromJson("pretty.json");
 
     while (!glfwWindowShouldClose(window.GetWindow()))
     {

@@ -19,7 +19,7 @@ extern Coordinator ecs;
 glm::vec2 jsonToVec2(nlohmann::json json);
 glm::vec3 jsonToVec3(nlohmann::json json);
 
-void Scene::SaveSceneToJson()
+void Scene::SaveSceneToJson(const std::string& filename)
 {
 	std::vector<Entity> livingEntities = ecs.GetLivingEntities();
 	nlohmann::json entities;
@@ -77,38 +77,6 @@ void Scene::SaveSceneToJson()
 			e["components"]["light"]["shadowCaster"] = light.shadowCaster;
 			e["components"]["light"]["isDirty"] = light.isDirty;
 			e["components"]["light"]["offset"] = { light.offset.x , light.offset.y, light.offset.z };
-
-			/*if (light.type = DIRECTIONAL) 
-			{
-				e["components"]["light"]["type"] = light.type;
-				e["components"]["light"]["color"] = { light.color.x, light.color.y, light.color.z };
-				e["components"]["light"]["strength"] = light.strength;
-				e["components"]["light"]["shadowCaster"] = light.shadowCaster;
-				e["components"]["light"]["isDirty"] = light.isDirty;
-			}
-			if (light.type = POINT)
-			{
-				e["components"]["light"]["type"] = light.type;
-				e["components"]["light"]["color"] = { light.color.x, light.color.y, light.color.z };
-				e["components"]["light"]["radius"] = light.radius;
-				e["components"]["light"]["strength"] = light.strength;
-				e["components"]["light"]["shadowCaster"] = light.shadowCaster;
-				e["components"]["light"]["isDirty"] = light.isDirty;
-				e["components"]["light"]["offset"] = { light.offset.x , light.offset.y, light.offset.z };
-			}
-			if (light.type = SPOT)
-			{
-				e["components"]["light"]["type"] = light.type;
-				e["components"]["light"]["color"] = { light.color.x, light.color.y, light.color.z };
-				e["components"]["light"]["radius"] = light.radius;
-				e["components"]["light"]["strength"] = light.strength;
-				e["components"]["light"]["direction"] = { light.direction.x, light.direction.y, light.direction.z };
-				e["components"]["light"]["innerCutoff"] = light.innerCutoff;
-				e["components"]["light"]["outerCutoff"] = light.outerCutoff;
-				e["components"]["light"]["shadowCaster"] = light.shadowCaster;
-				e["components"]["light"]["isDirty"] = light.isDirty;
-				e["components"]["light"]["offset"] = { light.offset.x , light.offset.y, light.offset.z };
-			}*/
 		}
 
 		if (ecs.HasComponent<CPlayer>(entity))
@@ -122,7 +90,7 @@ void Scene::SaveSceneToJson()
 		entities.push_back(e);
 	}
 
-	std::ofstream o("pretty.json");
+	std::ofstream o(filename);
 	if (!o.is_open())
 	{
 		std::cout << "Failed to open json file.\n";
@@ -137,10 +105,9 @@ void Scene::SaveSceneToJson()
 
 void Scene::LoadSceneFromJson(const std::string& filename)
 {
-
 	std::cout << "Loading scene..." << "\n";
 
-	std::ifstream f("pretty.json");
+	std::ifstream f(filename);
 	if (!f.is_open())
 	{
 		std::cout << "Failed to open json file. \n";
@@ -156,14 +123,7 @@ void Scene::LoadSceneFromJson(const std::string& filename)
 		Entity newEntity = ecs.CreateEntity();
 
 		if (e["components"].contains("transform"))
-		{
-			//std::vector<float> pos  = e["components"]["transform"]["position"].get<std::vector<float>>();
-
-			//glm::vec3 positionVector = jsonToVec3(e["components"]["transform"]["position"]);
-			//glm::vec3 scaleVector = jsonToVec3(e["components"]["transform"]["scale"]);
-			//glm::vec3 rotationVector = jsonToVec3(e["components"]["transform"]["rotation"]);
-
-			//std::cout << Util::vec3ToString(positionVector) << "\n";
+		{	
 
 			ecs.AddComponent<CTransform>(
 				newEntity,

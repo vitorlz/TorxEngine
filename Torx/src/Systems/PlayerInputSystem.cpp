@@ -79,10 +79,11 @@ void PlayerInputSystem::Update(float deltaTime)
     }
 }
 
-bool flashlightSwitch = false;
 float previousRadius;
 void flashlightLogic(CPlayer& player, CLight& light)
 {
+    static bool flashlightSwitch = player.flashlightOn ? false : true;
+
     if (light.type == SPOT)
     {
         light.direction = player.front;
