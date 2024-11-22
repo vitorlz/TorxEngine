@@ -5,5 +5,6 @@
 struct CModel
 {
 	Model model;
+	std::string modelName;
 	bool hasAOTexture{ true };
 };

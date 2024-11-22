@@ -16,6 +16,7 @@
 #include "../Components/CMesh.h"
 #include "../Physics/Raycast.h"
 #include "../Editor/Editor.h"
+#include "../Scene/Scene.h"
 #include <filesystem>
 #include <iomanip>
 #include <sstream>
@@ -265,6 +266,11 @@ void UI::Update()
         ImGui::TreePop();
     }
 
+    if (ImGui::Button("Save scene")) 
+    {
+        Scene::SaveSceneToJson();
+    }
+
     ImGui::End();
 
     // Gizmos
@@ -422,6 +428,7 @@ void showComponents(Entity entity)
                     if (ImGui::Selectable(modelNames[i].c_str()))
                     {
                         modelComponent.model = AssetManager::GetModel(modelNames[i]);
+                        modelComponent.modelName = modelNames[i];
                     }
 
                 }
@@ -483,18 +490,17 @@ void showComponents(Entity entity)
     {
         if (ImGui::CollapsingHeader("Mesh Component", ImGuiTreeNodeFlags_AllowItemOverlap))
         {
-            std::vector<std::string> textureTags;
-            std::string path = "res/textures/pbr";
-            for (const auto& entry : std::filesystem::directory_iterator(path))
-            {
-                std::cout << "Texture tags: " << entry.path().filename() << std::endl;
-                textureTags.push_back(entry.path().filename().string());
-            }
-
             auto& meshComponent = ecs.GetComponent<CMesh>(entity);
 
             if (ImGui::BeginCombo("", "Choose texture"))
             {
+                std::vector<std::string> textureTags;
+                std::string path = "res/textures/pbr";
+                for (const auto& entry : std::filesystem::directory_iterator(path))
+                {
+                    textureTags.push_back(entry.path().filename().string());
+                }
+
                 for (int i = 0; i < textureTags.size(); i++)
                 {
                     if (ImGui::Selectable(textureTags[i].c_str()))
@@ -506,7 +512,7 @@ void showComponents(Entity entity)
                 ImGui::EndCombo();
             }
 
-            ImGui::SliderFloat2("Texture scaling factor", &meshComponent.textureScalingFactor.x, 0.1f, 100.0f, "%.3f");
+            ImGui::SliderFloat2("Texture scaling factor", &meshComponent.textureScaling.x, 0.1f, 100.0f, "%.3f");
         }
 
         ImGui::SameLine();
@@ -551,6 +557,7 @@ void showEntityOptions(Entity entity)
                             entity,
                             CMesh{
                                 .mesh = AssetManager::GetMesh("cube"),
+                                .meshType = "cube"
                             });
                     }
 
@@ -560,6 +567,7 @@ void showEntityOptions(Entity entity)
                             entity,
                             CMesh{
                                 .mesh = AssetManager::GetMesh("quad"),
+                                .meshType = "quad"
                             });
                     }
                 }
@@ -638,7 +646,8 @@ void showEntityOptions(Entity entity)
                             ecs.AddComponent<CModel>(
                                 entity,
                                 CModel{
-                                    .model = AssetManager::GetModel(modelNames[1])
+                                    .model = AssetManager::GetModel(modelNames[i]),
+                                    .modelName = modelNames[i]
                                 });
                         }
 

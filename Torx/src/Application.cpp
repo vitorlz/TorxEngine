@@ -15,6 +15,8 @@
 #include "Util/ShaderManager.h"
 #include "AssetLoading/AssetManager.h"
 
+#include "Scene/Scene.h"
+
 #include "Components/CTransform.h"
 #include "Components/CLight.h"
 #include "Components/CModel.h"
@@ -98,174 +100,14 @@ int main()
     lightSystem->Init();
     generalInputSystem->Init();
 
-    Entity playerEntity = ecs.CreateEntity();
-
-    ecs.AddComponent<CTransform>(
-        playerEntity,
-        CTransform{
-            .position = glm::vec3(0.0f, 1.8f, 0.0f),
-            .scale = glm::vec3(0.0f, 0.0f, 0.0f),
-            .rotation = glm::vec3(0.0f, 0.0f, 0.0f),
-        });
-
-    ecs.AddComponent<CLight>(
-        playerEntity,
-        CLight{
-            .type = SPOT,
-            .color = glm::vec3(1.0f),
-            .radius = 9.0f,
-            .strength = 1.0f,
-            .direction = glm::vec3(0.0f, 0.0f, -1.0f),
-            .innerCutoff = 12.5f,
-            .outerCutoff = 17.5f,
-        });
-
-    ecs.AddComponent<CPlayer>(
-        playerEntity,
-        CPlayer{
-            .flashlightOn = true,
-            .movementSpeed = 3.0f,
-        });
-       
-    Entity sponzaEntity = ecs.CreateEntity();
-
-    ecs.AddComponent<CTransform>(
-        sponzaEntity,
-        CTransform{
-            .position = glm::vec3(0.0f, 0.0f, 0.0f),
-            .scale = glm::vec3(1.0f),
-            .rotation = glm::vec3(0.0f, 90.0f, 0.0f),   
-        });
-    
-    ecs.AddComponent<CModel>(
-        sponzaEntity,
-        CModel{
-            .model = AssetManager::GetModel("sponza"),
-            .hasAOTexture = false
-        });
-
-    ecs.AddComponent<CRigidBody>(
-        sponzaEntity,
-        CRigidBody{
-            .mass = 0.f
-        });
-
-   Entity lampEntity1 = ecs.CreateEntity();
-
-    ecs.AddComponent<CTransform>(
-        lampEntity1,
-        CTransform{
-            .position = glm::vec3(-0.330f, 3.600f, -6.610f),
-            .scale = glm::vec3(0.359f),
-            .rotation = glm::vec3(0.0f, 180.0f, 0.0f),
-        });
-
-    ecs.AddComponent<CModel>(
-        lampEntity1,
-        CModel{
-            .model = AssetManager::GetModel("victorianLamp")
-        });
-
-    ecs.AddComponent<CLight>(
-        lampEntity1,
-        CLight{
-            .type = POINT,
-            .color = glm::vec3(0.725f, 0.529f, 0.286f),
-            .radius = 7.57993f,
-            .strength = 1.0f,
-            .shadowCaster = true,
-            .offset = glm::vec3(0.000f, -0.282f, 0.562f)
-        });
-
-    ecs.AddComponent<CRigidBody>(
-        lampEntity1,
-        CRigidBody{
-            .mass = 0.f
-        });
-
-    Entity lampEntity2 = ecs.CreateEntity();
-
-    ecs.AddComponent<CTransform>(
-        lampEntity2,
-        CTransform{
-            .position = glm::vec3(-0.330f, 3.600f, 7.645f),
-            .scale = glm::vec3(0.359f),
-            .rotation = glm::vec3(0.0f, 0.0f, 0.0f),
-        });
-
-    ecs.AddComponent<CModel>(
-        lampEntity2,
-        CModel{
-            .model = AssetManager::GetModel("victorianLamp")
-        });
-
-    ecs.AddComponent<CLight>(
-        lampEntity2,
-        CLight{
-            .type = POINT,
-            .color = glm::vec3(0.725f, 0.529f, 0.286f),
-            .radius = 7.75744f,
-            .strength = 1.0f,
-            .shadowCaster = true,
-            .offset = glm::vec3(0.000f, -0.282f, -0.562f)
-        });
-
-    ecs.AddComponent<CRigidBody>(
-        lampEntity2,
-        CRigidBody{
-            .mass = 0.f
-        });
-
-    Entity cubeMesh1 = ecs.CreateEntity();
-
-    ecs.AddComponent<CTransform>(
-        cubeMesh1,
-        CTransform{
-            .position = glm::vec3(-1.0f, 3.0f, -2.0f),
-            .scale = glm::vec3(1.0f),
-            .rotation = glm::vec3(0.0f, 0.0f, 0.0f),
-        });
-
-    ecs.AddComponent<CMesh>(
-        cubeMesh1,
-        CMesh{
-            .mesh = AssetManager::GetMesh("cube")
-        });
-
-    ecs.AddComponent<CRigidBody>(
-        cubeMesh1,
-        CRigidBody{
-            .mass = 0.f
-        });
-
-    Entity quadMesh1 = ecs.CreateEntity();
-
-    ecs.AddComponent<CTransform>(
-        quadMesh1,
-        CTransform{
-            .position = glm::vec3(1.0f, 3.0f, -2.0f),
-            .scale = glm::vec3(1.0f),
-            .rotation = glm::vec3(0.0f, 0.0f, 0.0f),
-        });
-
-    ecs.AddComponent<CMesh>(
-        quadMesh1,
-        CMesh{
-            .mesh = AssetManager::GetMesh("quad")
-        });
-
-    ecs.AddComponent<CRigidBody>(
-        quadMesh1,
-        CRigidBody{
-            .mass = 0.f
-        });
-
     UI gui;
 
     gui.Init(window.GetWindow());
 
     lightSystem->Init();
     physicsSystem->Init();
+
+    Scene::LoadSceneFromJson("pretty.json");
 
     while (!glfwWindowShouldClose(window.GetWindow()))
     {
@@ -286,6 +128,7 @@ int main()
         lightSystem->Update(deltaTime);
 
         gui.Update();
+
         window.Update();
     }
 

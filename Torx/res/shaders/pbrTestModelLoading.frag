@@ -46,7 +46,7 @@ int pointShadowCasterIndex = 0;
 
 // misc
 uniform bool hasAOTexture;
-uniform vec2 textureScalingFactor;
+uniform vec2 textureScaling;
 vec2 scaledTexCoords;
 
 //lights
@@ -98,7 +98,7 @@ vec3 F0;
 void main()
 {
 
-	scaledTexCoords = TexCoords * textureScalingFactor;
+	scaledTexCoords = TexCoords * textureScaling;
 
 	vec4 albedoSample = texture(material.texture_albedo1, scaledTexCoords).rgba;
 	vec3 RMA = texture(material.texture_rma1, scaledTexCoords).gbr;

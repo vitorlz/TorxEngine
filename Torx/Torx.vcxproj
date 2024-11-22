@@ -57,7 +57,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>vendor/GLFW/include;vendor/glad/include;vendor/glm/include;vendor/stb_image;vendor/assimp/include;vendor/bulletphysics/include;imgui;vendor/imguizmo;vendor/imgui;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>vendor/GLFW/include;vendor/glad/include;vendor/glm/include;vendor/stb_image;vendor/assimp/include;vendor/bulletphysics/include;imgui;vendor/imguizmo;vendor/imgui;vendor/nlohmann/include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp20</LanguageStandard>
     </ClCompile>
     <Link>
@@ -76,7 +76,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>vendor/GLFW/include;vendor/glad/include;vendor/glm/include;vendor/stb_image;vendor/assimp/include;vendor/bulletphysics/include;imgui;vendor/imguizmo;vendor/imgui;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>vendor/GLFW/include;vendor/glad/include;vendor/glm/include;vendor/stb_image;vendor/assimp/include;vendor/bulletphysics/include;imgui;vendor/imguizmo;vendor/imgui;vendor/nlohmann/include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp20</LanguageStandard>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
     </ClCompile>
@@ -99,6 +99,7 @@
     <ClCompile Include="src\Physics\BulletDebugDrawer.cpp" />
     <ClCompile Include="src\Physics\Raycast.cpp" />
     <ClCompile Include="src\Rendering\RenderingUtil.cpp" />
+    <ClCompile Include="src\Scene\Scene.cpp" />
     <ClCompile Include="src\Systems\GeneralInputSystem.cpp" />
     <ClCompile Include="src\Systems\LightSystem.cpp" />
     <ClCompile Include="src\Systems\PhysicsSystem.cpp" />
@@ -141,6 +142,7 @@
     <ClInclude Include="src\Physics\BulletDebugDrawer.h" />
     <ClInclude Include="src\Physics\Raycast.h" />
     <ClInclude Include="src\Rendering\RenderingUtil.h" />
+    <ClInclude Include="src\Scene\Scene.h" />
     <ClInclude Include="src\Systems\GeneralInputSystem.h" />
     <ClInclude Include="src\Systems\LightSystem.h" />
     <ClInclude Include="src\Systems\PhysicsSystem.h" />

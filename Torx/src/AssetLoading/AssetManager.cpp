@@ -15,6 +15,7 @@ void AssetManager::LoadModels()
 	Model sponza("res/models/sponza-atrium/Sponza.gltf");
 	Model victorianLamp("res/models/victorianLamp/scene.gltf");
 	Model dirtBlock("res/models/dirtBlock/scene.gltf");
+	Model ceilingLamp1("res/models/ceilingLamp1/scene.gltf");
 	//Model deagle("res/models/deagle/scene.gltf");
 	//Model camera("res/models/camera/scene.gltf");
 	//Model camera("res/models/camera/scene.gltf");
@@ -26,6 +27,7 @@ void AssetManager::LoadModels()
 	m_Models.insert({ "sponza", sponza });
 	m_Models.insert({ "victorianLamp", victorianLamp });
 	m_Models.insert({ "dirtBlock", dirtBlock });
+	m_Models.insert({ "ceilingLamp1", ceilingLamp1 });
 	//mModels.insert({ "deagle", deagle });
 	//mModels.insert({ "camera", camera });
 	//mModels.insert({ "adamhead", adamhead });

@@ -74,8 +74,6 @@ namespace Editor
             ImGui::InputFloat3("Bound Snap", boundsSnap);
         }
 
-        
-
         if (!ecs.HasComponent<CTransform>(selectedEntity))
         {
             std::cout << "Can't render gizmo: entity has no transform" << "\n";

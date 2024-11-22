@@ -379,7 +379,7 @@ void RenderSystem::Update(float deltaTime)
         if (ecs.HasComponent<CModel>(entity))
         {
             auto& model3d = ecs.GetComponent<CModel>(entity);
-            pbrModelTestShader.setVec2("textureScalingFactor", glm::vec2(1.0f));
+            pbrModelTestShader.setVec2("textureScaling", glm::vec2(1.0f));
             pbrModelTestShader.setBool("hasAOTexture", model3d.hasAOTexture);
             model3d.model.Draw(pbrModelTestShader);
         }
@@ -387,7 +387,7 @@ void RenderSystem::Update(float deltaTime)
         {
             glDisable(GL_CULL_FACE);
             auto& meshComponent = ecs.GetComponent<CMesh>(entity);
-            pbrModelTestShader.setVec2("textureScalingFactor", meshComponent.textureScalingFactor);
+            pbrModelTestShader.setVec2("textureScaling", meshComponent.textureScaling);
             meshComponent.mesh.Draw(pbrModelTestShader);
             glEnable(GL_CULL_FACE);
         }

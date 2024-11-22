@@ -224,121 +224,21 @@ void PhysicsSystem::Init()
 void PhysicsSystem::Update(float deltaTime)
 {
 	dynamicsWorld->stepSimulation(deltaTime, 20, 1.0f / 165.0f);
-	if (Common::bulletLinesDebug)
-	{
-		dynamicsWorld->debugDrawWorld();
-	}
-
-	for (const auto& entity : mEntities)
-	{
-		auto& rigidBody = ecs.GetComponent<CRigidBody>(entity);
-
-		auto& transform = ecs.GetComponent<CTransform>(entity);
-
-		if (Common::usingGuizmo && rigidBody.body)
-		{
-			btTransform physicsTransform;
-
-			physicsTransform.setIdentity();
-
-			physicsTransform.setOrigin(btVector3(
-				btScalar(transform.position.x),
-				btScalar(transform.position.y),
-				btScalar(transform.position.z)));
-
-			btQuaternion quatRot;
-
-			quatRot.setEulerZYX(glm::radians(transform.rotation.z), glm::radians(transform.rotation.y), glm::radians(transform.rotation.x));
-
-			physicsTransform.setRotation(quatRot);
-
-			rigidBody.body->getCollisionShape()->setLocalScaling(btVector3(transform.scale.x, transform.scale.y, transform.scale.z));
-
-			rigidBody.body->getMotionState()->setWorldTransform(physicsTransform);
-			rigidBody.body->setWorldTransform(physicsTransform);
-
-			dynamicsWorld->updateSingleAabb(rigidBody.body);
-
-			continue;
-		}
-
-		btTransform trans;
-		if (rigidBody.body && rigidBody.body->getMotionState() && rigidBody.mass > 0 && !Common::usingGuizmo)
-		{
-			rigidBody.body->getMotionState()->getWorldTransform(trans);
-
-			btScalar x, y, z;
-
-			btQuaternion rotation  = trans.getRotation();
-
-			transform.position = glm::vec3(float(trans.getOrigin().getX()), float(trans.getOrigin().getY()), float(trans.getOrigin().getZ()));
-
-			glm::vec3 eulerRot = glm::eulerAngles(glm::quat(rotation.w(), rotation.x(), rotation.y(), rotation.z()));
-
-			transform.rotation = glm::vec3(glm::degrees(eulerRot.x), glm::degrees(eulerRot.y), glm::degrees(eulerRot.z));
-		}
-	}
-
-	CSingleton_Input& inputSing = CSingleton_Input::getInstance();
-
-	static bool shotFired{ false };
-	if (UI::isOpen)
-	{
-		if (inputSing.pressedKeys[MOUSE_LEFT] && !shotFired && !Editor::isOn())
-		{
-			int entityHit = Raycast::mouseRaycast();
-
-			glm::vec3 mouseRayDir = glm::normalize(Raycast::getMouseRayDir());
-			shotFired = true;
-			//std::cout << Util::vec3ToString(mouseRayDir);
-			btRigidBody* entityHitRb = ecs.GetComponent<CRigidBody>(entityHit).body;
-			btVector3 offset = Raycast::getMouseHitPointWorld() - entityHitRb->getCenterOfMassPosition() ;
-
-			std::cout << "entity hit: " << entityHit << "\n";
-			std::cout << "Hitpoint World: " << Raycast::getMouseHitPointWorld().x() << ", " << Raycast::getMouseHitPointWorld().y() << ", " << Raycast::getMouseHitPointWorld().z() << "\n";
-			std::cout << "Center of mass position: " << entityHitRb->getCenterOfMassPosition().x() << ", " << entityHitRb->getCenterOfMassPosition().y() << ", " << entityHitRb->getCenterOfMassPosition().z() << "\n";
-			std::cout << "Offset: " << offset.x() << ", " << offset.y() << ", " << offset.z() << "\n";
-			entityHitRb->activate();
-			entityHitRb->applyImpulse(btVector3(mouseRayDir.x, mouseRayDir.y, mouseRayDir.z) * 3, offset);
-		}
-		else if (!inputSing.pressedKeys[MOUSE_RIGHT])
-		{
-			shotFired = false;
-		}
-	}
-
-	if (mEntities.size() < dynamicsWorld->getNumCollisionObjects())
-	{
-		for (int i = dynamicsWorld->getNumCollisionObjects() - 1; i >= 0; i--)
-		{
-			Entity entity = dynamicsWorld->getCollisionObjectArray()[i]->getUserIndex();
-			if (!ecs.isAlive(entity) || !ecs.HasComponent<CRigidBody>(entity))
-			{
-				btCollisionObject* obj = dynamicsWorld->getCollisionObjectArray()[i];
-				btRigidBody* body = btRigidBody::upcast(obj);
-				if (body && body->getMotionState())
-				{
-					delete body->getMotionState();
-				}
-				dynamicsWorld->removeCollisionObject(obj);
-				delete obj->getCollisionShape();
-				delete obj;
-			};
-		}
-	}
 
 	if (mEntities.size() > dynamicsWorld->getNumCollisionObjects())
 	{
+
+
+		
 		Entity newEntity;
 		std::vector<Entity> oldEntities;
-		for (Entity entity : mEntities) 
+		for (Entity entity : mEntities)
 		{
 			for (int i = dynamicsWorld->getNumCollisionObjects() - 1; i >= 0; i--)
-			{	
+			{
 				newEntity = entity;
 				if (entity == dynamicsWorld->getCollisionObjectArray()[i]->getUserIndex())
-				{	
-
+				{
 					oldEntities.push_back(entity);
 					break;
 				}
@@ -515,5 +415,108 @@ void PhysicsSystem::Update(float deltaTime)
 
 			dynamicsWorld->addRigidBody(rigidBody.body);
 		}
+	}
+
+	for (const auto& entity : mEntities)
+	{
+		auto& rigidBody = ecs.GetComponent<CRigidBody>(entity);
+
+		auto& transform = ecs.GetComponent<CTransform>(entity);
+
+		if (Common::usingGuizmo && rigidBody.body)
+		{
+			btTransform physicsTransform;
+
+			physicsTransform.setIdentity();
+
+			physicsTransform.setOrigin(btVector3(
+				btScalar(transform.position.x),
+				btScalar(transform.position.y),
+				btScalar(transform.position.z)));
+
+			btQuaternion quatRot;
+
+			quatRot.setEulerZYX(glm::radians(transform.rotation.z), glm::radians(transform.rotation.y), glm::radians(transform.rotation.x));
+
+			physicsTransform.setRotation(quatRot);
+
+			rigidBody.body->getCollisionShape()->setLocalScaling(btVector3(transform.scale.x, transform.scale.y, transform.scale.z));
+
+			rigidBody.body->getMotionState()->setWorldTransform(physicsTransform);
+			rigidBody.body->setWorldTransform(physicsTransform);
+
+			dynamicsWorld->updateSingleAabb(rigidBody.body);
+
+			continue;
+		}
+
+		btTransform trans;
+		if (rigidBody.body && rigidBody.body->getMotionState() && rigidBody.mass > 0 && !Common::usingGuizmo)
+		{
+			rigidBody.body->getMotionState()->getWorldTransform(trans);
+
+			btScalar x, y, z;
+
+			btQuaternion rotation  = trans.getRotation();
+
+			transform.position = glm::vec3(float(trans.getOrigin().getX()), float(trans.getOrigin().getY()), float(trans.getOrigin().getZ()));
+
+			glm::vec3 eulerRot = glm::eulerAngles(glm::quat(rotation.w(), rotation.x(), rotation.y(), rotation.z()));
+
+			transform.rotation = glm::vec3(glm::degrees(eulerRot.x), glm::degrees(eulerRot.y), glm::degrees(eulerRot.z));
+		}
+	}
+
+	CSingleton_Input& inputSing = CSingleton_Input::getInstance();
+
+	static bool shotFired{ false };
+	if (UI::isOpen)
+	{
+		if (inputSing.pressedKeys[MOUSE_LEFT] && !shotFired && !Editor::isOn())
+		{
+			int entityHit = Raycast::mouseRaycast();
+
+			glm::vec3 mouseRayDir = glm::normalize(Raycast::getMouseRayDir());
+			shotFired = true;
+			//std::cout << Util::vec3ToString(mouseRayDir);
+			btRigidBody* entityHitRb = ecs.GetComponent<CRigidBody>(entityHit).body;
+			btVector3 offset = Raycast::getMouseHitPointWorld() - entityHitRb->getCenterOfMassPosition() ;
+
+			std::cout << "entity hit: " << entityHit << "\n";
+			std::cout << "Hitpoint World: " << Raycast::getMouseHitPointWorld().x() << ", " << Raycast::getMouseHitPointWorld().y() << ", " << Raycast::getMouseHitPointWorld().z() << "\n";
+			std::cout << "Center of mass position: " << entityHitRb->getCenterOfMassPosition().x() << ", " << entityHitRb->getCenterOfMassPosition().y() << ", " << entityHitRb->getCenterOfMassPosition().z() << "\n";
+			std::cout << "Offset: " << offset.x() << ", " << offset.y() << ", " << offset.z() << "\n";
+			entityHitRb->activate();
+			entityHitRb->applyImpulse(btVector3(mouseRayDir.x, mouseRayDir.y, mouseRayDir.z) * 3, offset);
+		}
+		else if (!inputSing.pressedKeys[MOUSE_RIGHT])
+		{
+			shotFired = false;
+		}
+	}
+
+	if (mEntities.size() < dynamicsWorld->getNumCollisionObjects())
+	{
+		for (int i = dynamicsWorld->getNumCollisionObjects() - 1; i >= 0; i--)
+		{
+			Entity entity = dynamicsWorld->getCollisionObjectArray()[i]->getUserIndex();
+			if (!ecs.isAlive(entity) || !ecs.HasComponent<CRigidBody>(entity))
+			{
+				btCollisionObject* obj = dynamicsWorld->getCollisionObjectArray()[i];
+				btRigidBody* body = btRigidBody::upcast(obj);
+				if (body && body->getMotionState())
+				{
+					delete body->getMotionState();
+				}
+				dynamicsWorld->removeCollisionObject(obj);
+				delete obj->getCollisionShape();
+				delete obj;
+			};
+		}
+	}
+
+	if (Common::bulletLinesDebug)
+	{
+		dynamicsWorld->debugDrawWorld();
 	}
 }

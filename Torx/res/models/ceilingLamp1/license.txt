@@ -1,0 +1,11 @@
+Model Information:
+* title:	Ceiling_Lamp_LP
+* source:	https://sketchfab.com/3d-models/ceiling-lamp-lp-97807f860c804446a31f9beed37afa20
+* author:	Vitor.GomesPT (https://sketchfab.com/Vitor.Gomes1)
+
+Model License:
+* license type:	CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)
+* requirements:	Author must be credited. Commercial use is allowed.
+
+If you use this 3D model in your project be sure to copy paste this credit wherever you share it:
+This work is based on "Ceiling_Lamp_LP" (https://sketchfab.com/3d-models/ceiling-lamp-lp-97807f860c804446a31f9beed37afa20) by Vitor.GomesPT (https://sketchfab.com/Vitor.Gomes1) licensed under CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)
