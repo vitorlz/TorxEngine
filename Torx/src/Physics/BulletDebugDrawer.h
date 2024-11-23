@@ -17,5 +17,6 @@ public:
 	void setDebugMode(int p);
 	int getDebugMode(void) const;
 private:
-	int m_debugMode;
+	int m_DebugMode;
+	static int m_LinesCount;
 };

@@ -17,7 +17,6 @@ bool  Common::aoDebug{ false };
 bool  Common::emissionDebug{ false };
 bool  Common::bulletLinesDebug{ false };
 bool  Common::bulletLinesReady{ false };
-int   Common::debugLinesCount{};
 
 // ------------- TONE MAPPING ----------------------------------
 bool  Common::aces{ true };

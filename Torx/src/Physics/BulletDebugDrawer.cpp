@@ -6,6 +6,7 @@
 #include <iostream>
 
 std::vector<float> BulletDebugDrawer::m_points;
+int BulletDebugDrawer::m_LinesCount;
 
 void BulletDebugDrawer::drawLine(const btVector3& from, const btVector3& to, const btVector3& color)
 {
@@ -23,7 +24,7 @@ void BulletDebugDrawer::drawLine(const btVector3& from, const btVector3& to, con
 	m_points.push_back(color.y());
 	m_points.push_back(color.z());
 
-	Common::debugLinesCount++;
+	m_LinesCount++;
 }
 
 void BulletDebugDrawer::drawContactPoint(const btVector3&, const btVector3&, btScalar, int, const btVector3&) {}
@@ -31,12 +32,12 @@ void BulletDebugDrawer::reportErrorWarning(const char*) {}
 void BulletDebugDrawer::draw3dText(const btVector3&, const char*) {}
 void BulletDebugDrawer::setDebugMode(int p) 
 { 
-	m_debugMode = p; 
+	m_DebugMode = p; 
 }
 
 int BulletDebugDrawer::getDebugMode(void) const 
 { 
-	return m_debugMode;
+	return m_DebugMode;
 }
 
 void BulletDebugDrawer::drawLines()
@@ -44,11 +45,11 @@ void BulletDebugDrawer::drawLines()
 	glNamedBufferSubData(RenderingUtil::mBulletDebugLinesVBO, 0, BulletDebugDrawer::m_points.size() * sizeof(btScalar), BulletDebugDrawer::m_points.data());
 
 	glBindVertexArray(RenderingUtil::mBulletDebugLinesVAO);
-	glDrawArrays(GL_LINES, 0, Common::debugLinesCount * 2);
+	glDrawArrays(GL_LINES, 0, m_LinesCount * 2);
 	glBindVertexArray(0);
 
 	m_points.clear();
-	Common::debugLinesCount = 0;
+	m_LinesCount = 0;
 }
 
 

@@ -97,7 +97,7 @@ int main()
     }
 
 
-    Scene::LoadSceneFromJson("res/scenes/sponzascene.json");
+    Scene::LoadSceneFromJson("testscene.json");
 
     UI gui;
 

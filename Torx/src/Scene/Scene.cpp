@@ -90,7 +90,7 @@ void Scene::SaveSceneToJson(const std::string& filename)
 		entities.push_back(e);
 	}
 
-	std::ofstream o(filename);
+	std::ofstream o("res/scenes/" + filename);
 	if (!o.is_open())
 	{
 		std::cout << "Failed to open json file.\n";
@@ -107,7 +107,7 @@ void Scene::LoadSceneFromJson(const std::string& filename)
 {
 	std::cout << "Loading scene..." << "\n";
 
-	std::ifstream f(filename);
+	std::ifstream f("res/scenes/" + filename);
 	if (!f.is_open())
 	{
 		std::cout << "Failed to open json file. \n";
@@ -132,8 +132,6 @@ void Scene::LoadSceneFromJson(const std::string& filename)
 					.scale = jsonToVec3(e["components"]["transform"]["scale"]),
 					.rotation = jsonToVec3(e["components"]["transform"]["rotation"]),
 				});
-			
-			
 		}
 
 		if (e["components"].contains("rigidbody"))
@@ -171,10 +169,14 @@ void Scene::LoadSceneFromJson(const std::string& filename)
 				newEntity,
 				CMesh{
 					.mesh = AssetManager::GetMesh(e["components"]["mesh"]["meshType"].get<std::string>()),
-					.meshType = e["components"]["mesh"]["meshType"].get<std::string>(),
+					.meshType = e["components"]["mesh"]["meshType"].get<std::string>(),  
 					.texture = e["components"]["mesh"]["texture"].get<std::string>(),
 					.textureScaling = jsonToVec2(e["components"]["mesh"]["textureScaling"])
 				});
+
+			
+			auto& meshComponent = ecs.GetComponent<CMesh>(newEntity);
+			meshComponent.mesh.textures = AssetManager::LoadMeshTextures(meshComponent.texture.c_str());
 		}
 
 		if (e["components"].contains("light"))

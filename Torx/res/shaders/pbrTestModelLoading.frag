@@ -174,7 +174,7 @@ void main()
 	vec3 specular = prefilteredColor * (F * envBRDF.x + envBRDF.y);
 	
 	//vec3 ambient = (kD * diffuse + specular) * ao;
-	vec3 ambient = ((kD * diffuse + specular) * ao) / 10;
+	vec3 ambient = ((kD * diffuse + specular) * ao);
 	
 	vec3 color = Lo;
 

@@ -269,7 +269,7 @@ void UI::Update()
 
     if (ImGui::Button("Save scene")) 
     {
-        Scene::SaveSceneToJson("sponzascene.json");
+        Scene::SaveSceneToJson("testscene.json");
     }
 
     ImGui::End();
@@ -506,7 +506,8 @@ void showComponents(Entity entity)
                 {
                     if (ImGui::Selectable(textureTags[i].c_str()))
                     {     
-                        meshComponent.mesh.textures =  AssetManager::LoadMeshTextures(std::string(textureTags[i]).c_str());
+                        meshComponent.texture = textureTags[i];
+                        meshComponent.mesh.textures =  AssetManager::LoadMeshTextures(meshComponent.texture.c_str());
                     }
 
                 }

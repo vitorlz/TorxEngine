@@ -227,8 +227,6 @@ void PhysicsSystem::Update(float deltaTime)
 
 	if (mEntities.size() > dynamicsWorld->getNumCollisionObjects())
 	{
-
-
 		
 		Entity newEntity;
 		std::vector<Entity> oldEntities;
@@ -487,7 +485,7 @@ void PhysicsSystem::Update(float deltaTime)
 			std::cout << "Center of mass position: " << entityHitRb->getCenterOfMassPosition().x() << ", " << entityHitRb->getCenterOfMassPosition().y() << ", " << entityHitRb->getCenterOfMassPosition().z() << "\n";
 			std::cout << "Offset: " << offset.x() << ", " << offset.y() << ", " << offset.z() << "\n";
 			entityHitRb->activate();
-			entityHitRb->applyImpulse(btVector3(mouseRayDir.x, mouseRayDir.y, mouseRayDir.z) * 3, offset);
+			entityHitRb->applyImpulse(btVector3(mouseRayDir.x, mouseRayDir.y, mouseRayDir.z) * 2, offset);
 		}
 		else if (!inputSing.pressedKeys[MOUSE_RIGHT])
 		{
@@ -519,4 +517,6 @@ void PhysicsSystem::Update(float deltaTime)
 	{
 		dynamicsWorld->debugDrawWorld();
 	}
+
+
 }
