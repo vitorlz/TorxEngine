@@ -517,6 +517,4 @@ void PhysicsSystem::Update(float deltaTime)
 	{
 		dynamicsWorld->debugDrawWorld();
 	}
-
-
 }

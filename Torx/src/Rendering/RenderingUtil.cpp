@@ -205,7 +205,7 @@ void RenderingUtil::CreateMSAAFBO()
     unsigned int msRbo;
     glGenRenderbuffers(1, &msRbo);
     glBindRenderbuffer(GL_RENDERBUFFER, msRbo);
-    glRenderbufferStorageMultisample(GL_RENDERBUFFER, 4, GL_DEPTH24_STENCIL8, Common::SCR_WIDTH, Common::SCR_HEIGHT);
+    glRenderbufferStorageMultisample(GL_RENDERBUFFER, 4, GL_DEPTH32F_STENCIL8, Common::SCR_WIDTH, Common::SCR_HEIGHT);
     glBindRenderbuffer(GL_RENDERBUFFER, 0);
 
     glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, msRbo);
