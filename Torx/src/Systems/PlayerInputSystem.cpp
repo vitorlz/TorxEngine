@@ -7,6 +7,7 @@
 #include "../Core/Coordinator.hpp"
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/quaternion.hpp>
 #include "../UI/UI.h"
 
 void PlayerInputSystem::Init() {}
@@ -17,6 +18,9 @@ void flashlightLogic(CPlayer& player, CLight& light);
 void PlayerInputSystem::Update(float deltaTime)
 {
     // maybe make this change settings in the player component that has like playerForward, playerPrimaryFire.
+
+    static glm::vec3 rotationEuler;
+
     for (auto& entity : mEntities)
     {
         auto& transform = ecs.GetComponent<CTransform>(entity);
@@ -25,14 +29,16 @@ void PlayerInputSystem::Update(float deltaTime)
         float velocity = player.movementSpeed * deltaTime;
 
         if (!UI::isOpen) {
-            transform.rotation.x -= inputSing.mouseOffsetY * 0.05; 
-            transform.rotation.y -= inputSing.mouseOffsetX * 0.05; 
-            transform.rotation.x = std::clamp(transform.rotation.x, -90.0f, 90.0f);
+            rotationEuler.x -= inputSing.mouseOffsetY * 0.05; 
+            rotationEuler.y -= inputSing.mouseOffsetX * 0.05;
+            rotationEuler.x = std::clamp(rotationEuler.x, -90.0f, 90.0f);
         }
 
+        transform.rotation = glm::quat(glm::radians(rotationEuler));
+
         glm::mat4 model = glm::translate(glm::mat4(1.0f), transform.position);
-        model = glm::rotate(model, glm::radians(transform.rotation.y), glm::vec3(0.0f, 1.0, 0.0)); // Yaw
-        model = glm::rotate(model, glm::radians(transform.rotation.x), glm::vec3(1.0f, 0.0, 0.0)); // Pitch
+        glm::mat4 rotMatrix = glm::mat4_cast(transform.rotation);
+        model *= rotMatrix;
          
         glm::vec3 cameraRight = glm::normalize(glm::vec3(model[0]));
         glm::vec3 cameraUp = glm::normalize(glm::vec3(model[1]));
@@ -61,8 +67,8 @@ void PlayerInputSystem::Update(float deltaTime)
 
         model = glm::mat4(1.0f);
         model = glm::translate(model, transform.position);
-        model = glm::rotate(model, glm::radians(transform.rotation.y), glm::vec3(0.0f, 1.0f, 0.0f)); // Yaw
-        model = glm::rotate(model, glm::radians(transform.rotation.x), glm::vec3(1.0f, 0.0f, 0.0f)); // Pitch
+        rotMatrix = glm::mat4_cast(transform.rotation);
+        model *= rotMatrix;
 
         glm::mat4 viewMatrix = glm::inverse(model);
 

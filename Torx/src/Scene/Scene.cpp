@@ -18,6 +18,7 @@ extern Coordinator ecs;
 
 glm::vec2 jsonToVec2(nlohmann::json json);
 glm::vec3 jsonToVec3(nlohmann::json json);
+glm::quat jsonToQuat(nlohmann::json json);
 
 void Scene::SaveSceneToJson(const std::string& filename)
 {
@@ -33,7 +34,7 @@ void Scene::SaveSceneToJson(const std::string& filename)
 			const auto& transform = ecs.GetComponent<CTransform>(entity);
 			e["components"]["transform"]["position"] = { transform.position.x, transform.position.y, transform.position.z };
 			e["components"]["transform"]["scale"] = { transform.scale.x, transform.scale.y, transform.scale.z };
-			e["components"]["transform"]["rotation"] = { transform.rotation.x, transform.rotation.y, transform.rotation.z };
+			e["components"]["transform"]["rotation"] = { transform.rotation.w, transform.rotation.x, transform.rotation.y, transform.rotation.z };
 			e["id"] = entity;
 		}
 
@@ -58,7 +59,14 @@ void Scene::SaveSceneToJson(const std::string& filename)
 		{
 			const auto& mesh = ecs.GetComponent<CMesh>(entity);
 			e["components"]["mesh"]["meshType"] = mesh.meshType;
-			e["components"]["mesh"]["texture"] = mesh.texture;
+			if (mesh.texture == "")
+			{
+				e["components"]["mesh"]["texture"] = "darkmarble";
+			}
+			else 
+			{
+				e["components"]["mesh"]["texture"] = mesh.texture;
+			}
 			e["components"]["mesh"]["textureScaling"] = { mesh.textureScaling.x, mesh.textureScaling.y };
 			e["id"] = entity;
 		}
@@ -130,7 +138,7 @@ void Scene::LoadSceneFromJson(const std::string& filename)
 				CTransform{
 					.position = jsonToVec3(e["components"]["transform"]["position"]),
 					.scale = jsonToVec3(e["components"]["transform"]["scale"]),
-					.rotation = jsonToVec3(e["components"]["transform"]["rotation"]),
+					.rotation = jsonToQuat(e["components"]["transform"]["rotation"]),
 				});
 		}
 
@@ -210,6 +218,13 @@ void Scene::LoadSceneFromJson(const std::string& filename)
 	}
 
 	std::cout << "scene loaded " << "\n";
+}
+
+glm::quat jsonToQuat(nlohmann::json json)
+{
+	std::vector<float> rot = json.get<std::vector<float>>();
+
+	return glm::quat(rot[0], rot[1], rot[2], rot[3]);
 }
 
 glm::vec3 jsonToVec3(nlohmann::json json)

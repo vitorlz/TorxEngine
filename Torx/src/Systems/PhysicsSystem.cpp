@@ -201,7 +201,9 @@ void PhysicsSystem::Init()
 				btScalar(transform.position.y),
 				btScalar(transform.position.z)));
 
-			btQuaternion quatRot(glm::radians(transform.rotation.y), glm::radians(transform.rotation.x), glm::radians(transform.rotation.z));
+			transform.rotation = glm::normalize(transform.rotation);
+
+			btQuaternion quatRot(transform.rotation.x, transform.rotation.y, transform.rotation.z, transform.rotation.w);
 
 			startTransform.setRotation(quatRot);
 
@@ -396,9 +398,13 @@ void PhysicsSystem::Update(float deltaTime)
 					btScalar(transform.position.y),
 					btScalar(transform.position.z)));
 
-				btQuaternion quatRot(glm::radians(transform.rotation.y), glm::radians(transform.rotation.x), glm::radians(transform.rotation.z));
+				transform.rotation = glm::normalize(transform.rotation);
+
+				btQuaternion quatRot(transform.rotation.x, transform.rotation.y, transform.rotation.z, transform.rotation.w);
 
 				startTransform.setRotation(quatRot);
+
+				std::cout << "new rigid body added \n";
 
 				//using motionstate is optional, it provides interpolation capabilities, and only synchronizes 'active' objects
 				btDefaultMotionState* myMotionState = new btDefaultMotionState(startTransform);
@@ -437,9 +443,9 @@ void PhysicsSystem::Update(float deltaTime)
 				btScalar(transform.position.y),
 				btScalar(transform.position.z)));
 
-			btQuaternion quatRot;
+			transform.rotation = glm::normalize(transform.rotation);
 
-			quatRot.setEulerZYX(glm::radians(transform.rotation.z), glm::radians(transform.rotation.y), glm::radians(transform.rotation.x));
+			btQuaternion quatRot(transform.rotation.x, transform.rotation.y, transform.rotation.z, transform.rotation.w);
 
 			physicsTransform.setRotation(quatRot);
 
@@ -464,9 +470,9 @@ void PhysicsSystem::Update(float deltaTime)
 
 			transform.position = glm::vec3(float(trans.getOrigin().getX()), float(trans.getOrigin().getY()), float(trans.getOrigin().getZ()));
 
-			glm::vec3 eulerRot = glm::eulerAngles(glm::quat(rotation.w(), rotation.x(), rotation.y(), rotation.z()));
+			transform.rotation = glm::quat(rotation.getW(), rotation.getX(), rotation.getY(), rotation.getZ());
 
-			transform.rotation = glm::vec3(glm::degrees(eulerRot.x), glm::degrees(eulerRot.y), glm::degrees(eulerRot.z));
+			transform.rotation = glm::normalize(transform.rotation);
 		}
 	}
 

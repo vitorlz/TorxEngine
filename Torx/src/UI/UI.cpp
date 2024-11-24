@@ -395,9 +395,12 @@ void showComponents(Entity entity)
         {
             CTransform& transform = ecs.GetComponent<CTransform>(entity);
 
-            ImGui::SliderFloat3("Position", &transform.position.x, -20.0f, 20.0f, "%.3f");
-            ImGui::SliderFloat3("Scale", &transform.scale.x, -10.0f, 10.0f, "%.3f");
-            ImGui::SliderFloat3("Rotation", &transform.rotation.x, -360.0f, 360.0f, "%.3f");
+            ImGui::SliderFloat3("Position", &transform.position.x, -20.0f, 20.0f, "%.10f");
+            ImGui::SliderFloat3("Scale", &transform.scale.x, -10.0f, 10.0f, "%.10f");
+
+            glm::vec3 rotationEuler = glm::degrees(glm::eulerAngles(transform.rotation));
+
+            ImGui::SliderFloat3("Rotation", &rotationEuler.x, -360.0f, 360.0f, "%.10f");
 
             if (ecs.HasComponent<CLight>(entity))
             {
@@ -733,7 +736,7 @@ void showEntityOptions(Entity entity, bool addingNewEntity)
             CTransform{
                 .position = playerPosition + playerFront * 2.0f,
                 .scale = glm::vec3(1.0f),
-                .rotation = glm::vec3(0.0f, 0.0f, 0.0f),
+                .rotation = glm::quat(),
             });
 
         selectedComponent = -1;

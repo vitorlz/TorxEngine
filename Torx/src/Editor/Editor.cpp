@@ -9,6 +9,9 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
+#include "../Util/Util.h"
+#define GLM_ENABLE_EXPERIMENTAL 
+#include <glm/gtx/string_cast.hpp>
 
 
 extern Coordinator ecs;
@@ -92,7 +95,7 @@ namespace Editor
 
         glm::mat4 model = glm::mat4(1.0f);
         model = glm::translate(model, transform.position);
-        glm::mat4 rotMatrix = glm::mat4_cast(glm::quat(glm::vec3(glm::radians(transform.rotation.x), glm::radians(transform.rotation.y), glm::radians(transform.rotation.z))));
+        glm::mat4 rotMatrix = glm::mat4_cast(transform.rotation);
         model *= rotMatrix;
         model = glm::scale(model, transform.scale);
 
@@ -112,24 +115,54 @@ namespace Editor
         {
             Common::usingGuizmo = true;
 
-            // update graphics transform
-
-            glm::vec3 translation, rotation, scale;
-            ImGuizmo::DecomposeMatrixToComponents(glm::value_ptr(model), glm::value_ptr(translation), glm::value_ptr(rotation), glm::value_ptr(scale));
-
-            glm::vec3 deltaRotation = rotation - transform.rotation;
+            glm::vec3 translation, scale;
+            glm::quat rotation;
+           
+            Util::decomposeMtx(model, translation, rotation, scale);
 
             if (currentGizmoOperation == ImGuizmo::TRANSLATE)
             {
-                transform.position = translation;
+                if (useSnap)
+                {
+                    translation.x = round(translation.x / snap[0]) * snap[0];
+                    translation.y = round(translation.y / snap[1]) * snap[1];
+                    translation.z = round(translation.z / snap[2]) * snap[2];
+
+                    transform.position = translation;
+                }
+                else
+                {
+                    transform.position = translation;
+                }
             }
             else if (currentGizmoOperation == ImGuizmo::ROTATE)
             {
-                transform.rotation += deltaRotation;
+                if (useSnap)
+                {
+                    glm::vec3 eulerAngles = glm::degrees(glm::eulerAngles(rotation));
+
+                    eulerAngles = round(eulerAngles / rotateSnap[0]) * rotateSnap[0];
+                    
+                    transform.rotation = glm::quat(glm::radians(eulerAngles));
+                }
+                else
+                {
+                    transform.rotation = rotation;
+                }
+               
             }
             else if (currentGizmoOperation == ImGuizmo::SCALE)
             {
-                transform.scale = scale;
+                if (useSnap)
+                {
+                    scale = round(scale / snap[0]) * snap[0];
+                  
+                    transform.scale = scale;
+                }
+                else
+                {
+                    transform.scale = scale;
+                }
             }
 
         }

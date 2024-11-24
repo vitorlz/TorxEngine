@@ -113,7 +113,7 @@ void RenderSystem::Update(float deltaTime)
             glm::mat4 model = glm::mat4(1.0f);
             model = glm::translate(model, transform.position);
 
-            glm::mat4 rotMatrix = glm::mat4_cast(glm::quat(glm::vec3(glm::radians(transform.rotation.x), glm::radians(transform.rotation.y), glm::radians(transform.rotation.z))));
+            glm::mat4 rotMatrix = glm::mat4_cast(transform.rotation);
 
             model *= rotMatrix;
 
@@ -228,7 +228,7 @@ void RenderSystem::Update(float deltaTime)
                 glm::mat4 model = glm::mat4(1.0f);
                 model = glm::translate(model, transform.position);
 
-                glm::mat4 rotMatrix = glm::mat4_cast(glm::quat(glm::vec3(glm::radians(transform.rotation.x), glm::radians(transform.rotation.y), glm::radians(transform.rotation.z))));
+                glm::mat4 rotMatrix = glm::mat4_cast(transform.rotation);
 
                 model *= rotMatrix;
 
@@ -364,7 +364,7 @@ void RenderSystem::Update(float deltaTime)
         glm::mat4 model = glm::mat4(1.0f);
         model = glm::translate(model, transform.position);
 
-        glm::mat4 rotMatrix = glm::mat4_cast(glm::quat(glm::vec3(glm::radians(transform.rotation.x), glm::radians(transform.rotation.y), glm::radians(transform.rotation.z))));
+        glm::mat4 rotMatrix = glm::mat4_cast(transform.rotation);
 
         model *= rotMatrix;
 
