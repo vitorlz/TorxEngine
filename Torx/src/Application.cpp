@@ -96,7 +96,6 @@ int main()
         ecs.SetSystemSignature<PlayerInputSystem>(signature);
     }
 
-
     Scene::LoadSceneFromJson("testscene.json");
 
     UI gui;

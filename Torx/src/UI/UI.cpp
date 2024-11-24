@@ -26,7 +26,7 @@ bool UI::isOpen{ false };
 bool UI::firstMouseUpdateAfterMenu{ false };
 
 void showComponents(Entity entity);
-void showEntityOptions(Entity entity);
+void showEntityOptions(Entity entity, bool addingNewEntity);
 
 extern Coordinator ecs;
 
@@ -99,7 +99,7 @@ void UI::Update()
             if (ImGui::TreeNode("", "Entity %d", livingEntities[i]))
             {  
                 showComponents(livingEntities[i]);
-                showEntityOptions(livingEntities[i]);
+                showEntityOptions(livingEntities[i], false);
                 ImGui::TreePop();
             }
             ImGui::PopID();
@@ -300,7 +300,7 @@ void UI::Update()
                 std::string selectedEntityText = ss.str();
                 ImGui::TextColored(ImVec4(1.0f, 1.0f, 0.0f, 1.0f), selectedEntityText.c_str());
                 showComponents(selectedEntity);
-                showEntityOptions(selectedEntity);
+                showEntityOptions(selectedEntity, addingNewEntity);
             }
         }
 
@@ -324,7 +324,7 @@ void UI::Update()
             ImGui::TextColored(ImVec4(1.0f, 1.0f, 0.0f, 1.0f), addingEntityText.c_str());
 
             showComponents(newEntity);
-            showEntityOptions(newEntity);
+            showEntityOptions(newEntity, addingNewEntity);
 
             if (ImGui::Button("Done"))
             {
@@ -416,31 +416,54 @@ void showComponents(Entity entity)
     {
         if (ImGui::CollapsingHeader("Model Component", ImGuiTreeNodeFlags_AllowItemOverlap))
         {
-            ImGui::TextColored(ImVec4(1.0f, 1.0f, 0.0f, 1.0f), "Has model component");
+            auto& modelComponent = ecs.GetComponent<CModel>(entity);
 
-            if (ImGui::BeginCombo("", "Choose Model"))
-            {
-                auto& modelComponent = ecs.GetComponent<CModel>(entity);
-
-                std::vector<std::string> modelNames = AssetManager::GetModelNames();
-
-                for (int i = 0; i < modelNames.size(); i++)
-                {
-                    if (ImGui::Selectable(modelNames[i].c_str()))
-                    {
-                        modelComponent.model = AssetManager::GetModel(modelNames[i]);
-                        modelComponent.modelName = modelNames[i];
-                    }
-
-                }
-                ImGui::EndCombo();
-            }
+            ImGui::TextColored(ImVec4(1.0f, 1.0f, 0.0f, 1.0f), modelComponent.modelName.c_str());
         }
         ImGui::SameLine();
+
+        static bool dont_ask_me_next_time = false;
         if (ImGui::Button("Delete##xx2"))
         {
-            ecs.RemoveComponent<CModel>(entity);
+            if (ecs.HasComponent<CRigidBody>(entity) && !dont_ask_me_next_time) 
+            {
+                ImGui::OpenPopup("Delete?");
+            }
+            else if (ecs.HasComponent<CRigidBody>(entity))
+            {
+                ecs.RemoveComponent<CModel>(entity);
+                ecs.RemoveComponent<CRigidBody>(entity);
+            }
+            else
+            {
+                ecs.RemoveComponent<CModel>(entity);
+            }
+            
         }
+
+        ImVec2 center = ImGui::GetMainViewport()->GetCenter();
+        ImGui::SetNextWindowPos(center, ImGuiCond_Appearing, ImVec2(0.5f, 0.5f));
+
+        if (ImGui::BeginPopupModal("Delete?", NULL, ImGuiWindowFlags_AlwaysAutoResize))
+        {
+            ImGui::Text("Deleting an entity's model component will also delete its rigid body.");
+            ImGui::Separator();
+
+            ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(0, 0));
+            ImGui::Checkbox("Don't ask me next time", &dont_ask_me_next_time);
+            ImGui::PopStyleVar();
+
+            if (ImGui::Button("OK", ImVec2(120, 0))) 
+            { 
+                ecs.RemoveComponent<CModel>(entity);
+                ecs.RemoveComponent<CRigidBody>(entity);
+            }
+            ImGui::SetItemDefaultFocus();
+            ImGui::SameLine();
+            if (ImGui::Button("Cancel", ImVec2(120, 0))) { ImGui::CloseCurrentPopup(); }
+            ImGui::EndPopup();
+        }
+
     }
 
     if (ecs.HasComponent<CPlayer>(entity))
@@ -518,15 +541,53 @@ void showComponents(Entity entity)
         }
 
         ImGui::SameLine();
-        if (ImGui::Button("Delete##xx5"))
+        static bool dont_ask_me_next_time = false;
+        if (ImGui::Button("Delete##xx2"))
         {
-            ecs.RemoveComponent<CMesh>(entity);
+
+            if (ecs.HasComponent<CRigidBody>(entity))
+            {
+                ImGui::OpenPopup("Delete?");
+            }
+            else if (ecs.HasComponent<CRigidBody>(entity))
+            {
+                ecs.RemoveComponent<CMesh>(entity);
+                ecs.RemoveComponent<CRigidBody>(entity);
+            }
+            else
+            {
+                ecs.RemoveComponent<CMesh>(entity);
+            }
+
+        }
+
+        ImVec2 center = ImGui::GetMainViewport()->GetCenter();
+        ImGui::SetNextWindowPos(center, ImGuiCond_Appearing, ImVec2(0.5f, 0.5f));
+
+        if (ImGui::BeginPopupModal("Delete?", NULL, ImGuiWindowFlags_AlwaysAutoResize))
+        {
+            ImGui::Text("Deleting an entity's mesh component will also delete its rigid body.");
+            ImGui::Separator();
+
+            ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(0, 0));
+            ImGui::Checkbox("Don't ask me next time", &dont_ask_me_next_time);
+            ImGui::PopStyleVar();
+
+            if (ImGui::Button("OK", ImVec2(120, 0)))
+            {
+                ecs.RemoveComponent<CMesh>(entity);
+                ecs.RemoveComponent<CRigidBody>(entity);
+            }
+            ImGui::SetItemDefaultFocus();
+            ImGui::SameLine();
+            if (ImGui::Button("Cancel", ImVec2(120, 0))) { ImGui::CloseCurrentPopup(); }
+            ImGui::EndPopup();
         }
     }
 
 }
 
-void showEntityOptions(Entity entity)
+void showEntityOptions(Entity entity, bool addingNewEntity)
 {
 
     static int selectedComponent = -1;
@@ -678,11 +739,15 @@ void showEntityOptions(Entity entity)
         selectedComponent = -1;
     }
 
-    if (ImGui::Button("Destroy Entity"))
-    {
-        ecs.DestroyEntity(entity);
-    }
 
+    if (!addingNewEntity)
+    {
+        if (ImGui::Button("Destroy Entity"))
+        {
+            ecs.DestroyEntity(entity);
+        }
+    }
+  
     if (ImGui::Button("Duplicate"))
     {
         Util::duplicateEntity(entity);

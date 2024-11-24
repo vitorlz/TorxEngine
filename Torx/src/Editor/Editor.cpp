@@ -103,7 +103,7 @@ namespace Editor
             currentGizmoOperation = ImGuizmo::TRANSLATE;
         if (inputSing.pressedKeys[NUMBER_2])
             currentGizmoOperation = ImGuizmo::ROTATE;
-        if (inputSing.pressedKeys[NUMBER_3]) // r Key
+        if (inputSing.pressedKeys[NUMBER_3]) 
             currentGizmoOperation = ImGuizmo::SCALE;
 
         ImGuizmo::Manipulate(glm::value_ptr(view), glm::value_ptr(projection), currentGizmoOperation, ImGuizmo::LOCAL, glm::value_ptr(model), NULL, useSnap ? snap.data() : NULL, boundSizing ? bounds : NULL, boundSizingSnap ? boundsSnap : NULL);
@@ -119,9 +119,19 @@ namespace Editor
 
             glm::vec3 deltaRotation = rotation - transform.rotation;
 
-            transform.position = translation;
-            transform.rotation += deltaRotation;
-            transform.scale = scale;
+            if (currentGizmoOperation == ImGuizmo::TRANSLATE)
+            {
+                transform.position = translation;
+            }
+            else if (currentGizmoOperation == ImGuizmo::ROTATE)
+            {
+                transform.rotation += deltaRotation;
+            }
+            else if (currentGizmoOperation == ImGuizmo::SCALE)
+            {
+                transform.scale = scale;
+            }
+
         }
         else
         {

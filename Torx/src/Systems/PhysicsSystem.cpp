@@ -43,7 +43,7 @@ btDiscreteDynamicsWorld* dynamicsWorld = new btDiscreteDynamicsWorld(dispatcher,
 
 
 BulletDebugDrawer debugDrawer;
-void PhysicsSystem::Init() 
+void PhysicsSystem::Init()
 {
 
 	Raycast::setDynamicsWorld(dynamicsWorld);
@@ -57,6 +57,10 @@ void PhysicsSystem::Init()
 
 	for (const auto& entity : mEntities)
 	{
+		if (!ecs.HasComponent<CModel>(entity) && !ecs.HasComponent<CMesh>(entity))
+		{
+			continue;
+		}
 
 		auto& rigidBody = ecs.GetComponent<CRigidBody>(entity);
 		auto& transform = ecs.GetComponent<CTransform>(entity);
@@ -253,165 +257,166 @@ void PhysicsSystem::Update(float deltaTime)
 			}
 		}
 
-		auto& rigidBody = ecs.GetComponent<CRigidBody>(newEntity);
-		auto& transform = ecs.GetComponent<CTransform>(newEntity);
-
+		if (ecs.HasComponent<CModel>(newEntity) || ecs.HasComponent<CMesh>(newEntity))
 		{
-			btTransform startTransform;
-			/// Create Dynamic Objects
-			startTransform.setIdentity();
+			auto& rigidBody = ecs.GetComponent<CRigidBody>(newEntity);
+			auto& transform = ecs.GetComponent<CTransform>(newEntity);
 
-			btScalar mass = rigidBody.mass;
-
-			//rigidbody is dynamic if and only if mass is non zero, otherwise static
-			bool isDynamic = (mass != 0.f);
-
-			btCollisionShape* colShapeDynamic = nullptr;
-			btBvhTriangleMeshShape* colShapeStatic = nullptr;
-
-			if (isDynamic)
 			{
+				btTransform startTransform;
+				/// Create Dynamic Objects
+				startTransform.setIdentity();
 
-				if (ecs.HasComponent<CModel>(newEntity))
+				btScalar mass = rigidBody.mass;
+
+				//rigidbody is dynamic if and only if mass is non zero, otherwise static
+				bool isDynamic = (mass != 0.f);
+
+				btCollisionShape* colShapeDynamic = nullptr;
+				btBvhTriangleMeshShape* colShapeStatic = nullptr;
+
+				if (isDynamic)
 				{
-					auto& model = ecs.GetComponent<CModel>(newEntity);
-
-					btConvexHullShape* convexHullShape = new btConvexHullShape();
-
-
-					for (const Mesh& mesh : model.model.meshes)
+					if (ecs.HasComponent<CModel>(newEntity))
 					{
-						for (const Vertex& vertex : mesh.vertices) {
+						auto& model = ecs.GetComponent<CModel>(newEntity);
+
+						btConvexHullShape* convexHullShape = new btConvexHullShape();
+
+						for (const Mesh& mesh : model.model.meshes)
+						{
+							for (const Vertex& vertex : mesh.vertices) {
+								convexHullShape->addPoint(btVector3(vertex.Position.x, vertex.Position.y, vertex.Position.z), false);
+							}
+						}
+
+						convexHullShape->setLocalScaling(btVector3(transform.scale.x, transform.scale.y, transform.scale.z));
+
+						convexHullShape->recalcLocalAabb();
+						convexHullShape->optimizeConvexHull();
+						convexHullShape->setMargin(0.005f);
+
+						colShapeDynamic = convexHullShape;
+
+						collisionShapes.push_back(colShapeDynamic);
+					}
+					else if (ecs.HasComponent<CMesh>(newEntity))
+					{
+						auto& meshComponent = ecs.GetComponent<CMesh>(newEntity);
+
+						btConvexHullShape* convexHullShape = new btConvexHullShape();
+
+
+
+						for (const Vertex& vertex : meshComponent.mesh.vertices) {
 							convexHullShape->addPoint(btVector3(vertex.Position.x, vertex.Position.y, vertex.Position.z), false);
 						}
+						convexHullShape->setLocalScaling(btVector3(transform.scale.x, transform.scale.y, transform.scale.z));
+
+						convexHullShape->recalcLocalAabb();
+						convexHullShape->optimizeConvexHull();
+						convexHullShape->setMargin(0.005f);
+
+						colShapeDynamic = convexHullShape;
+
+						collisionShapes.push_back(colShapeDynamic);
 					}
 
-					convexHullShape->setLocalScaling(btVector3(transform.scale.x, transform.scale.y, transform.scale.z));
-
-					convexHullShape->recalcLocalAabb();
-					convexHullShape->optimizeConvexHull();
-					convexHullShape->setMargin(0.005f);
-
-					colShapeDynamic = convexHullShape;
-
-					collisionShapes.push_back(colShapeDynamic);
 				}
-				else if (ecs.HasComponent<CMesh>(newEntity))
+				else
 				{
-					auto& meshComponent = ecs.GetComponent<CMesh>(newEntity);
 
-					btConvexHullShape* convexHullShape = new btConvexHullShape();
-
-
-
-					for (const Vertex& vertex : meshComponent.mesh.vertices) {
-						convexHullShape->addPoint(btVector3(vertex.Position.x, vertex.Position.y, vertex.Position.z), false);
-					}
-					convexHullShape->setLocalScaling(btVector3(transform.scale.x, transform.scale.y, transform.scale.z));
-
-					convexHullShape->recalcLocalAabb();
-					convexHullShape->optimizeConvexHull();
-					convexHullShape->setMargin(0.005f);
-
-					colShapeDynamic = convexHullShape;
-
-					collisionShapes.push_back(colShapeDynamic);
-				}
-
-			}
-			else
-			{
-
-				if (ecs.HasComponent<CModel>(newEntity))
-				{
-					auto& model = ecs.GetComponent<CModel>(newEntity);
-
-					btTriangleIndexVertexArray* triangleIndexVertex = new btTriangleIndexVertexArray();
-
-					for (const Mesh& mesh : model.model.meshes)
+					if (ecs.HasComponent<CModel>(newEntity))
 					{
+						auto& model = ecs.GetComponent<CModel>(newEntity);
+
+						btTriangleIndexVertexArray* triangleIndexVertex = new btTriangleIndexVertexArray();
+
+						for (const Mesh& mesh : model.model.meshes)
+						{
+							btIndexedMesh indexedMesh;
+
+							indexedMesh.m_vertexBase = (const unsigned char*)mesh.vertices.data();
+							indexedMesh.m_vertexStride = sizeof(mesh.vertices[0]);
+							indexedMesh.m_numVertices = mesh.vertices.size();
+							indexedMesh.m_triangleIndexBase = (const unsigned char*)mesh.indices.data();
+							indexedMesh.m_triangleIndexStride = sizeof(unsigned int) * 3;
+							indexedMesh.m_numTriangles = mesh.indices.size() / 3;
+							indexedMesh.m_indexType = PHY_INTEGER;
+
+							//std::cout << mesh.indices.size() << "\n";
+
+							triangleIndexVertex->addIndexedMesh(indexedMesh, PHY_INTEGER);
+
+						}
+
+						colShapeStatic = new btBvhTriangleMeshShape(triangleIndexVertex, false);
+
+						colShapeStatic->setLocalScaling(btVector3(transform.scale.x, transform.scale.y, transform.scale.z));
+						colShapeStatic->recalcLocalAabb();
+
+						collisionShapes.push_back(colShapeStatic);
+					}
+					else if (ecs.HasComponent<CMesh>(newEntity))
+					{
+						auto& meshComponent = ecs.GetComponent<CMesh>(newEntity);
+
+						btTriangleIndexVertexArray* triangleIndexVertex = new btTriangleIndexVertexArray();
+
 						btIndexedMesh indexedMesh;
 
-						indexedMesh.m_vertexBase = (const unsigned char*)mesh.vertices.data();
-						indexedMesh.m_vertexStride = sizeof(mesh.vertices[0]);
-						indexedMesh.m_numVertices = mesh.vertices.size();
-						indexedMesh.m_triangleIndexBase = (const unsigned char*)mesh.indices.data();
+						indexedMesh.m_vertexBase = (const unsigned char*)meshComponent.mesh.vertices.data();
+						indexedMesh.m_vertexStride = sizeof(meshComponent.mesh.vertices[0]);
+						indexedMesh.m_numVertices = meshComponent.mesh.vertices.size();
+						indexedMesh.m_triangleIndexBase = (const unsigned char*)meshComponent.mesh.indices.data();
 						indexedMesh.m_triangleIndexStride = sizeof(unsigned int) * 3;
-						indexedMesh.m_numTriangles = mesh.indices.size() / 3;
+						indexedMesh.m_numTriangles = meshComponent.mesh.indices.size() / 3;
 						indexedMesh.m_indexType = PHY_INTEGER;
 
 						//std::cout << mesh.indices.size() << "\n";
 
 						triangleIndexVertex->addIndexedMesh(indexedMesh, PHY_INTEGER);
 
+						colShapeStatic = new btBvhTriangleMeshShape(triangleIndexVertex, false);
+
+						colShapeStatic->setLocalScaling(btVector3(transform.scale.x, transform.scale.y, transform.scale.z));
+						colShapeStatic->recalcLocalAabb();
+
+						collisionShapes.push_back(colShapeStatic);
 					}
 
-					colShapeStatic = new btBvhTriangleMeshShape(triangleIndexVertex, false);
-
-					colShapeStatic->setLocalScaling(btVector3(transform.scale.x, transform.scale.y, transform.scale.z));
-					colShapeStatic->recalcLocalAabb();
-
-					collisionShapes.push_back(colShapeStatic);
 				}
-				else if (ecs.HasComponent<CMesh>(newEntity))
+
+				btVector3 localInertia(0, 0, 0);
+				if (isDynamic)
+					colShapeDynamic->calculateLocalInertia(mass, localInertia);
+
+				startTransform.setOrigin(btVector3(
+					btScalar(transform.position.x),
+					btScalar(transform.position.y),
+					btScalar(transform.position.z)));
+
+				btQuaternion quatRot(glm::radians(transform.rotation.y), glm::radians(transform.rotation.x), glm::radians(transform.rotation.z));
+
+				startTransform.setRotation(quatRot);
+
+				//using motionstate is optional, it provides interpolation capabilities, and only synchronizes 'active' objects
+				btDefaultMotionState* myMotionState = new btDefaultMotionState(startTransform);
+				if (isDynamic)
 				{
-					auto& meshComponent = ecs.GetComponent<CMesh>(newEntity);
-
-					btTriangleIndexVertexArray* triangleIndexVertex = new btTriangleIndexVertexArray();
-
-					btIndexedMesh indexedMesh;
-
-					indexedMesh.m_vertexBase = (const unsigned char*)meshComponent.mesh.vertices.data();
-					indexedMesh.m_vertexStride = sizeof(meshComponent.mesh.vertices[0]);
-					indexedMesh.m_numVertices = meshComponent.mesh.vertices.size();
-					indexedMesh.m_triangleIndexBase = (const unsigned char*)meshComponent.mesh.indices.data();
-					indexedMesh.m_triangleIndexStride = sizeof(unsigned int) * 3;
-					indexedMesh.m_numTriangles = meshComponent.mesh.indices.size() / 3;
-					indexedMesh.m_indexType = PHY_INTEGER;
-
-					//std::cout << mesh.indices.size() << "\n";
-
-					triangleIndexVertex->addIndexedMesh(indexedMesh, PHY_INTEGER);
-
-					colShapeStatic = new btBvhTriangleMeshShape(triangleIndexVertex, false);
-
-					colShapeStatic->setLocalScaling(btVector3(transform.scale.x, transform.scale.y, transform.scale.z));
-					colShapeStatic->recalcLocalAabb();
-
-					collisionShapes.push_back(colShapeStatic);
+					btRigidBody::btRigidBodyConstructionInfo rbInfo(mass, myMotionState, colShapeDynamic, localInertia);
+					rigidBody.body = new btRigidBody(rbInfo);
+				}
+				else
+				{
+					btRigidBody::btRigidBodyConstructionInfo rbInfo(mass, myMotionState, colShapeStatic, localInertia);
+					rigidBody.body = new btRigidBody(rbInfo);
 				}
 
+				rigidBody.body->setUserIndex(newEntity);
+
+				dynamicsWorld->addRigidBody(rigidBody.body);
 			}
-
-			btVector3 localInertia(0, 0, 0);
-			if (isDynamic)
-				colShapeDynamic->calculateLocalInertia(mass, localInertia);
-
-			startTransform.setOrigin(btVector3(
-				btScalar(transform.position.x),
-				btScalar(transform.position.y),
-				btScalar(transform.position.z)));
-
-			btQuaternion quatRot(glm::radians(transform.rotation.y), glm::radians(transform.rotation.x), glm::radians(transform.rotation.z));
-
-			startTransform.setRotation(quatRot);
-
-			//using motionstate is optional, it provides interpolation capabilities, and only synchronizes 'active' objects
-			btDefaultMotionState* myMotionState = new btDefaultMotionState(startTransform);
-			if (isDynamic)
-			{
-				btRigidBody::btRigidBodyConstructionInfo rbInfo(mass, myMotionState, colShapeDynamic, localInertia);
-				rigidBody.body = new btRigidBody(rbInfo);
-			}
-			else
-			{
-				btRigidBody::btRigidBodyConstructionInfo rbInfo(mass, myMotionState, colShapeStatic, localInertia);
-				rigidBody.body = new btRigidBody(rbInfo);
-			}
-
-			rigidBody.body->setUserIndex(newEntity);
-
-			dynamicsWorld->addRigidBody(rigidBody.body);
 		}
 	}
 
@@ -517,4 +522,5 @@ void PhysicsSystem::Update(float deltaTime)
 	{
 		dynamicsWorld->debugDrawWorld();
 	}
+
 }
