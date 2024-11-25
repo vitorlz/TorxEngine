@@ -156,90 +156,25 @@ void UI::Update()
 
     if (ImGui::TreeNode("Environment Maps"))
     {
-        const char* items[] = { "Lilienstein", "Sunset", "Clear Night", "Cinema", "Fireplace"};
-        static int item_selected_idx = 0;
-
-        const char* combo_preview_value = items[item_selected_idx];
-
-        if (ImGui::BeginCombo("combo 1", combo_preview_value))
+   
+       
+        if (ImGui::BeginCombo("##xx", "Select an environment map"))
         {
-            for (int n = 0; n < IM_ARRAYSIZE(items); n++)
+            std::vector<std::string> envMaps;
+            std::string path = "res/textures/hdr";
+            for (const auto& entry : std::filesystem::directory_iterator(path))
             {
-                ImGui::PushID(n);
-                const bool is_selected = (item_selected_idx == n);
-                if (ImGui::Selectable(items[n], is_selected))
+                envMaps.push_back(entry.path().filename().string());
+            }
+
+            for (int i = 0; i < envMaps.size(); i++)
+            {
+                ImGui::PushID(i);
+                if (ImGui::Selectable(envMaps[i].c_str()))
                 {
-                    item_selected_idx = n;
-
-                    if ("Lilienstein" == items[n])
-                    {
-
-                        glDeleteTextures(1, &RenderingUtil::mEnvironmentCubemap);
-                        glDeleteTextures(1, &RenderingUtil::mIrradianceCubemap);
-                        glDeleteTextures(1, &RenderingUtil::mPrefilteredEnvMap);
-                        glDeleteTextures(1, &RenderingUtil::mBrdfLUT);
-
-                        RenderingUtil::EquirectangularToCubemap("res/textures/hdr/lilienstein_2k.hdr");
-                        RenderingUtil::CreateIrradianceCubemap();
-                        RenderingUtil::CreatePrefilteredEnvMap();
-                        RenderingUtil::CreateBRDFIntegrationMap();
-                    }
-
-                    if ("Sunset" == items[n])
-                    {
-                        glDeleteTextures(1, &RenderingUtil::mEnvironmentCubemap);
-                        glDeleteTextures(1, &RenderingUtil::mIrradianceCubemap);
-                        glDeleteTextures(1, &RenderingUtil::mPrefilteredEnvMap);
-                        glDeleteTextures(1, &RenderingUtil::mBrdfLUT);
-
-                        RenderingUtil::EquirectangularToCubemap("res/textures/hdr/sunset_jhbcentral_2k.hdr");
-                        RenderingUtil::CreateIrradianceCubemap();
-                        RenderingUtil::CreatePrefilteredEnvMap();
-                        RenderingUtil::CreateBRDFIntegrationMap();
-                    }
-
-                    if ("Clear Night" == items[n])
-                    {
-                        glDeleteTextures(1, &RenderingUtil::mEnvironmentCubemap);
-                        glDeleteTextures(1, &RenderingUtil::mIrradianceCubemap);
-                        glDeleteTextures(1, &RenderingUtil::mPrefilteredEnvMap);
-                        glDeleteTextures(1, &RenderingUtil::mBrdfLUT);
-
-                        RenderingUtil::EquirectangularToCubemap("res/textures/hdr/rogland_clear_night_2k.hdr");
-                        RenderingUtil::CreateIrradianceCubemap();
-                        RenderingUtil::CreatePrefilteredEnvMap();
-                        RenderingUtil::CreateBRDFIntegrationMap();
-                    }
-
-                    if ("Cinema" == items[n])
-                    {
-                        glDeleteTextures(1, &RenderingUtil::mEnvironmentCubemap);
-                        glDeleteTextures(1, &RenderingUtil::mIrradianceCubemap);
-                        glDeleteTextures(1, &RenderingUtil::mPrefilteredEnvMap);
-                        glDeleteTextures(1, &RenderingUtil::mBrdfLUT);
-
-                        RenderingUtil::EquirectangularToCubemap("res/textures/hdr/pretville_cinema_2k.hdr");
-                        RenderingUtil::CreateIrradianceCubemap();
-                        RenderingUtil::CreatePrefilteredEnvMap();
-                        RenderingUtil::CreateBRDFIntegrationMap();
-                    }
-
-                    if ("Fireplace" == items[n])
-                    {
-                        glDeleteTextures(1, &RenderingUtil::mEnvironmentCubemap);
-                        glDeleteTextures(1, &RenderingUtil::mIrradianceCubemap);
-                        glDeleteTextures(1, &RenderingUtil::mPrefilteredEnvMap);
-                        glDeleteTextures(1, &RenderingUtil::mBrdfLUT);
-
-                        RenderingUtil::EquirectangularToCubemap("res/textures/hdr/fireplace_2k.hdr");
-                        RenderingUtil::CreateIrradianceCubemap();
-                        RenderingUtil::CreatePrefilteredEnvMap();
-                        RenderingUtil::CreateBRDFIntegrationMap();
-                    }
-                    
+                    Scene::SetEnvironmentMap(envMaps[i]);
+                    RenderingUtil::LoadNewEnvironmentMap(envMaps[i].c_str());
                 }
-                if (is_selected)
-                    ImGui::SetItemDefaultFocus();
 
                 ImGui::PopID();
             }
@@ -269,7 +204,7 @@ void UI::Update()
 
     if (ImGui::Button("Save scene")) 
     {
-        Scene::SaveSceneToJson("testscene.json");
+        Scene::SaveSceneToJson("testscene1.json");
     }
 
     ImGui::End();
@@ -350,7 +285,9 @@ void showComponents(Entity entity)
 {
     if (ecs.HasComponent<CLight>(entity))
     {
+
         CLight& light = ecs.GetComponent<CLight>(entity);
+        light.isDirty = true;
         if (ImGui::CollapsingHeader("Light Component", ImGuiTreeNodeFlags_AllowItemOverlap))
         {
             if (light.type == DIRECTIONAL)
@@ -378,9 +315,6 @@ void showComponents(Entity entity)
                 ImGui::SliderFloat3("Offset", &light.offset.x, -10.0f, 10.0f);
             }
             ImGui::Checkbox("Cast Shadows", (bool*)&light.shadowCaster);
-
-            light.isDirty = true;
-
         }
         ImGui::SameLine();
         if (ImGui::Button("Delete##xx0"))
@@ -401,12 +335,6 @@ void showComponents(Entity entity)
             glm::vec3 rotationEuler = glm::degrees(glm::eulerAngles(transform.rotation));
 
             ImGui::SliderFloat3("Rotation", &rotationEuler.x, -360.0f, 360.0f, "%.10f");
-
-            if (ecs.HasComponent<CLight>(entity))
-            {
-                CLight& light = ecs.GetComponent<CLight>(entity);
-                light.isDirty = true;
-            }
         }
         ImGui::SameLine();
         if (ImGui::Button("Delete##xx1"))

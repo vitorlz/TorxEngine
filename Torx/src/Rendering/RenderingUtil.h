@@ -33,6 +33,7 @@ public:
 	static void CreatePrefilteredEnvMap();
 	static void CreateBRDFIntegrationMap();
 	static void CreateBulletDebugBuffers();
+	static void LoadNewEnvironmentMap(const char* filename);
 
 private:
 	static void CreateCubeVAO();

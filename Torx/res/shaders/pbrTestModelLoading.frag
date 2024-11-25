@@ -41,7 +41,6 @@ uniform bool emissionDebug;
 // shadows
 uniform sampler2D dirShadowMap;
 uniform samplerCubeArray pointShadowMap;
-uniform float point_far_plane[10];
 int pointShadowCasterIndex = 0;
 
 // misc
@@ -174,7 +173,7 @@ void main()
 	vec3 specular = prefilteredColor * (F * envBRDF.x + envBRDF.y);
 	
 	//vec3 ambient = (kD * diffuse + specular) * ao;
-	vec3 ambient = ((kD * diffuse + specular) * ao);
+	vec3 ambient = ((kD * diffuse + specular) * ao) / 10;
 	
 	vec3 color = Lo;
 
@@ -436,13 +435,13 @@ float PointShadowCalculation(vec3 fragPos, Light light, int shadowCasterIndex)
 	for(int i = 0; i < samples; ++i)
 	{
 		float closestDepth = texture(pointShadowMap, vec4(fragToLight + sampleOffsetDirections[i] * diskRadius, shadowCasterIndex)).r;
-		closestDepth *= point_far_plane[shadowCasterIndex];   // undo mapping [0;1]
+		closestDepth *= light.radius.x;   // undo mapping [0;1]
 		if(currentDepth - bias > closestDepth)
 			shadow += 1.0;
 	}
 	shadow /= float(samples) * 1.1;  
 
-	float unitDepth = currentDepth / point_far_plane[shadowCasterIndex];
+	float unitDepth = currentDepth / light.radius.x;
 
 	return mix(shadow, 0, unitDepth / 3);
 }

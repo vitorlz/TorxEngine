@@ -27,7 +27,6 @@ extern Coordinator ecs;
 
 void RenderSystem::Init() 
 {
-    RenderingUtil::Init();
 }
 
 const int MAX_OMNISHADOWS = 10;
@@ -60,8 +59,8 @@ void RenderSystem::Update(float deltaTime)
     glEnable(GL_CULL_FACE);
     glCullFace(GL_FRONT);
     glEnable(GL_DEPTH_TEST);
-    bool dirtyDirLightFound = false;
-    glm::vec3 dirLightPos;
+    std::vector<Entity> dirLightShadowEntities;
+    dirLightShadowEntities.resize(10);
 
     for (const auto& entity : mEntities)
     {
@@ -71,24 +70,19 @@ void RenderSystem::Update(float deltaTime)
             
             if (light.shadowCaster && light.type == DIRECTIONAL)
             {
-                auto& transform = ecs.GetComponent<CTransform>(entity);
-               
-                dirLightPos = transform.position;
-
-                if (light.isDirty)
-                {
-                    dirtyDirLightFound = true;
-                }
+                dirLightShadowEntities.push_back(entity);
             }
         }
     }
 
-    if (dirtyDirLightFound)
+    for (Entity lightEntity : dirLightShadowEntities)
     {
+        auto& transform = ecs.GetComponent<CTransform>(lightEntity);
+
         float near_plane = 0.1f, far_plane = 40.0f;
         glm::mat4 lightProjection = glm::ortho(-17.0f, 17.0f, -17.0f, 17.0f, near_plane, far_plane);
 
-        glm::mat4 lightView = glm::lookAt(dirLightPos, glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+        glm::mat4 lightView = glm::lookAt(transform.position, glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
 
         dirLightSpaceMatrix = lightProjection * lightView;
 
@@ -140,15 +134,11 @@ void RenderSystem::Update(float deltaTime)
     glCullFace(GL_FRONT);
     glEnable(GL_DEPTH_TEST);
 
-    int omniShadowCasters = 0;
-    std::vector<glm::vec3> lightPos;
-    lightPos.reserve(MAX_OMNISHADOWS);
     glm::mat4 shadowProj;
-    std::vector<float> pointFar;
-    pointFar.reserve(MAX_OMNISHADOWS);
     float pointNear = 0.1f;
     std::vector<glm::mat4> shadowTransforms;
-    bool dirtyLightFound = false;
+    std::vector<Entity> pointLightShadowEntities;
+    pointLightShadowEntities.reserve(10);
 
     // get light position, radius, and increase shadowcaster counter
     for (const auto& entity : mEntities)
@@ -159,94 +149,87 @@ void RenderSystem::Update(float deltaTime)
 
             if (light.shadowCaster && light.type == POINT) 
             {
-                auto& transform = ecs.GetComponent<CTransform>(entity);
-                lightPos.push_back(transform.position + light.offset);
-                pointFar.push_back(light.radius);
-                omniShadowCasters++;
-
-                if (light.isDirty)
-                {
-                    dirtyLightFound = true;
-                }
+                pointLightShadowEntities.push_back(entity);
             }
         }
     }
-    
-    if (dirtyLightFound)
+  
+    glViewport(0, 0, ((float)1024), ((float)1024));
+    glBindFramebuffer(GL_FRAMEBUFFER, RenderingUtil::mPointLightShadowMapFBO);
+
+    glClear(GL_DEPTH_BUFFER_BIT);
+
+    Shader& pointShadowMapShader = ShaderManager::GetShaderProgram("pointShadowMapShader");
+
+    pointShadowMapShader.use();
+
+    pointShadowMapShader.setInt("omniShadowCasters", pointLightShadowEntities.size());
+
+    int lightEntityCount = 0;
+
+    for (Entity lightEntity : pointLightShadowEntities)
     {
-        std::cout << "shadow map rendered \n";
-        glViewport(0, 0, ((float)1024), ((float)1024));
-        glBindFramebuffer(GL_FRAMEBUFFER, RenderingUtil::mPointLightShadowMapFBO);
 
-        glClear(GL_DEPTH_BUFFER_BIT);
+        lightEntityCount++;
 
-        Shader& pointShadowMapShader = ShaderManager::GetShaderProgram("pointShadowMapShader");
+        auto& light = ecs.GetComponent<CLight>(lightEntity);
+        auto& transform = ecs.GetComponent<CTransform>(lightEntity);
 
-        pointShadowMapShader.use();
+        glm::vec3 lightPos = transform.position + light.offset;
 
-        pointShadowMapShader.setInt("omniShadowCasters", omniShadowCasters);
+        shadowProj = glm::perspective(glm::radians(90.0f), ((float)1024) / ((float)1024), pointNear, light.radius);
 
-        for (int i = 0; i < omniShadowCasters; i++)
-        {
-            shadowProj = glm::perspective(glm::radians(90.0f), ((float)1024) / ((float)1024), pointNear, pointFar[i]);
+        shadowTransforms.push_back(shadowProj *
+            glm::lookAt(lightPos, lightPos + glm::vec3(1.0, 0.0, 0.0), glm::vec3(0.0, -1.0, 0.0)));
+        shadowTransforms.push_back(shadowProj *
+            glm::lookAt(lightPos, lightPos + glm::vec3(-1.0, 0.0, 0.0), glm::vec3(0.0, -1.0, 0.0)));
+        shadowTransforms.push_back(shadowProj *
+            glm::lookAt(lightPos, lightPos + glm::vec3(0.0, 1.0, 0.0), glm::vec3(0.0, 0.0, 1.0)));
+        shadowTransforms.push_back(shadowProj *
+            glm::lookAt(lightPos, lightPos + glm::vec3(0.0, -1.0, 0.0), glm::vec3(0.0, 0.0, -1.0)));
+        shadowTransforms.push_back(shadowProj *
+            glm::lookAt(lightPos, lightPos + glm::vec3(0.0, 0.0, 1.0), glm::vec3(0.0, -1.0, 0.0)));
+        shadowTransforms.push_back(shadowProj *
+            glm::lookAt(lightPos, lightPos + glm::vec3(0.0, 0.0, -1.0), glm::vec3(0.0, -1.0, 0.0)));
 
-            shadowTransforms.push_back(shadowProj *
-                glm::lookAt(lightPos[i], lightPos[i] + glm::vec3(1.0, 0.0, 0.0), glm::vec3(0.0, -1.0, 0.0)));
-            shadowTransforms.push_back(shadowProj *
-                glm::lookAt(lightPos[i], lightPos[i] + glm::vec3(-1.0, 0.0, 0.0), glm::vec3(0.0, -1.0, 0.0)));
-            shadowTransforms.push_back(shadowProj *
-                glm::lookAt(lightPos[i], lightPos[i] + glm::vec3(0.0, 1.0, 0.0), glm::vec3(0.0, 0.0, 1.0)));
-            shadowTransforms.push_back(shadowProj *
-                glm::lookAt(lightPos[i], lightPos[i] + glm::vec3(0.0, -1.0, 0.0), glm::vec3(0.0, 0.0, -1.0)));
-            shadowTransforms.push_back(shadowProj *
-                glm::lookAt(lightPos[i], lightPos[i] + glm::vec3(0.0, 0.0, 1.0), glm::vec3(0.0, -1.0, 0.0)));
-            shadowTransforms.push_back(shadowProj *
-                glm::lookAt(lightPos[i], lightPos[i] + glm::vec3(0.0, 0.0, -1.0), glm::vec3(0.0, -1.0, 0.0)));
-        }
-
-        for (unsigned int j = 0; j < (omniShadowCasters * 6); ++j) {
+        for (unsigned int j = (lightEntityCount - 1) * 6; j < 6 * lightEntityCount; ++j) {
 
             pointShadowMapShader.setMat4("shadowMatrices[" + std::to_string(j) + "]", shadowTransforms[j]);
         }
 
-        for (int i = 0; i < omniShadowCasters; i++)
+        pointShadowMapShader.setFloat("far_plane", light.radius);
+        pointShadowMapShader.setVec3("lightPos", lightPos);
+
+        for (const auto& entity : mEntities)
         {
-            pointShadowMapShader.setFloat("far_plane", pointFar[i]);
-            pointShadowMapShader.setVec3("lightPos", lightPos[i]);
-
-            for (const auto& entity : mEntities)
+            if (ecs.HasComponent<CLight>(entity) || (!ecs.HasComponent<CModel>(entity) && !ecs.HasComponent<CMesh>(entity)))
             {
+                continue;
+            }
 
-                if (ecs.HasComponent<CLight>(entity) || (!ecs.HasComponent<CModel>(entity) && !ecs.HasComponent<CMesh>(entity)))
-                {
-                    continue;
-                }            
+            auto& transform = ecs.GetComponent<CTransform>(entity);
 
-                auto& transform = ecs.GetComponent<CTransform>(entity);
-               
+            glm::mat4 model = glm::mat4(1.0f);
+            model = glm::translate(model, transform.position);
 
-                glm::mat4 model = glm::mat4(1.0f);
-                model = glm::translate(model, transform.position);
+            glm::mat4 rotMatrix = glm::mat4_cast(transform.rotation);
 
-                glm::mat4 rotMatrix = glm::mat4_cast(transform.rotation);
+            model *= rotMatrix;
 
-                model *= rotMatrix;
+            model = glm::scale(model, transform.scale);
 
-                model = glm::scale(model, transform.scale);
+            pointShadowMapShader.setMat4("model", model);
 
-                pointShadowMapShader.setMat4("model", model);
+            if (ecs.HasComponent<CModel>(entity))
+            {
+                auto& modelComponent = ecs.GetComponent<CModel>(entity);
+                modelComponent.model.Draw(pointShadowMapShader);
+            }
+            else
+            {
+                auto& meshComponent = ecs.GetComponent<CMesh>(entity);
+                meshComponent.mesh.Draw(pointShadowMapShader);
 
-                if (ecs.HasComponent<CModel>(entity))
-                {
-                    auto& modelComponent = ecs.GetComponent<CModel>(entity);
-                    modelComponent.model.Draw(pointShadowMapShader);
-                }
-                else
-                {
-                    auto& meshComponent = ecs.GetComponent<CMesh>(entity);
-                    meshComponent.mesh.Draw(pointShadowMapShader);
-                    
-                }
             }
         }
     }
@@ -304,6 +287,13 @@ void RenderSystem::Update(float deltaTime)
 
     Shader& pbrModelTestShader = ShaderManager::GetShaderProgram("pbrModelTestShader");
     pbrModelTestShader.use();
+
+    if (pointLightShadowEntities.size() != 0)
+    {
+        glActiveTexture(GL_TEXTURE10);
+        glBindTexture(GL_TEXTURE_CUBE_MAP_ARRAY, RenderingUtil::mPointLightShadowMap);
+        pbrModelTestShader.setInt("pointShadowMap", 10);
+    }
 
     pbrModelTestShader.setMat4("view", player.viewMatrix);
     pbrModelTestShader.setMat4("projection", projection);
@@ -373,15 +363,6 @@ void RenderSystem::Update(float deltaTime)
         glm::mat3 normalMatrix = glm::transpose(glm::inverse(model));
         
         pbrModelTestShader.use();
-
-        if (omniShadowCasters != 0) 
-        {
-            glActiveTexture(GL_TEXTURE10);
-            glBindTexture(GL_TEXTURE_CUBE_MAP_ARRAY, RenderingUtil::mPointLightShadowMap);
-            pbrModelTestShader.setInt("pointShadowMap", 10);
-
-            glUniform1fv(glGetUniformLocation(pbrModelTestShader.ID, "point_far_plane"), omniShadowCasters, pointFar.data());
-        }
 
         pbrModelTestShader.setMat4("model", model);
         pbrModelTestShader.setMat3("normalMatrix", normalMatrix);

@@ -164,7 +164,6 @@ namespace Editor
                     transform.scale = scale;
                 }
             }
-
         }
         else
         {

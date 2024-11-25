@@ -157,11 +157,8 @@ void LightSystem::Update(float deltaTime)
 
 		if (light.isDirty) 
 		{	
-			
 			auto& transform = ecs.GetComponent<CTransform>(entity);
-			
-			//std::cout << "light is dirty \n";
-		
+
 			if (light.type == SPOT)
 			{
 				EntityToLightMap[entity].direction = glm::vec4(light.direction, 1.0f);

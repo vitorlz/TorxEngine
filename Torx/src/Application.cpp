@@ -26,6 +26,7 @@
 #include "Components/CMesh.h"
 
 #include "Systems/RenderSystem.h"
+#include "Rendering/RenderingUtil.h"
 #include "Systems/LightSystem.h"
 #include "Systems/GeneralInputSystem.h"
 #include "Systems/playerInputSystem.h"
@@ -96,12 +97,16 @@ int main()
         ecs.SetSystemSignature<PlayerInputSystem>(signature);
     }
 
-    Scene::LoadSceneFromJson("testscene.json");
+    
 
     UI gui;
 
     gui.Init(window.GetWindow());
 
+    RenderingUtil::Init();
+
+    Scene::LoadSceneFromJson("testscene1.json");
+    
     renderSystem->Init();
     generalInputSystem->Init();
     lightSystem->Init();

@@ -21,10 +21,12 @@ struct CLight
 	glm::vec3 direction;
 	float innerCutoff;
 	float outerCutoff;
-	int shadowCaster{ 0 };
+	bool shadowCaster{ false };
 	// set isDirty to true initially so light is updated at least once
-	int isDirty{ 1 };
+	bool isDirty{ true };
 	glm::vec3 offset;
+
+	bool dynamic{ false };
 };
 
 

@@ -39,12 +39,6 @@ void RenderingUtil::Init()
     RenderingUtil::CreatePointLightShadowMapFBO(1024, 1024);
     RenderingUtil::CreateScreenQuadVAO();
     RenderingUtil::CreatePingPongFBOs();
-    
-    RenderingUtil::EquirectangularToCubemap("res/textures/hdr/pretville_cinema_2k.hdr");
-    RenderingUtil::CreateIrradianceCubemap();
-
-    RenderingUtil::CreatePrefilteredEnvMap();
-    RenderingUtil::CreateBRDFIntegrationMap();
 }
 
 float cubeVertices[] = 
@@ -637,4 +631,23 @@ void RenderingUtil::CreateBulletDebugBuffers()
     glEnableVertexAttribArray(1);
     glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(btScalar), (void*)(3 * sizeof(btScalar)));
     glBindVertexArray(0);
+}
+
+void RenderingUtil::LoadNewEnvironmentMap(const char* filename)
+{
+
+    if (mEnvironmentCubemap) 
+    {
+        glDeleteTextures(1, &mEnvironmentCubemap);
+        glDeleteTextures(1, &mIrradianceCubemap);
+        glDeleteTextures(1, &mPrefilteredEnvMap);
+        glDeleteTextures(1, &mBrdfLUT);
+    }
+  
+    std::string path = "res/textures/hdr/" + std::string(filename);
+
+    EquirectangularToCubemap(path.c_str());
+    CreateIrradianceCubemap();
+    CreatePrefilteredEnvMap();
+    CreateBRDFIntegrationMap();
 }
