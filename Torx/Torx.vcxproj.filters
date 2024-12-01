@@ -306,6 +306,12 @@
     <None Include="res\shaders\dirShadowMap.frag" />
     <None Include="res\shaders\line.vert" />
     <None Include="res\shaders\line.frag" />
+    <None Include="res\shaders\voxelization.vert" />
+    <None Include="res\shaders\voxelization.geom" />
+    <None Include="res\shaders\voxelization.frag" />
+    <None Include="res\shaders\voxelVisualization.vert" />
+    <None Include="res\shaders\voxelVisualization.frag" />
+    <None Include="res\shaders\voxelVisualization.geom" />
   </ItemGroup>
   <ItemGroup>
     <Library Include="vendor\assimp\lib\assimp-vc143-mt.lib" />

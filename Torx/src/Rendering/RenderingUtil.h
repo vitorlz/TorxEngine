@@ -27,13 +27,14 @@ public:
 	// specular indirect lighting
 	static unsigned int mPrefilteredEnvMap;
 	static unsigned int mBrdfLUT;
+	static unsigned int mVoxelTexture;
 
 	static void EquirectangularToCubemap(const char* path);
 	static void CreateIrradianceCubemap();
 	static void CreatePrefilteredEnvMap();
 	static void CreateBRDFIntegrationMap();
 	static void CreateBulletDebugBuffers();
-	static void LoadNewEnvironmentMap(const char* filename);
+	static void LoadNewEnvironmentMap(const char* filename); 
 
 private:
 	static void CreateCubeVAO();
@@ -43,4 +44,5 @@ private:
 	static void CreateDirLightShadowMapFBO(unsigned int shadowWidth, unsigned int shadowHeight);
 	static void CreatePointLightShadowMapFBO(unsigned int shadowWidth, unsigned int shadowHeight);
 	static void CreatePingPongFBOs();
+	static void CreateVoxelTexture(int voxelTextureSize);
 };

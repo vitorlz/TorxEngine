@@ -280,7 +280,7 @@ void RenderSystem::Update(float deltaTime)
 
     Common::playerViewMatrix = player.viewMatrix;
 
-    if (UI::isOpen)
+   /* if (UI::isOpen)
     {
         Raycast::calculateMouseRaycast(projection* player.viewMatrix);
     }
@@ -382,7 +382,107 @@ void RenderSystem::Update(float deltaTime)
             meshComponent.mesh.Draw(pbrModelTestShader);
             glEnable(GL_CULL_FACE);
         }
+    }*/
+
+   
+
+    if (Common::voxelize)
+    {
+        Shader& voxelizationShader = ShaderManager::GetShaderProgram("voxelizationShader");
+
+        voxelizationShader.use();
+
+        glViewport(0, 0, 64, 64);
+        glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE);
+        glDisable(GL_CULL_FACE);
+        glDisable(GL_DEPTH_TEST);
+        glDisable(GL_BLEND);
+
+        glBindImageTexture(0, RenderingUtil::mVoxelTexture, 0, GL_TRUE, 0, GL_WRITE_ONLY, GL_RGBA8);
+        glBindTexture(GL_TEXTURE_3D, RenderingUtil::mVoxelTexture);
+
+        for (const auto& entity : mEntities)
+        {
+            auto& transform = ecs.GetComponent<CTransform>(entity);
+
+            if (!ecs.HasComponent<CModel>(entity) && !ecs.HasComponent<CMesh>(entity))
+            {
+                continue;
+            }
+
+            glm::mat4 model = glm::mat4(1.0f);
+            model = glm::translate(model, transform.position);
+
+            glm::mat4 rotMatrix = glm::mat4_cast(transform.rotation);
+
+            model *= rotMatrix;
+
+            model = glm::scale(model, transform.scale);
+
+            glm::mat3 normalMatrix = glm::transpose(glm::inverse(model));
+
+            voxelizationShader.setMat4("model", model);
+            voxelizationShader.setMat3("normalMatrix", normalMatrix);
+            voxelizationShader.setVec3("camPos", ecs.GetComponent<CTransform>(playerEntity).position);
+           
+            if (ecs.HasComponent<CModel>(entity))
+            {
+                auto& model3d = ecs.GetComponent<CModel>(entity);
+                voxelizationShader.setVec2("textureScaling", glm::vec2(1.0f));
+                voxelizationShader.setBool("hasAOTexture", model3d.hasAOTexture);
+                model3d.model.Draw(voxelizationShader);
+            }
+            else
+            {
+                glDisable(GL_CULL_FACE);
+                auto& meshComponent = ecs.GetComponent<CMesh>(entity);
+                voxelizationShader.setVec2("textureScaling", meshComponent.textureScaling);
+                meshComponent.mesh.Draw(voxelizationShader);
+                glEnable(GL_CULL_FACE);
+            }
+        }
+
+        glGenerateMipmap(GL_TEXTURE_3D);
+
+        Common::voxelize = false;
+
+        std::cout << "voxelized \n";
+
+        glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
+        glEnable(GL_DEPTH_TEST);
     }
+
+    // voxel visualization
+
+    glViewport(0, 0, Window::screenWidth, Window::screenHeight);
+
+    glBindFramebuffer(GL_FRAMEBUFFER, RenderingUtil::mMsFBO);
+
+    // set both color buffer attachments as the draw buffers before clearing them, otherwise only the first color attachment will get cleared.
+    // This would mean that the color buffer which we render the bloom brightness texture onto would not get cleared and the bloom would effect would
+    // just accumulate over frames.
+    
+    glDrawBuffers(2, attachments);
+
+    glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+    glClear(GL_COLOR_BUFFER_BIT);
+    glClear(GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
+    glEnable(GL_DEPTH_TEST);
+
+    Shader& voxelVisualizationShader = ShaderManager::GetShaderProgram("voxelVisualizationShader");
+
+    voxelVisualizationShader.use();
+
+    voxelVisualizationShader.setVec3("gridDimensions", 64, 64, 64);
+    voxelVisualizationShader.setMat4("view", player.viewMatrix);
+    voxelVisualizationShader.setMat4("projection", projection);
+   
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_3D, RenderingUtil::mVoxelTexture);
+    voxelVisualizationShader.setInt("voxelTexture", 0);
+
+    glDrawArrays(GL_POINTS, 0, 64*64*64);
+
 
    if (Common::bulletLinesDebug)
    {

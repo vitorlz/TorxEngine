@@ -204,7 +204,12 @@ void UI::Update()
 
     if (ImGui::Button("Save scene")) 
     {
-        Scene::SaveSceneToJson("testscene1.json");
+        Scene::SaveSceneToJson("sponzascene.json");
+    }
+
+    if (ImGui::Button("Voxelize"))
+    {
+        Common::voxelize = true;
     }
 
     ImGui::End();

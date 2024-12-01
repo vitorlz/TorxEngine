@@ -59,4 +59,5 @@ public:
 	static std::vector<float> bloomWeights;
 	static glm::mat4 playerViewMatrix;
 	static bool usingGuizmo;
+	static bool voxelize;
 };

@@ -1,187 +1,192 @@
-[
-    {
-        "components": {
-            "light": {
-                "color": [
-                    1.0,
-                    1.0,
-                    1.0
-                ],
-                "direction": [
-                    -0.013916241005063057,
-                    0.0706263855099678,
-                    0.9974057674407959
-                ],
-                "innerCutoff": 12.5,
-                "isDirty": 0,
-                "offset": [
-                    0.0,
-                    0.0,
-                    0.0
-                ],
-                "outerCutoff": 17.5,
-                "radius": 0.0,
-                "shadowCaster": 0,
-                "strength": 1.0,
-                "type": 2
-            },
-            "player": {
-                "flashlightOn": false,
-                "movementSpeed": 3.0
-            },
-            "transform": {
-                "position": [
-                    -0.2840828597545624,
-                    3.281548023223877,
-                    -0.8942727446556091
-                ],
-                "rotation": [
-                    4.0499653816223145,
-                    1979.2005615234375,
-                    0.0
-                ],
-                "scale": [
-                    0.0,
-                    0.0,
-                    0.0
-                ]
-            }
-        },
-        "id": 0
+{
+    "config": {
+        "environmentMap": "rogland_clear_night_2k.hdr"
     },
-    {
-        "components": {
-            "model": {
-                "hasAOTexture": false,
-                "modelName": "sponza"
+    "entities": [
+        {
+            "components": {
+                "light": {
+                    "color": [
+                        1.0,
+                        1.0,
+                        1.0
+                    ],
+                    "direction": [
+                        -0.013916241005063057,
+                        0.0706263855099678,
+                        0.9974057674407959
+                    ],
+                    "innerCutoff": 12.5,
+                    "isDirty": 0,
+                    "offset": [
+                        0.0,
+                        0.0,
+                        0.0
+                    ],
+                    "outerCutoff": 17.5,
+                    "radius": 0.0,
+                    "shadowCaster": false,
+                    "strength": 1.0,
+                    "type": 2
+                },
+                "player": {
+                    "flashlightOn": false,
+                    "movementSpeed": 3.0
+                },
+                "transform": {
+                    "position": [
+                        -0.2840828597545624,
+                        3.281548023223877,
+                        -0.8942727446556091
+                    ],
+                    "rotation": [
+                        4.0499653816223145,
+                        1979.2005615234375,
+                        0.0
+                    ],
+                    "scale": [
+                        0.0,
+                        0.0,
+                        0.0
+                    ]
+                }
             },
-            "rigidbody": {
-                "mass": 0.0
-            },
-            "transform": {
-                "position": [
-                    0.0,
-                    0.0,
-                    0.0
-                ],
-                "rotation": [
-                    0.0,
-                    90.0,
-                    0.0
-                ],
-                "scale": [
-                    1.0,
-                    1.0,
-                    1.0
-                ]
-            }
+            "id": 0
         },
-        "id": 1
-    },
-    {
-        "components": {
-            "light": {
-                "color": [
-                    0.7250000238418579,
-                    0.5289999842643738,
-                    0.28600001335144043
-                ],
-                "direction": [
-                    0.0,
-                    0.0,
-                    0.0
-                ],
-                "innerCutoff": 0.0,
-                "isDirty": 0,
-                "offset": [
-                    0.0,
-                    -0.28200000524520874,
-                    -0.6380000114440918
-                ],
-                "outerCutoff": 0.0,
-                "radius": 7.579929828643799,
-                "shadowCaster": 1,
-                "strength": 1.0,
-                "type": 1
+        {
+            "components": {
+                "model": {
+                    "hasAOTexture": false,
+                    "modelName": "sponza"
+                },
+                "rigidbody": {
+                    "mass": 0.0
+                },
+                "transform": {
+                    "position": [
+                        0.0,
+                        0.0,
+                        0.0
+                    ],
+                    "rotation": [
+                        0.0,
+                        90.0,
+                        0.0
+                    ],
+                    "scale": [
+                        1.0,
+                        1.0,
+                        1.0
+                    ]
+                }
             },
-            "model": {
-                "hasAOTexture": true,
-                "modelName": "victorianLamp"
-            },
-            "rigidbody": {
-                "mass": 0.0
-            },
-            "transform": {
-                "position": [
-                    -0.3299999237060547,
-                    3.600001096725464,
-                    7.634615421295166
-                ],
-                "rotation": [
-                    -4.829665613215184e-06,
-                    4.325890586187597e-06,
-                    8.780634379945695e-05
-                ],
-                "scale": [
-                    0.35899949073791504,
-                    0.35899993777275085,
-                    0.35899949073791504
-                ]
-            }
+            "id": 1
         },
-        "id": 2
-    },
-    {
-        "components": {
-            "light": {
-                "color": [
-                    0.7250000238418579,
-                    0.5289999842643738,
-                    0.28600001335144043
-                ],
-                "direction": [
-                    0.0,
-                    0.0,
-                    0.0
-                ],
-                "innerCutoff": 0.0,
-                "isDirty": 0,
-                "offset": [
-                    0.0,
-                    -0.28200000524520874,
-                    0.5619999766349792
-                ],
-                "outerCutoff": 0.0,
-                "radius": 7.579929828643799,
-                "shadowCaster": 1,
-                "strength": 1.0,
-                "type": 1
+        {
+            "components": {
+                "light": {
+                    "color": [
+                        0.7250000238418579,
+                        0.5289999842643738,
+                        0.28600001335144043
+                    ],
+                    "direction": [
+                        0.0,
+                        0.0,
+                        0.0
+                    ],
+                    "innerCutoff": 0.0,
+                    "isDirty": 0,
+                    "offset": [
+                        0.0,
+                        -0.28200000524520874,
+                        -0.6380000114440918
+                    ],
+                    "outerCutoff": 0.0,
+                    "radius": 7.579929828643799,
+                    "shadowCaster": true,
+                    "strength": 1.0,
+                    "type": 1
+                },
+                "model": {
+                    "hasAOTexture": true,
+                    "modelName": "victorianLamp"
+                },
+                "rigidbody": {
+                    "mass": 0.0
+                },
+                "transform": {
+                    "position": [
+                        -0.3299999237060547,
+                        3.600001096725464,
+                        7.634615421295166
+                    ],
+                    "rotation": [
+                        -4.829665613215184e-06,
+                        4.325890586187597e-06,
+                        8.780634379945695e-05
+                    ],
+                    "scale": [
+                        0.35899949073791504,
+                        0.35899993777275085,
+                        0.35899949073791504
+                    ]
+                }
             },
-            "model": {
-                "hasAOTexture": true,
-                "modelName": "victorianLamp"
-            },
-            "rigidbody": {
-                "mass": 0.0
-            },
-            "transform": {
-                "position": [
-                    -0.33000001311302185,
-                    3.5999999046325684,
-                    -6.610000133514404
-                ],
-                "rotation": [
-                    0.0,
-                    180.0,
-                    0.0
-                ],
-                "scale": [
-                    0.35899999737739563,
-                    0.35899999737739563,
-                    0.35899999737739563
-                ]
-            }
+            "id": 2
         },
-        "id": 5
-    }
-]
+        {
+            "components": {
+                "light": {
+                    "color": [
+                        0.7250000238418579,
+                        0.5289999842643738,
+                        0.28600001335144043
+                    ],
+                    "direction": [
+                        0.0,
+                        0.0,
+                        0.0
+                    ],
+                    "innerCutoff": 0.0,
+                    "isDirty": 0,
+                    "offset": [
+                        0.0,
+                        -0.28200000524520874,
+                        0.5619999766349792
+                    ],
+                    "outerCutoff": 0.0,
+                    "radius": 7.579929828643799,
+                    "shadowCaster": true,
+                    "strength": 1.0,
+                    "type": 1
+                },
+                "model": {
+                    "hasAOTexture": true,
+                    "modelName": "victorianLamp"
+                },
+                "rigidbody": {
+                    "mass": 0.0
+                },
+                "transform": {
+                    "position": [
+                        -0.33000001311302185,
+                        3.5999999046325684,
+                        -6.610000133514404
+                    ],
+                    "rotation": [
+                        0.0,
+                        180.0,
+                        0.0
+                    ],
+                    "scale": [
+                        0.35899999737739563,
+                        0.35899999737739563,
+                        0.35899999737739563
+                    ]
+                }
+            },
+            "id": 5
+        }
+    ]
+}

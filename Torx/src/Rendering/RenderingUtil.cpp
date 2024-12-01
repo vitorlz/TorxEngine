@@ -27,6 +27,7 @@ unsigned int RenderingUtil::mDirLightShadowMapFBO;
 unsigned int RenderingUtil::mDirLightShadowMap;
 unsigned int RenderingUtil::mBulletDebugLinesVAO;
 unsigned int RenderingUtil::mBulletDebugLinesVBO;
+unsigned int RenderingUtil::mVoxelTexture;
 
 void RenderingUtil::Init()
 {
@@ -39,6 +40,8 @@ void RenderingUtil::Init()
     RenderingUtil::CreatePointLightShadowMapFBO(1024, 1024);
     RenderingUtil::CreateScreenQuadVAO();
     RenderingUtil::CreatePingPongFBOs();
+    
+    RenderingUtil::CreateVoxelTexture(64);
 }
 
 float cubeVertices[] = 
@@ -650,4 +653,27 @@ void RenderingUtil::LoadNewEnvironmentMap(const char* filename)
     CreateIrradianceCubemap();
     CreatePrefilteredEnvMap();
     CreateBRDFIntegrationMap();
+}
+
+void RenderingUtil::CreateVoxelTexture(int voxelTextureSize)
+{
+    glGenTextures(1, &mVoxelTexture);
+    glBindTexture(GL_TEXTURE_3D, mVoxelTexture);
+
+    glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
+    glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
+    glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_BORDER);
+
+    glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+    glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+
+    int texSize = voxelTextureSize;
+
+    const std::vector <float> texture3D(4 * texSize * texSize * texSize, 0.0f);
+
+    glTexStorage3D(GL_TEXTURE_3D, 7, GL_RGBA8, texSize, texSize, texSize);
+    glTexImage3D(GL_TEXTURE_3D, 0, GL_RGBA8, texSize, texSize, texSize, 0, GL_RGBA, GL_FLOAT, texture3D.data());
+   
+    glGenerateMipmap(GL_TEXTURE_3D);
+    glBindTexture(GL_TEXTURE_3D, 0);
 }

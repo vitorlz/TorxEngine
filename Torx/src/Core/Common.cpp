@@ -37,4 +37,6 @@ std::vector<float> Common::bloomWeights;
 glm::mat4 Common::playerViewMatrix;
 bool Common::usingGuizmo{ false };
 
+// --------------- VXGI ---------------------
 
+bool Common::voxelize{ true };
