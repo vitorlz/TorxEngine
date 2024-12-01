@@ -1,12 +1,15 @@
 #version 460 core
 
 uniform ivec3 gridDimensions;  // Dimensions of the voxel grid
-uniform mat4 view;             // View matrix
-uniform mat4 projection;       // Projection matrix
 uniform sampler3D voxelTexture; // 3D texture containing voxel colors
 
 out vec3 gridCoord;
-out vec3 voxelColor;  // Color output to fragment shader
+out vec4 voxelColor;
+out vec3 worldPos;
+out mat4 projView;
+
+uniform mat4 projection;
+uniform mat4 view;
 
 void main()
 {
@@ -22,10 +25,12 @@ void main()
     vec3 texCoord = gridCoord / vec3(gridDimensions);
 
     // Sample the color from the 3D texture
-    voxelColor = texture(voxelTexture, texCoord).rgb;
+    voxelColor = texture(voxelTexture, vec3(texCoord.x, texCoord.y, texCoord.z)).rgba;
 
     // Center the voxel position in the world space
-    vec3 worldPos = (gridCoord - vec3(gridDimensions) * 0.5 + 0.5);
+    worldPos = (gridCoord - vec3(gridDimensions) * 0.5 + 0.5) * 0.5f;
     
-    gl_Position = projection * view * vec4(worldPos, 1.0);
+    projView = projection * view;
+
+    gl_Position;
 }

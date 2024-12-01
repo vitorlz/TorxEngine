@@ -40,3 +40,5 @@ bool Common::usingGuizmo{ false };
 // --------------- VXGI ---------------------
 
 bool Common::voxelize{ true };
+bool Common::showVoxelDebug{ false };
+int	Common::voxelGridDimensions{ 128 };

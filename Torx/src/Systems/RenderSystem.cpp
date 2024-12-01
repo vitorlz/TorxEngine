@@ -104,6 +104,11 @@ void RenderSystem::Update(float deltaTime)
         {
             auto& transform = ecs.GetComponent<CTransform>(entity);
 
+            if (!ecs.HasComponent<CModel>(entity) && !ecs.HasComponent<CMesh>(entity))
+            {
+                continue;
+            }
+
             glm::mat4 model = glm::mat4(1.0f);
             model = glm::translate(model, transform.position);
 
@@ -280,119 +285,127 @@ void RenderSystem::Update(float deltaTime)
 
     Common::playerViewMatrix = player.viewMatrix;
 
-   /* if (UI::isOpen)
+    if (!Common::showVoxelDebug)
     {
-        Raycast::calculateMouseRaycast(projection* player.viewMatrix);
-    }
-
-    Shader& pbrModelTestShader = ShaderManager::GetShaderProgram("pbrModelTestShader");
-    pbrModelTestShader.use();
-
-    if (pointLightShadowEntities.size() != 0)
-    {
-        glActiveTexture(GL_TEXTURE10);
-        glBindTexture(GL_TEXTURE_CUBE_MAP_ARRAY, RenderingUtil::mPointLightShadowMap);
-        pbrModelTestShader.setInt("pointShadowMap", 10);
-    }
-
-    pbrModelTestShader.setMat4("view", player.viewMatrix);
-    pbrModelTestShader.setMat4("projection", projection);
-    pbrModelTestShader.setVec3("camPos", ecs.GetComponent<CTransform>(playerEntity).position);
-    pbrModelTestShader.setBool("showNormals", Common::normalsDebug);
-    pbrModelTestShader.setBool("worldPosDebug", Common::worldPosDebug);
-    pbrModelTestShader.setBool("albedoDebug", Common::albedoDebug);
-    pbrModelTestShader.setBool("roughnessDebug", Common::roughnessDebug);
-    pbrModelTestShader.setBool("metallicDebug", Common::metallicDebug);
-    pbrModelTestShader.setBool("aoDebug", Common::aoDebug);
-    pbrModelTestShader.setBool("emissionDebug", Common::emissionDebug);
-    pbrModelTestShader.setBool("bloom", Common::bloomOn);
-    pbrModelTestShader.setInt("irradianceMap", 6);
-    pbrModelTestShader.setInt("prefilterMap", 7);
-    pbrModelTestShader.setInt("brdfLUT", 8);
-    pbrModelTestShader.setInt("dirShadowMap", 9);
-    pbrModelTestShader.setMat4("dirLightSpaceMatrix", dirLightSpaceMatrix);
-
-    glActiveTexture(GL_TEXTURE6);
-    glBindTexture(GL_TEXTURE_CUBE_MAP, RenderingUtil::mIrradianceCubemap);
-    glActiveTexture(GL_TEXTURE7);
-    glBindTexture(GL_TEXTURE_CUBE_MAP, RenderingUtil::mPrefilteredEnvMap);
-    glActiveTexture(GL_TEXTURE8);
-    glBindTexture(GL_TEXTURE_2D, RenderingUtil::mBrdfLUT);
-    glActiveTexture(GL_TEXTURE9);
-    glBindTexture(GL_TEXTURE_2D, RenderingUtil::mDirLightShadowMap);
-
-    for (const auto& entity : mEntities) 
-    {
-
-        auto& transform = ecs.GetComponent<CTransform>(entity);
-
-        if (ecs.HasComponent<CLight>(entity) && Common::lightPosDebug)
+        if (UI::isOpen)
         {
-            auto& light = ecs.GetComponent<CLight>(entity);
-
-            Shader& solidColorShader = ShaderManager::GetShaderProgram("solidColorShader");
-
-            solidColorShader.use();
-
-            glm::mat4 model = glm::mat4(1.0f);
-            model = glm::translate(model, transform.position + light.offset);
-            model = glm::scale(model, glm::vec3(0.1f));
-
-            solidColorShader.setMat4("projection", projection);
-            solidColorShader.setMat4("view", player.viewMatrix);
-            solidColorShader.setMat4("model", model);
-            solidColorShader.setVec3("color", light.color * light.strength);
-
-            Util::renderSphere();
+            Raycast::calculateMouseRaycast(projection * player.viewMatrix);
         }
 
-        if (!ecs.HasComponent<CModel>(entity) && !ecs.HasComponent<CMesh>(entity))
-        {
-            continue;
-        }
-
-        glm::mat4 model = glm::mat4(1.0f);
-        model = glm::translate(model, transform.position);
-
-        glm::mat4 rotMatrix = glm::mat4_cast(transform.rotation);
-
-        model *= rotMatrix;
-
-        model = glm::scale(model, transform.scale);
-
-        glm::mat3 normalMatrix = glm::transpose(glm::inverse(model));
-        
+        Shader& pbrModelTestShader = ShaderManager::GetShaderProgram("vxgiTestShader");
         pbrModelTestShader.use();
 
-        pbrModelTestShader.setMat4("model", model);
-        pbrModelTestShader.setMat3("normalMatrix", normalMatrix);
-
-        if (ecs.HasComponent<CModel>(entity))
+        if (pointLightShadowEntities.size() != 0)
         {
-            auto& model3d = ecs.GetComponent<CModel>(entity);
-            pbrModelTestShader.setVec2("textureScaling", glm::vec2(1.0f));
-            pbrModelTestShader.setBool("hasAOTexture", model3d.hasAOTexture);
-            model3d.model.Draw(pbrModelTestShader);
+            glActiveTexture(GL_TEXTURE10);
+            glBindTexture(GL_TEXTURE_CUBE_MAP_ARRAY, RenderingUtil::mPointLightShadowMap);
+            pbrModelTestShader.setInt("pointShadowMap", 10);
         }
-        else
-        {
-            glDisable(GL_CULL_FACE);
-            auto& meshComponent = ecs.GetComponent<CMesh>(entity);
-            pbrModelTestShader.setVec2("textureScaling", meshComponent.textureScaling);
-            meshComponent.mesh.Draw(pbrModelTestShader);
-            glEnable(GL_CULL_FACE);
-        }
-    }*/
 
-   
+        pbrModelTestShader.setFloat("voxelSize", 1 / Common::voxelGridDimensions);
+        pbrModelTestShader.setMat4("view", player.viewMatrix);
+        pbrModelTestShader.setMat4("projection", projection);
+        pbrModelTestShader.setVec3("camPos", ecs.GetComponent<CTransform>(playerEntity).position);
+        pbrModelTestShader.setBool("showNormals", Common::normalsDebug);
+        pbrModelTestShader.setBool("worldPosDebug", Common::worldPosDebug);
+        pbrModelTestShader.setBool("albedoDebug", Common::albedoDebug);
+        pbrModelTestShader.setBool("roughnessDebug", Common::roughnessDebug);
+        pbrModelTestShader.setBool("metallicDebug", Common::metallicDebug);
+        pbrModelTestShader.setBool("aoDebug", Common::aoDebug);
+        pbrModelTestShader.setBool("emissionDebug", Common::emissionDebug);
+        pbrModelTestShader.setBool("bloom", Common::bloomOn);
+        pbrModelTestShader.setInt("irradianceMap", 6);
+        pbrModelTestShader.setInt("prefilterMap", 7);
+        pbrModelTestShader.setInt("brdfLUT", 8);
+        pbrModelTestShader.setInt("dirShadowMap", 9);
+        pbrModelTestShader.setMat4("dirLightSpaceMatrix", dirLightSpaceMatrix);
+
+        glActiveTexture(GL_TEXTURE6);
+        glBindTexture(GL_TEXTURE_CUBE_MAP, RenderingUtil::mIrradianceCubemap);
+        glActiveTexture(GL_TEXTURE7);
+        glBindTexture(GL_TEXTURE_CUBE_MAP, RenderingUtil::mPrefilteredEnvMap);
+        glActiveTexture(GL_TEXTURE8);
+        glBindTexture(GL_TEXTURE_2D, RenderingUtil::mBrdfLUT);
+        glActiveTexture(GL_TEXTURE9);
+        glBindTexture(GL_TEXTURE_2D, RenderingUtil::mDirLightShadowMap);
+        glActiveTexture(GL_TEXTURE15);
+        glBindTexture(GL_TEXTURE_3D, RenderingUtil::mVoxelTexture);
+        pbrModelTestShader.setInt("voxelTexture", 15);
+
+        for (const auto& entity : mEntities)
+        {
+            auto& transform = ecs.GetComponent<CTransform>(entity);
+
+            if (ecs.HasComponent<CLight>(entity) && Common::lightPosDebug)
+            {
+                auto& light = ecs.GetComponent<CLight>(entity);
+
+                Shader& solidColorShader = ShaderManager::GetShaderProgram("solidColorShader");
+
+                solidColorShader.use();
+
+                glm::mat4 model = glm::mat4(1.0f);
+                model = glm::translate(model, transform.position + light.offset);
+                model = glm::scale(model, glm::vec3(0.1f));
+
+                solidColorShader.setMat4("projection", projection);
+                solidColorShader.setMat4("view", player.viewMatrix);
+                solidColorShader.setMat4("model", model);
+                solidColorShader.setVec3("color", light.color * light.strength);
+
+                Util::renderSphere();
+            }
+
+            if (!ecs.HasComponent<CModel>(entity) && !ecs.HasComponent<CMesh>(entity))
+            {
+                continue;
+            }
+
+            glm::mat4 model = glm::mat4(1.0f);
+            model = glm::translate(model, transform.position);
+
+            glm::mat4 rotMatrix = glm::mat4_cast(transform.rotation);
+
+            model *= rotMatrix;
+
+            model = glm::scale(model, transform.scale);
+
+            glm::mat3 normalMatrix = glm::transpose(glm::inverse(model));
+
+            pbrModelTestShader.use();
+
+            pbrModelTestShader.setMat4("model", model);
+            pbrModelTestShader.setMat3("normalMatrix", normalMatrix);
+
+            if (ecs.HasComponent<CModel>(entity))
+            {
+                auto& model3d = ecs.GetComponent<CModel>(entity);
+                pbrModelTestShader.setVec2("textureScaling", glm::vec2(1.0f));
+                pbrModelTestShader.setBool("hasAOTexture", model3d.hasAOTexture);
+                model3d.model.Draw(pbrModelTestShader);
+            }
+            else
+            {
+                glDisable(GL_CULL_FACE);
+                auto& meshComponent = ecs.GetComponent<CMesh>(entity);
+                pbrModelTestShader.setVec2("textureScaling", meshComponent.textureScaling);
+                meshComponent.mesh.Draw(pbrModelTestShader);
+                glEnable(GL_CULL_FACE);
+            }
+        }
+    }
 
     if (Common::voxelize)
     {
+        glBindTexture(GL_TEXTURE_3D, RenderingUtil::mVoxelTexture);
+        float clearColor[4] = { 0.0, 0.0, 0.0, 0.0 };
+        glClearTexImage(RenderingUtil::mVoxelTexture, 0, GL_RGBA, GL_FLOAT, clearColor);
+
         Shader& voxelizationShader = ShaderManager::GetShaderProgram("voxelizationShader");
 
         voxelizationShader.use();
 
-        glViewport(0, 0, 64, 64);
+        glViewport(0, 0, Common::voxelGridDimensions, Common::voxelGridDimensions);
         glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE);
         glDisable(GL_CULL_FACE);
         glDisable(GL_DEPTH_TEST);
@@ -452,37 +465,45 @@ void RenderSystem::Update(float deltaTime)
         glEnable(GL_DEPTH_TEST);
     }
 
-    // voxel visualization
 
-    glViewport(0, 0, Window::screenWidth, Window::screenHeight);
+    if (Common::showVoxelDebug)
+    {
+        // voxel visualization
 
-    glBindFramebuffer(GL_FRAMEBUFFER, RenderingUtil::mMsFBO);
+        glViewport(0, 0, Window::screenWidth, Window::screenHeight);
 
-    // set both color buffer attachments as the draw buffers before clearing them, otherwise only the first color attachment will get cleared.
-    // This would mean that the color buffer which we render the bloom brightness texture onto would not get cleared and the bloom would effect would
-    // just accumulate over frames.
-    
-    glDrawBuffers(2, attachments);
+        glBindFramebuffer(GL_FRAMEBUFFER, RenderingUtil::mMsFBO);
 
-    glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-    glClear(GL_COLOR_BUFFER_BIT);
-    glClear(GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
-    glEnable(GL_DEPTH_TEST);
+        // set both color buffer attachments as the draw buffers before clearing them, otherwise only the first color attachment will get cleared.
+        // This would mean that the color buffer which we render the bloom brightness texture onto would not get cleared and the bloom would effect would
+        // just accumulate over frames.
 
-    Shader& voxelVisualizationShader = ShaderManager::GetShaderProgram("voxelVisualizationShader");
+        glDrawBuffers(1, attachments);
 
-    voxelVisualizationShader.use();
+        glClearColor(0.0f, 1.0f, 0.0f, 1.0f);
+        glClear(GL_COLOR_BUFFER_BIT);
+        glClear(GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
+        glEnable(GL_DEPTH_TEST);
 
-    voxelVisualizationShader.setVec3("gridDimensions", 64, 64, 64);
-    voxelVisualizationShader.setMat4("view", player.viewMatrix);
-    voxelVisualizationShader.setMat4("projection", projection);
-   
-    glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_3D, RenderingUtil::mVoxelTexture);
-    voxelVisualizationShader.setInt("voxelTexture", 0);
+        Shader& voxelVisualizationShader = ShaderManager::GetShaderProgram("voxelVisualizationShader");
 
-    glDrawArrays(GL_POINTS, 0, 64*64*64);
+        voxelVisualizationShader.use();
 
+        glUniform3i(glGetUniformLocation(voxelVisualizationShader.ID, "gridDimensions"), Common::voxelGridDimensions, Common::voxelGridDimensions, Common::voxelGridDimensions);
+
+        voxelVisualizationShader.setMat4("view", player.viewMatrix);
+        voxelVisualizationShader.setMat4("projection", projection);
+
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_3D, RenderingUtil::mVoxelTexture);
+        voxelVisualizationShader.setInt("voxelTexture", 0);
+
+        unsigned int vao;
+        glGenVertexArrays(1, &vao);
+        glBindVertexArray(vao);
+
+        glDrawArrays(GL_POINTS, 0, Common::voxelGridDimensions * Common::voxelGridDimensions * Common::voxelGridDimensions);
+    }
 
    if (Common::bulletLinesDebug)
    {

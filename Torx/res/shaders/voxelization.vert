@@ -25,6 +25,6 @@ void main()
 	// fragment shader. After manually clipping the fragment's interpolated world position, we convert it to the [0, 1] range and divide the 3d texture's dimensions
 	// by it. We will use that value to index voxels in the 3d texture and inject lighting information into them.
 
-	gl_Position = vec4(FragPosGeom * 1/5, 1.0); 
+	gl_Position = vec4(FragPosGeom * 1/11.5, 1.0); 
 
 }

@@ -23,8 +23,8 @@ void ShaderManager::LoadShaders()
 	std::shared_ptr<Shader>	pbrModelTestShader = std::make_shared<Shader>("res/shaders/lighting.vert", "res/shaders/pbrTestModelLoading.frag");
 	std::shared_ptr<Shader>	lineDebugShader = std::make_shared<Shader>("res/shaders/line.vert", "res/shaders/line.frag");
 	std::shared_ptr<Shader>	voxelizationShader = std::make_shared<Shader>("res/shaders/voxelization.vert", "res/shaders/voxelization.frag", "res/shaders/voxelization.geom");
-	std::shared_ptr<Shader>	voxelVisualizationShader = std::make_shared<Shader>("res/shaders/voxelVisualization.vert", "res/shaders/voxelVisualization.frag");
-	
+	std::shared_ptr<Shader>	voxelVisualizationShader = std::make_shared<Shader>("res/shaders/voxelVisualization.vert", "res/shaders/voxelVisualization.frag", "res/shaders/voxelVisualization.geom");
+	std::shared_ptr<Shader>	vxgiTestShader = std::make_shared<Shader>("res/shaders/lighting.vert", "res/shaders/VXGI.frag");
 
 	shaderPrograms.clear();
 
@@ -45,6 +45,7 @@ void ShaderManager::LoadShaders()
 	shaderPrograms.insert({ "lineDebugShader", lineDebugShader });
 	shaderPrograms.insert({ "voxelizationShader", voxelizationShader });
 	shaderPrograms.insert({ "voxelVisualizationShader", voxelVisualizationShader });
+	shaderPrograms.insert({ "vxgiTestShader", vxgiTestShader });
 }
 
 // maybe make this more efficient in the future.

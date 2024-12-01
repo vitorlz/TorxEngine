@@ -82,17 +82,6 @@ void main(){
 
 	roughness = RMA.r;
 	metallic = RMA.g;
-	
-	if(hasAOTexture)
-	{
-		//ao = RMA.b;
-	}
-	else
-	{
-		//ao = 1.0;
-	}
-
-	ao = 1.0;
 
 	if(albedoSample.a < 0.5)
 		discard;
@@ -200,7 +189,7 @@ vec3 CalcPointLight(Light light, vec3 N, vec3 V, vec3 F0)
 
 	float NdotL = max(dot(N, L), 0.0); // scale the light's contribution by its angle to the surface's normal.
 		
-	return (kD * albedo / PI) * radiance * NdotL;
+	return (1.0 * albedo / PI) * radiance * NdotL;
 }
 
 vec3 getNormalFromMap()

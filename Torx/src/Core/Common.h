@@ -60,4 +60,6 @@ public:
 	static glm::mat4 playerViewMatrix;
 	static bool usingGuizmo;
 	static bool voxelize;
+	static bool showVoxelDebug;
+	static int	voxelGridDimensions;
 };

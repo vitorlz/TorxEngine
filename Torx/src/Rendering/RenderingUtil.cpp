@@ -28,6 +28,8 @@ unsigned int RenderingUtil::mDirLightShadowMap;
 unsigned int RenderingUtil::mBulletDebugLinesVAO;
 unsigned int RenderingUtil::mBulletDebugLinesVBO;
 unsigned int RenderingUtil::mVoxelTexture;
+unsigned int RenderingUtil::mVoxelVisualizationFBO;
+unsigned int RenderingUtil::mVoxelVisualizationTexture;
 
 void RenderingUtil::Init()
 {
@@ -41,7 +43,8 @@ void RenderingUtil::Init()
     RenderingUtil::CreateScreenQuadVAO();
     RenderingUtil::CreatePingPongFBOs();
     
-    RenderingUtil::CreateVoxelTexture(64);
+    RenderingUtil::CreateVoxelTexture(Common::voxelGridDimensions);
+    RenderingUtil::CreateVoxelVisualizationFBO();
 }
 
 float cubeVertices[] = 
@@ -676,4 +679,39 @@ void RenderingUtil::CreateVoxelTexture(int voxelTextureSize)
    
     glGenerateMipmap(GL_TEXTURE_3D);
     glBindTexture(GL_TEXTURE_3D, 0);
+}
+
+void RenderingUtil::CreateVoxelVisualizationFBO()
+{
+    glGenFramebuffers(1, &mVoxelVisualizationFBO);
+    glBindFramebuffer(GL_FRAMEBUFFER, mVoxelVisualizationFBO);
+
+    unsigned int mVoxelVisualizationTexture;
+    glGenTextures(1, &mVoxelVisualizationTexture);
+  
+    glBindTexture(GL_TEXTURE_2D, mVoxelVisualizationTexture);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, Common::SCR_WIDTH, Common::SCR_HEIGHT, 0, GL_RGBA, GL_FLOAT, NULL);
+
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, mVoxelVisualizationTexture, 0);
+    
+    glBindTexture(GL_TEXTURE_2D, 0);
+
+    unsigned int rbo;
+    glGenRenderbuffers(1, &rbo);
+    glBindRenderbuffer(GL_RENDERBUFFER, rbo);
+    glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, Common::SCR_WIDTH, Common::SCR_HEIGHT);
+    glBindRenderbuffer(GL_RENDERBUFFER, 0);
+
+    glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, rbo);
+
+    if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
+        std::cout << "ERROR::FRAMEBUFFER:: Framebuffer is not complete!" << std::endl;
+    }
+
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }

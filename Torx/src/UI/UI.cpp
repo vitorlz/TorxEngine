@@ -212,6 +212,8 @@ void UI::Update()
         Common::voxelize = true;
     }
 
+    ImGui::Checkbox("Show voxel debug", &Common::showVoxelDebug);
+
     ImGui::End();
 
     // Gizmos
