@@ -25,11 +25,11 @@ void main()
     vec3 texCoord = gridCoord / vec3(gridDimensions);
 
     // Sample the color from the 3D texture
-    voxelColor = texture(voxelTexture, vec3(texCoord.x, texCoord.y, texCoord.z)).rgba;
+    voxelColor = textureLod(voxelTexture, vec3(texCoord.x, texCoord.y, texCoord.z), 0).rgba;
 
     // Center the voxel position in the world space
     worldPos = (gridCoord - vec3(gridDimensions) * 0.5 + 0.5) * 0.5f;
-    
+        
     projView = projection * view;
 
     gl_Position;

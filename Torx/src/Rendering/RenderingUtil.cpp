@@ -28,7 +28,7 @@ unsigned int RenderingUtil::mDirLightShadowMap;
 unsigned int RenderingUtil::mBulletDebugLinesVAO;
 unsigned int RenderingUtil::mBulletDebugLinesVBO;
 unsigned int RenderingUtil::mVoxelTexture;
-unsigned int RenderingUtil::mVoxelVisualizationFBO;
+unsigned int RenderingUtil::mVoxelizationFBO;
 unsigned int RenderingUtil::mVoxelVisualizationTexture;
 
 void RenderingUtil::Init()
@@ -44,7 +44,7 @@ void RenderingUtil::Init()
     RenderingUtil::CreatePingPongFBOs();
     
     RenderingUtil::CreateVoxelTexture(Common::voxelGridDimensions);
-    RenderingUtil::CreateVoxelVisualizationFBO();
+    //RenderingUtil::CreateVoxelizationFBO();
 }
 
 float cubeVertices[] = 
@@ -667,6 +667,10 @@ void RenderingUtil::CreateVoxelTexture(int voxelTextureSize)
     glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
     glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_BORDER);
 
+
+    GLfloat borderColor[] = { 0.0f, 0.0f, 0.0f, 0.0f }; 
+    glTexParameterfv(GL_TEXTURE_3D, GL_TEXTURE_BORDER_COLOR, borderColor);
+
     glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
     glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 
@@ -681,37 +685,27 @@ void RenderingUtil::CreateVoxelTexture(int voxelTextureSize)
     glBindTexture(GL_TEXTURE_3D, 0);
 }
 
-void RenderingUtil::CreateVoxelVisualizationFBO()
+void RenderingUtil::CreateVoxelizationFBO()
 {
-    glGenFramebuffers(1, &mVoxelVisualizationFBO);
-    glBindFramebuffer(GL_FRAMEBUFFER, mVoxelVisualizationFBO);
 
-    unsigned int mVoxelVisualizationTexture;
-    glGenTextures(1, &mVoxelVisualizationTexture);
-  
-    glBindTexture(GL_TEXTURE_2D, mVoxelVisualizationTexture);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, Common::SCR_WIDTH, Common::SCR_HEIGHT, 0, GL_RGBA, GL_FLOAT, NULL);
+    glGenFramebuffers(1, &mVoxelizationFBO);
 
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-
-    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, mVoxelVisualizationTexture, 0);
+    glBindFramebuffer(GL_FRAMEBUFFER, mVoxelizationFBO);
     
-    glBindTexture(GL_TEXTURE_2D, 0);
+    glDrawBuffer(GL_NONE);
+    glReadBuffer(GL_NONE);
 
-    unsigned int rbo;
-    glGenRenderbuffers(1, &rbo);
-    glBindRenderbuffer(GL_RENDERBUFFER, rbo);
-    glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, Common::SCR_WIDTH, Common::SCR_HEIGHT);
-    glBindRenderbuffer(GL_RENDERBUFFER, 0);
-
-    glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, rbo);
-
-    if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
-        std::cout << "ERROR::FRAMEBUFFER:: Framebuffer is not complete!" << std::endl;
+    const int status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
+    if (status != GL_FRAMEBUFFER_COMPLETE)
+    {
+        std::cout << "ERROR::FRAMEBUFFER:: Framebuffer is not complete!\n";
+        throw 0;
     }
 
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
+}
+
+void RenderingUtil::DeleteTexture(unsigned int textureId) 
+{
+    glDeleteTextures(1, &textureId);
 }

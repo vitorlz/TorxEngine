@@ -62,4 +62,14 @@ public:
 	static bool voxelize;
 	static bool showVoxelDebug;
 	static int	voxelGridDimensions;
+	static bool vxgi;
+	static bool showDiffuseAccumulation;
+	static bool showTotalIndirectDiffuseLight;
+	static float diffuseConeSpread;
+	static float voxelizationAreaSize;
+	static float specularBias;
+	static float specularStepSizeMultiplier;
+	static float specularConeOriginOffset;
+	static bool showTotalIndirectSpecularLight;
+	static float specularConeMaxDistance;
 };

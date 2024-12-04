@@ -6,7 +6,10 @@ layout (location = 2) in vec2 aTexCoords;
 
 uniform mat4 model;
 uniform mat3 normalMatrix;
+uniform float voxelizationAreaSize;
 
+
+out float voxelizationAreaSizeGeom;
 out vec3 FragPosGeom;
 out vec3 NormalGeom;
 out vec2 TexCoordsGeom;
@@ -16,6 +19,7 @@ void main()
 	FragPosGeom = vec3(model * vec4(aPos, 1.0));
 	NormalGeom = normalMatrix * aNormal;
 	TexCoordsGeom = aTexCoords;
+	voxelizationAreaSizeGeom = voxelizationAreaSize;
 
 	// just for test, we are going to voxelize the scene 60 units in each direction. Here we are dividing the world position of the vertex by 1/30, which means
 	// that components between -30 and 30 will me mapped to NDC [-1, 1]. In the geometry shader we are going to pass this position along to the fragment shader
@@ -25,6 +29,6 @@ void main()
 	// fragment shader. After manually clipping the fragment's interpolated world position, we convert it to the [0, 1] range and divide the 3d texture's dimensions
 	// by it. We will use that value to index voxels in the 3d texture and inject lighting information into them.
 
-	gl_Position = vec4(FragPosGeom * 1/11.5, 1.0); 
+	gl_Position = vec4(FragPosGeom * 1/voxelizationAreaSize, 1.0); 
 
-}
+}	

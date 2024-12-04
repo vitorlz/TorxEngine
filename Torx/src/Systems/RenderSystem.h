@@ -13,4 +13,7 @@ public:
 	void Init();
 
 	void Update(float deltaTime);
+
+private:
+	void voxelizeScene(glm::vec3 camPos);
 };

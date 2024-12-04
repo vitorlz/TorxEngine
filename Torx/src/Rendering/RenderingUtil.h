@@ -30,7 +30,7 @@ public:
 	
 	// voxels
 	static unsigned int mVoxelTexture;
-	static unsigned int mVoxelVisualizationFBO;
+	static unsigned int mVoxelizationFBO;
 	static unsigned int mVoxelVisualizationTexture;
 
 	static void EquirectangularToCubemap(const char* path);
@@ -39,6 +39,8 @@ public:
 	static void CreateBRDFIntegrationMap();
 	static void CreateBulletDebugBuffers();
 	static void LoadNewEnvironmentMap(const char* filename); 
+	static void DeleteTexture(unsigned int textureId);
+	static void CreateVoxelTexture(int voxelTextureSize);
 
 private:
 	static void CreateCubeVAO();
@@ -48,6 +50,5 @@ private:
 	static void CreateDirLightShadowMapFBO(unsigned int shadowWidth, unsigned int shadowHeight);
 	static void CreatePointLightShadowMapFBO(unsigned int shadowWidth, unsigned int shadowHeight);
 	static void CreatePingPongFBOs();
-	static void CreateVoxelTexture(int voxelTextureSize);
-	static void CreateVoxelVisualizationFBO();
+	static void CreateVoxelizationFBO();
 };

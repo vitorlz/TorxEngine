@@ -97,8 +97,6 @@ int main()
         ecs.SetSystemSignature<PlayerInputSystem>(signature);
     }
 
-    
-
     UI gui;
 
     gui.Init(window.GetWindow());

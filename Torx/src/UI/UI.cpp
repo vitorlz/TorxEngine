@@ -184,7 +184,6 @@ void UI::Update()
         ImGui::TreePop();
     }
 
-
     if (ImGui::TreeNode("Debug"))
     {
         ImGui::Checkbox("Show normals", &Common::normalsDebug);
@@ -202,17 +201,74 @@ void UI::Update()
         ImGui::TreePop();
     }
 
-    if (ImGui::Button("Save scene")) 
+    static int voxelGridDimensions = Common::voxelGridDimensions;
+    if (ImGui::TreeNode("VXGI"))
+    {
+        ImGui::Checkbox("VXGI on", &Common::vxgi);
+       
+        ImGui::Checkbox("Show voxelized scene", &Common::showVoxelDebug);
+        ImGui::SliderFloat("Voxelization area size", &Common::voxelizationAreaSize, 0.0f, 50.0f);
+
+        ImGui::SeparatorText("Indirect Diffuse Lighting");
+        ImGui::Checkbox("Show indirect diffuse light accumulation", &Common::showDiffuseAccumulation);
+        ImGui::Checkbox("Show total indirect diffuse light", &Common::showTotalIndirectDiffuseLight);
+        ImGui::SliderFloat("Diffuse cone spread", &Common::diffuseConeSpread, 0.001f, 5.0f);
+
+        ImGui::SeparatorText("Indirect specular lighting");
+        ImGui::SliderFloat("Specular bias", &Common::specularBias, 0.0f, 20.0f);
+        ImGui::SliderFloat("Cone origin offset", &Common::specularConeOriginOffset, 0.0f, 20.0f);
+        ImGui::SliderFloat("Cone max. distance", &Common::specularConeMaxDistance, 0.1f, 20.0f);
+        ImGui::SliderFloat("Step size multiplier", &Common::specularStepSizeMultiplier, 0.1f, 5.0f);
+        ImGui::Checkbox("Show total indirect specular light", &Common::showTotalIndirectSpecularLight);
+        
+        ImGui::SeparatorText("Voxel grid dimension");
+        if (ImGui::RadioButton("64", &voxelGridDimensions, 64))
+        {
+            RenderingUtil::DeleteTexture(RenderingUtil::mVoxelTexture);
+            Common::voxelGridDimensions = voxelGridDimensions;
+            RenderingUtil::CreateVoxelTexture(voxelGridDimensions);
+            Common::voxelize = true;
+        } 
+        ImGui::SameLine();
+        if (ImGui::RadioButton("128", &voxelGridDimensions, 128))
+        {
+            RenderingUtil::DeleteTexture(RenderingUtil::mVoxelTexture);
+            Common::voxelGridDimensions = voxelGridDimensions;
+            RenderingUtil::CreateVoxelTexture(voxelGridDimensions);
+            Common::voxelize = true;
+            
+        } 
+        ImGui::SameLine();
+        if (ImGui::RadioButton("256", &voxelGridDimensions, 256))
+        {
+            RenderingUtil::DeleteTexture(RenderingUtil::mVoxelTexture);
+            Common::voxelGridDimensions = voxelGridDimensions;
+            RenderingUtil::CreateVoxelTexture(voxelGridDimensions);
+            Common::voxelize = true;
+        }
+        ImGui::SameLine();
+        if (ImGui::RadioButton("512", &voxelGridDimensions, 512))
+        {
+            RenderingUtil::DeleteTexture(RenderingUtil::mVoxelTexture);
+            Common::voxelGridDimensions = voxelGridDimensions;
+            RenderingUtil::CreateVoxelTexture(voxelGridDimensions);
+            Common::voxelize = true;
+        }
+
+        if (ImGui::Button("Voxelize"))
+        {
+            Common::voxelize = true;
+        }
+
+        ImGui::TreePop();
+    }
+
+    if (ImGui::Button("Save scene"))
     {
         Scene::SaveSceneToJson("sponzascene.json");
     }
 
-    if (ImGui::Button("Voxelize"))
-    {
-        Common::voxelize = true;
-    }
-
-    ImGui::Checkbox("Show voxel debug", &Common::showVoxelDebug);
+    //ImGui::Checkbox("Show voxel debug", &Common::showVoxelDebug);
 
     ImGui::End();
 

@@ -6,10 +6,12 @@ layout (triangle_strip, max_vertices =(3)) out;
 in vec3 FragPosGeom[];
 in vec3 NormalGeom[];
 in vec2 TexCoordsGeom[];
+in float voxelizationAreaSizeGeom[];
 
 out vec3 FragPos;
 out vec3 Normal;
 out vec2 TexCoords;
+out float voxelizationAreaSizeFrag;
 
 void main(){
 
@@ -18,6 +20,9 @@ void main(){
 	// we can do to maybe make this better is scale the triangles up a little bit so that they fill voxels that would otherwise not be filled because the triangle
 	// only intersects its edge.
 
+	// conservative rasterization;
+	float projectionScalingFactor = 1.0;
+
 	const vec3 p1 = FragPosGeom[1] - FragPosGeom[0];
 	const vec3 p2 = FragPosGeom[2] - FragPosGeom[0];
 	const vec3 p = abs(cross(p1, p2)); 
@@ -25,12 +30,13 @@ void main(){
 		FragPos = gl_in[i].gl_Position.xyz;
 		Normal = NormalGeom[i];
 		TexCoords = TexCoordsGeom[i];
+		voxelizationAreaSizeFrag = voxelizationAreaSizeGeom[i];
 		if(p.z > p.x && p.z > p.y){
-			gl_Position = vec4(FragPos.x, FragPos.y, 0, 1);
+			gl_Position = vec4(FragPos.x * projectionScalingFactor, FragPos.y * projectionScalingFactor, 0, 1);
 		} else if (p.x > p.y && p.x > p.z){
-			gl_Position = vec4(FragPos.y, FragPos.z, 0, 1);
+			gl_Position = vec4(FragPos.y * projectionScalingFactor, FragPos.z * projectionScalingFactor, 0, 1);
 		} else {
-			gl_Position = vec4(FragPos.x, FragPos.z, 0, 1);
+			gl_Position = vec4(FragPos.x * projectionScalingFactor, FragPos.z * projectionScalingFactor, 0, 1);
 		}
 		EmitVertex();
 	}

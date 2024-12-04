@@ -323,7 +323,6 @@ vec3 CalcPointLight(Light light, vec3 N, vec3 V, vec3 F0)
 	// we can  directly loop over these incoming light directions e.g. the number of lights in the scene.
 }
 
-
 vec3 CalcDirLight(Light light, vec3 N, vec3 V, vec3 F0) 
 {
 
@@ -392,7 +391,6 @@ vec3 CalcSpotLight(Light light, vec3 N, vec3 V, vec3 F0)
 	float NdotL = max(dot(N, L), 0.0); // scale the light's contribution by its angle to the surface's normal.
 		
 	return (kD * albedo / PI + specular) * radiance * NdotL;
-
 }
 
 float PointShadowCalculation(vec3 fragPos, Light light, int shadowCasterIndex) 

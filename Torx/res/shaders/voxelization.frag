@@ -39,13 +39,17 @@ layout(binding = 0, std430) buffer LightsSSBO
 in vec3 FragPos;
 in vec3 Normal;
 in vec2 TexCoords;
+in float voxelizationAreaSizeFrag;
 
 // misc
 uniform bool hasAOTexture;
 uniform vec2 textureScaling;
 vec2 scaledTexCoords;
-
 uniform vec3 camPos;
+
+// shadows 
+uniform samplerCubeArray pointShadowMap;
+int pointShadowCasterIndex = 0;
 
 const float PI = 3.14159265359;
 
@@ -56,6 +60,7 @@ float DistributionGGX(vec3 N, vec3 H, float roughness);
 vec3 CalcPointLight(Light light, vec3 N, vec3 V, vec3 F0);
 //vec3 CalcDirLight(Light light, vec3 N, vec3 V, vec3 F0);
 //vec3 CalcSpotLight(Light light, vec3 N, vec3 V, vec3 F0);
+float PointShadowCalculation(vec3 fragPos, Light light, int shadowCasterIndex);
 float PointShadowCalculation(vec3 fragPos, Light light, int shadowCasterIndex);
 float DirShadowCalculation(vec4 fragPosLightSpace, vec3 normal, vec3 lightDir);
 vec3 getNormalFromMap();
@@ -71,10 +76,16 @@ vec3 scaleAndBias(vec3 p) { return 0.5f * p + vec3(0.5f); }
 
 bool isInsideCube(const vec3 p, float e) { return abs(p.x) < 1 + e && abs(p.y) < 1 + e && abs(p.z) < 1 + e; }
 
+vec3 fragPosUnscaled;
+
 void main(){
 	if(!isInsideCube(FragPos, 0)) return;
+	scaledTexCoords = TexCoords;
 
-	scaledTexCoords = TexCoords * textureScaling;
+	// Remember that we scaled some range of fragment positions to be inside clipspace in the vertex shader.
+	// We have to unscale them to do the light calculations correctly. We are bringing FragPos from clip space to world space
+	// to calculate lighting in world space.
+	fragPosUnscaled = FragPos * voxelizationAreaSizeFrag;
 
 	vec4 albedoSample = texture(material.texture_albedo1, scaledTexCoords).rgba;
 	vec3 RMA = texture(material.texture_rma1, scaledTexCoords).gbr;
@@ -83,13 +94,13 @@ void main(){
 	roughness = RMA.r;
 	metallic = RMA.g;
 
-	if(albedoSample.a < 0.5)
+	if(albedoSample.a < 0.0)
 		discard;
 
 	albedo = albedoSample.rgb;
 
 	vec3 N = getNormalFromMap();
-	vec3 V = normalize(camPos - FragPos); // viewDir
+	vec3 V = normalize(camPos - fragPosUnscaled); // viewDir
 	vec3 R = reflect(-V, N);   
 
 	vec3 F0 = vec3(0.04);
@@ -110,12 +121,21 @@ void main(){
 	// Output lighting to 3D texture.
 	vec3 voxel = scaleAndBias(FragPos);
 	ivec3 dim = imageSize(texture3D);
+	ivec3 voxelCoord = ivec3(dim * voxel);
 	//float alpha = pow(1 - material.transparency, 4); // For soft shadows to work better with transparent materials.
 	vec4 res = vec4(Lo, 1);
 
+	vec4 currentColor = imageLoad(texture3D, voxelCoord);
+
+	if(currentColor.r > res.r || currentColor.g > res.g || currentColor.b > res.b)
+	{
+		return;
+	}	
+
 	// notice that we are indexing into the 3d texture using a vector of integers. So dim * voxel is truncated into an integer, which means that 
 	// ivec3(dim * voxel) points to an exact voxel location in the 3d texture.
-    imageStore(texture3D, ivec3(dim * voxel), res);
+
+    imageStore(texture3D, voxelCoord, res);
 }
 
 vec3 fresnelSchlick(float cosTheta, vec3 F0)
@@ -162,11 +182,17 @@ vec3 CalcPointLight(Light light, vec3 N, vec3 V, vec3 F0)
 {
 	float shadow = 0;
 
-	vec3 L = normalize(light.position.xyz - FragPos); // lightDir
+	if (light.shadowCaster.x == 1) 
+	{
+		shadow = PointShadowCalculation(fragPosUnscaled, light, pointShadowCasterIndex);
+		pointShadowCasterIndex++;
+	}
+
+	vec3 L = normalize(light.position.xyz - fragPosUnscaled); // lightDir
 	vec3 H = normalize(V + L); // halfway vector
 
-	float distance = length(light.position.xyz - FragPos);
-	float attenuation = smoothstep(light.radius.x, 0.0, length(light.position.xyz - FragPos));
+	float distance = length(light.position.xyz - fragPosUnscaled);
+	float attenuation = smoothstep(light.radius.x, 0.0, length(light.position.xyz - fragPosUnscaled));
 	vec3 radiance = light.color.xyz * attenuation; // the scaling by the angle between the normal of the surface and the solid angle (which is just the direction vector
 	// of the fragment to the light in this case) is in the final reflectance formula.
 
@@ -176,10 +202,10 @@ vec3 CalcPointLight(Light light, vec3 N, vec3 V, vec3 F0)
 
 	// Cook-Torrance BRDF --> gives us how much each individual light ray (direction vector from fragment to light in this case) contributes 
 	// to the final refleted light of an opaque surface (the current fragment) given its material properties.
-	//vec3 numerator = NDF * G * F;
-	//float denominator = 4.0 * max(dot(N, V), 0.0) *  max(dot(N, L), 0.0) + 0.0001;
+	vec3 numerator = NDF * G * F;
+	float denominator = 4.0 * max(dot(N, V), 0.0) *  max(dot(N, L), 0.0) + 0.0001;
 	
-	//vec3 specular = numerator / denominator;
+	vec3 specular = numerator / denominator;
 
 	vec3 kS = F;
 	vec3 kD = vec3(1.0) - kS;
@@ -188,8 +214,61 @@ vec3 CalcPointLight(Light light, vec3 N, vec3 V, vec3 F0)
 	kD *= 1.0 - metallic;
 
 	float NdotL = max(dot(N, L), 0.0); // scale the light's contribution by its angle to the surface's normal.
-		
-	return (1.0 * albedo / PI) * radiance * NdotL;
+
+	//vec3 
+
+	return (kD * albedo / PI + specular) * radiance * NdotL * clamp((1.0 - shadow), 0.0, 1.0);
+}
+
+float PointShadowCalculation(vec3 fragPos, Light light, int shadowCasterIndex) 
+{
+	// get a vector from the light source to the current fragment so that we can (1) get its length to use as the depth value of the current fragment (remember that we used the length
+	// of a vector from the light to a fragment as the depth value when generating the shadow map to make the depth values linear. We use perspective projection when rendering the scene
+	// to create point shadow map, so the depth values stored would not be linear, and that is why we had to do it ourselves.
+	// (2) we also use this vector to sample a depth value from the shadow cubemap.
+
+	vec3 fragToLight = fragPos - light.position.xyz;
+
+	float currentDepth = length(fragToLight);
+
+	vec3 sampleOffsetDirections[56] = vec3[]
+	(
+		vec3( 1,  1,  1), vec3( 1, -1,  1), vec3(-1, -1,  1), vec3(-1,  1,  1),
+		vec3( 1,  1, -1), vec3( 1, -1, -1), vec3(-1, -1, -1), vec3(-1,  1, -1),
+		vec3( 1,  1,  0), vec3( 1, -1,  0), vec3(-1, -1,  0), vec3(-1,  1,  0),
+		vec3( 1,  0,  1), vec3(-1,  0,  1), vec3( 1,  0, -1), vec3(-1,  0, -1),
+		vec3( 0,  1,  1), vec3( 0, -1,  1), vec3( 0, -1, -1), vec3( 0,  1, -1),
+		vec3( 0.5,  0.5,  0.5), vec3(-0.5, -0.5,  0.5), vec3(0.5, -0.5, 0.5), vec3(-0.5, 0.5, 0.5),
+		vec3( 0.5,  0.5, -0.5), vec3(-0.5, -0.5, -0.5), vec3(0.5, -0.5, -0.5), vec3(-0.5, 0.5, -0.5),
+		vec3( 0.5,  1,  0), vec3(-0.5,  1,  0), vec3(0.5, -1, 0), vec3(-0.5, -1, 0),
+		vec3( 1,  0.5,  0), vec3(-1,  0.5,  0), vec3(1, -0.5, 0), vec3(-1, -0.5, 0),
+		vec3( 0,  0.5,  1), vec3(0, -0.5, 1), vec3(0, 0.5, -1), vec3(0, -0.5, -1),
+		vec3( 0.5,  0,  1), vec3(-0.5,  0,  1), vec3(0.5, 0, -1), vec3(-0.5, 0, -1),
+		vec3( 0.25,  0.25,  0.25), vec3(-0.25, -0.25,  0.25), vec3(0.25, -0.25, 0.25), vec3(-0.25, 0.25, 0.25),
+		vec3( 0.25,  0.25, -0.25), vec3(-0.25, -0.25, -0.25), vec3(0.25, -0.25, -0.25), vec3(-0.25, 0.25, -0.25),
+		vec3( 1,  0,  0), vec3(-1,  0,  0), vec3(0, 1, 0), vec3(0, -1, 0)
+	);
+
+	// this is PCF but in 3D. We sample a "disk" around a given texel, test to see if it is in shadow or not, add the result to the shadow variable,
+	// and then take the average. This gets us smoother shadows.
+
+	float shadow = 0.0;
+	float bias   = 0.0;	
+	int samples  = 56;
+	// this diskradis is what is causing light bleed.
+	float diskRadius = 0.01;
+	for(int i = 0; i < samples; ++i)
+	{
+		float closestDepth = texture(pointShadowMap, vec4(fragToLight + sampleOffsetDirections[i] * diskRadius, shadowCasterIndex)).r;
+		closestDepth *= light.radius.x;   // undo mapping [0;1]
+		if(currentDepth - bias > closestDepth)
+			shadow += 1.0;
+	}
+	shadow /= float(samples) * 1.1;  
+
+	float unitDepth = currentDepth / light.radius.x;
+
+	return mix(shadow, 0, unitDepth / 3);
 }
 
 vec3 getNormalFromMap()

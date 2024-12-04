@@ -11,5 +11,5 @@ void main()
         discard;
     }
    
-   FragColor = fragColor; // Set the color with full alpha
+    FragColor = fragColor; // Set the color with full alpha
 }

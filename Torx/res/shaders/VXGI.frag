@@ -4,11 +4,12 @@
 #define SQRT2 1.414213
 #define ISQRT2 0.707106
 #define DIFFUSE_INDIRECT_FACTOR 0.1f
+#define MIPMAP_HARDCAP 5.4
 
 layout (location = 0) out vec4 FragColor;
 layout (location = 1) out vec4 BrightColor;
 
-in vec2 TexCoords;
+in vec2 TexCoords;	
 in vec3 FragPos;
 in vec3 Normal;
 
@@ -97,24 +98,37 @@ vec3 indirectDiffuseLight(vec3 normal);
 bool isInsideCube(const vec3 p, float e);
 vec3 orthogonal(vec3 u);
 vec3 traceDiffuseVoxelCone(const vec3 from, vec3 direction);
+vec3 traceSpecularVoxelCone(vec3 from, vec3 direction, vec3 normal);
+vec3 indirectSpecularLight(vec3 viewDirection, vec3 normal);
 
 vec3 albedo;
 vec3 emission;
 float roughness; 
 float metallic;
 float ao;
-vec3 F0;
+vec3 F0; 
 
 // vxgi
 uniform sampler3D voxelTexture;
-//uniform float voxelSize;
+uniform float voxelSize;
+uniform bool vxgi;
+uniform bool showDiffuseAccumulation;
+uniform bool showTotalIndirectDiffuseLight;
+uniform float diffuseConeSpread;
+uniform float voxelizationAreaSize;
+uniform float specularBias;
+uniform float specularStepSizeMultiplier;
+uniform float specularConeOriginOffset;
+uniform bool showTotalIndirectSpecularLight;
+uniform float specularConeMaxDistance;
 
-#define voxelSize (1/128.0)
-
+float MAX_DISTANCE;
+	
 void main()
-{
-
+{	
 	scaledTexCoords = TexCoords * textureScaling;
+
+	MAX_DISTANCE = distance(vec3(abs(FragPos)), vec3(-specularConeMaxDistance));
 
 	vec4 albedoSample = texture(material.texture_albedo1, scaledTexCoords).rgba;
 	vec3 RMA = texture(material.texture_rma1, scaledTexCoords).gbr;
@@ -145,7 +159,6 @@ void main()
 	F0 = mix(F0, albedo, metallic);
 
 	vec3 Lo = vec3(0.0); // reflectance (total sum of radiance that comes from light sources and get reflected by a point P (the fragment in this case)
-
 
 	// ------ Directional Light ---------
 	for(int i = 0; i < lights.length(); i++) {
@@ -179,20 +192,24 @@ void main()
 	vec3 kS = F;
 	vec3 kD = 1.0 - kS;
 	kD *= 1.0 - metallic;
-	// retrieve the irradiance influencing the fragment
-	vec3 irradiance = texture(irradianceMap, N).rgb;
-	vec3 diffuse = irradiance * albedo;
-	// We treat both diffuse and specular indirect lighting as ambient lighting as it comes from outside sources and not from direct light sources.
-	const float MAX_REFLECTION_LOD = 4.0;
-	vec3 prefilteredColor = textureLod(prefilterMap, R, roughness * MAX_REFLECTION_LOD).rgb;
-	vec2 envBRDF = texture(brdfLUT, vec2(max(dot(N, V), 0.0), roughness)).rg;
-	vec3 specular = prefilteredColor * (F * envBRDF.x + envBRDF.y);
-	
-	//vec3 ambient = (kD * diffuse + specular) * ao;
-	//vec3 ambient = ((kD * diffuse + specular) * ao) / 10;
-	
-	vec3 color = Lo + indirectDiffuseLight(N);
 
+	vec3 color = Lo;
+
+	vec3 indirectDiffuseContribution = (kD * indirectDiffuseLight(N));
+	vec3 indirectSpecularContribution = (kS * indirectSpecularLight(V, N));
+
+	if(vxgi && !(showTotalIndirectDiffuseLight || showDiffuseAccumulation || showTotalIndirectSpecularLight))
+	{
+		color += indirectDiffuseContribution + indirectSpecularContribution;	
+	}
+	else if(showTotalIndirectDiffuseLight || showDiffuseAccumulation)
+	{
+		color = indirectDiffuseContribution;
+	}
+	else if(showTotalIndirectSpecularLight)
+	{
+		color = indirectSpecularContribution;
+	}
 	if(showNormals) 
 	{
 		FragColor = vec4(N, 1.0);
@@ -254,24 +271,25 @@ vec3 orthogonal(vec3 u){
 // Traces a diffuse voxel cone.
 vec3 traceDiffuseVoxelCone(const vec3 from, vec3 direction){
 	direction = normalize(direction);
-	
-	const float CONE_SPREAD = 0.01;
+
+	float CONE_SPREAD = diffuseConeSpread;
 
 	vec4 acc = vec4(0.0f);
 
 	// Controls bleeding from close surfaces.
 	// Low values look rather bad if using shadow cone tracing.
 	// Might be a better choice to use shadow maps and lower this value.
-	float dist = 0.1953125;
+	float dist = 0.0;
 
 	// Trace.
 	while(dist < SQRT2 && acc.a < 1){
-		vec3 c = from + dist * direction;
-		c = scaleAndBias((from + dist * direction) / 11.5);			
-		float l = (1 + CONE_SPREAD * dist / voxelSize);
+		vec3 c = (from + dist * direction) / voxelizationAreaSize;
+		if(!isInsideCube(c, 0)) break;
+		c = scaleAndBias(c);		
+		float l = 1 + CONE_SPREAD * dist / voxelSize;
 		float level = log2(l);
 		float ll = (level + 1) * (level + 1);
-		vec4 voxel = textureLod(voxelTexture, c, min(5.4f, level)).rgba;
+		vec4 voxel = textureLod(voxelTexture, c, min(MIPMAP_HARDCAP, level)).rgba;
 		acc += 0.075 * ll * voxel * pow(1 - voxel.a, 2);
 		dist += ll * voxelSize * 2;
 	}
@@ -279,7 +297,7 @@ vec3 traceDiffuseVoxelCone(const vec3 from, vec3 direction){
 }
 
 vec3 indirectDiffuseLight(vec3 normal){
-	const float ANGLE_MIX = 0.5f; // Angle mix (1.0f => orthogonal direction, 0.0f => direction of normal).
+	const float ANGLE_MIX = 0.666; // Angle mix (1.0f => orthogonal direction, 0.0f => direction of normal).
 
 	const float w[3] = {1.0, 1.0, 1.0}; // Cone weights.
 
@@ -301,10 +319,10 @@ vec3 indirectDiffuseLight(vec3 normal){
 	// We offset forward in normal direction, and backward in cone direction.
 	// Backward in cone direction improves GI, and forward direction removes
 	// artifacts.
-	const float CONE_OFFSET = -0.1;
+	const float CONE_OFFSET = -0.01;
 
 	// Trace front cone
-	acc += w[0] * traceDiffuseVoxelCone(CONE_OFFSET * normal, normal);
+	acc += w[0] * traceDiffuseVoxelCone(C_ORIGIN + CONE_OFFSET * normal, normal);
 		
 	// Trace 4 side cones.
 	const vec3 s1 = mix(normal, ortho, ANGLE_MIX);
@@ -329,7 +347,46 @@ vec3 indirectDiffuseLight(vec3 normal){
 	acc += w[2] * traceDiffuseVoxelCone(C_ORIGIN - CONE_OFFSET * corner2, c4);
 
 	// Return result.
-	return DIFFUSE_INDIRECT_FACTOR * acc * (albedo + vec3(0.001f));
+
+	if(showDiffuseAccumulation)
+	{
+		return  acc;
+	}
+	else 
+	{
+		return acc * (albedo + vec3(0.001f));
+	}
+}
+
+vec3 traceSpecularVoxelCone(vec3 from, vec3 direction, vec3 normal){
+	direction = normalize(direction);
+
+	const float OFFSET = specularConeOriginOffset * voxelSize;
+	const float STEP = voxelSize * specularStepSizeMultiplier;
+
+	from += OFFSET * normal;
+	
+	vec4 acc = vec4(0.0f);
+	float dist = OFFSET;
+		
+	// Trace.
+	while(dist < MAX_DISTANCE && acc.a < 1){ 
+		vec3 c = (from + dist * direction) / voxelizationAreaSize;
+		if(!isInsideCube(c, 0)) break;
+		c = scaleAndBias(c); 
+		float level = 0.1 *  roughness * log2(1 + dist / voxelSize);
+		vec4 voxel = textureLod(voxelTexture, c, min(level, MIPMAP_HARDCAP));
+		float f = 1 - acc.a;
+		acc.rgb += 0.25 * (1 + roughness) * voxel.rgb * voxel.a * f; 
+		acc.a += 0.25 * voxel.a * f;
+		dist += STEP * (1.0f + 0.125f * level);
+	}
+	return 1.0 * pow(roughness + 1, 0.8) * acc.rgb;
+}
+
+vec3 indirectSpecularLight(vec3 viewDirection, vec3 normal){
+	const vec3 reflection = normalize(reflect(-viewDirection, normal));
+	return  (1 - roughness) * specularBias * traceSpecularVoxelCone(FragPos, reflection, normal);
 }
 
 vec3 fresnelSchlick(float cosTheta, vec3 F0)
