@@ -15,5 +15,5 @@ public:
 	void Update(float deltaTime);
 
 private:
-	void voxelizeScene(glm::vec3 camPos);
+	void voxelizeScene(glm::vec3 camPos, glm::mat4 dirLightSpaceMatrix);
 };

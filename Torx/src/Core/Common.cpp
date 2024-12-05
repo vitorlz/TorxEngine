@@ -45,11 +45,11 @@ int	Common::voxelGridDimensions{ 128 };
 bool Common::vxgi{ true };
 bool Common::showDiffuseAccumulation{ false };
 bool Common::showTotalIndirectDiffuseLight{ false };
-float Common::diffuseConeSpread{ 0.216 };
+float Common::diffuseConeSpread{ 2.1 };
 float Common::voxelizationAreaSize{ 12.0f };
 float Common::specularBias{ 1 };
 float Common::specularStepSizeMultiplier{ 1 };
-float Common::specularConeOriginOffset{ 8 };
+float Common::specularConeOriginOffset{ 0.8 };
 bool Common::showTotalIndirectSpecularLight{ false };
 float Common::specularConeMaxDistance{ 1 };
 

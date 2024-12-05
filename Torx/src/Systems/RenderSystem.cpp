@@ -262,7 +262,7 @@ void RenderSystem::Update(float deltaTime)
     Common::playerViewMatrix = player.viewMatrix;
 
     // voxelize scene before rendering it
-    voxelizeScene(ecs.GetComponent<CTransform>(playerEntity).position);
+    voxelizeScene(ecs.GetComponent<CTransform>(playerEntity).position, dirLightSpaceMatrix);
 
     glCullFace(GL_BACK);
 
@@ -338,12 +338,6 @@ void RenderSystem::Update(float deltaTime)
         vxgiTestShader.setInt("dirShadowMap", 9);
         vxgiTestShader.setMat4("dirLightSpaceMatrix", dirLightSpaceMatrix);
 
-        glActiveTexture(GL_TEXTURE6);
-        glBindTexture(GL_TEXTURE_CUBE_MAP, RenderingUtil::mIrradianceCubemap);
-        glActiveTexture(GL_TEXTURE7);
-        glBindTexture(GL_TEXTURE_CUBE_MAP, RenderingUtil::mPrefilteredEnvMap);
-        glActiveTexture(GL_TEXTURE8);
-        glBindTexture(GL_TEXTURE_2D, RenderingUtil::mBrdfLUT);
         glActiveTexture(GL_TEXTURE9);
         glBindTexture(GL_TEXTURE_2D, RenderingUtil::mDirLightShadowMap);
         glActiveTexture(GL_TEXTURE15);
@@ -642,9 +636,9 @@ void RenderSystem::Update(float deltaTime)
 }
 
 
-void RenderSystem::voxelizeScene(glm::vec3 camPos)
+void RenderSystem::voxelizeScene(glm::vec3 camPos, glm::mat4 dirLightSpaceMatrix)
 {
-    if (Common::voxelize)
+    if (true)
     {
 
         glBindTexture(GL_TEXTURE_3D, RenderingUtil::mVoxelTexture);
@@ -660,6 +654,11 @@ void RenderSystem::voxelizeScene(glm::vec3 camPos)
         glActiveTexture(GL_TEXTURE5);
         glBindTexture(GL_TEXTURE_CUBE_MAP_ARRAY, RenderingUtil::mPointLightShadowMap);
         voxelizationShader.setInt("pointShadowMap", 5);
+        glActiveTexture(GL_TEXTURE6);
+        glBindTexture(GL_TEXTURE_2D, RenderingUtil::mDirLightShadowMap);
+        voxelizationShader.setInt("dirShadowMap", 6);
+
+        voxelizationShader.setMat4("dirLightSpaceMatrix", dirLightSpaceMatrix);
 
         glViewport(0, 0, Common::voxelGridDimensions, Common::voxelGridDimensions);
         glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE);

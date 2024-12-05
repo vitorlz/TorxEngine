@@ -218,7 +218,7 @@ void UI::Update()
         ImGui::SliderFloat("Specular bias", &Common::specularBias, 0.0f, 20.0f);
         ImGui::SliderFloat("Cone origin offset", &Common::specularConeOriginOffset, 0.0f, 20.0f);
         ImGui::SliderFloat("Cone max. distance", &Common::specularConeMaxDistance, 0.1f, 20.0f);
-        ImGui::SliderFloat("Step size multiplier", &Common::specularStepSizeMultiplier, 0.1f, 5.0f);
+        ImGui::SliderFloat("Step size multiplier", &Common::specularStepSizeMultiplier, 0.1f, 10.0f);
         ImGui::Checkbox("Show total indirect specular light", &Common::showTotalIndirectSpecularLight);
         
         ImGui::SeparatorText("Voxel grid dimension");

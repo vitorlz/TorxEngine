@@ -13,9 +13,6 @@ in vec2 TexCoords;
 in vec3 FragPos;
 in vec3 Normal;
 
-// interpolated fragment's directional light's light space position
-in vec4 FragPosLightSpaceDir;
-
 // material parameters
 struct Material 
 {
@@ -47,6 +44,7 @@ uniform bool emissionDebug;
 
 // shadows
 uniform sampler2D dirShadowMap;
+in vec4 FragPosLightSpaceDir;
 uniform samplerCubeArray pointShadowMap;
 int pointShadowCasterIndex = 0;
 
@@ -124,6 +122,15 @@ uniform float specularConeMaxDistance;
 
 float MAX_DISTANCE;
 	
+vec4 unpackRGBA(uint packedColor) {
+    float r = float(packedColor & 0xFF) / 255.0;
+    float g = float((packedColor >> 8) & 0xFF) / 255.0;
+    float b = float((packedColor >> 16) & 0xFF) / 255.0;
+    float a = float((packedColor >> 24) & 0xFF) / 255.0;
+
+    return vec4(r, g, b, a);
+}
+
 void main()
 {	
 	scaledTexCoords = TexCoords * textureScaling;
@@ -358,35 +365,43 @@ vec3 indirectDiffuseLight(vec3 normal){
 	}
 }
 
-vec3 traceSpecularVoxelCone(vec3 from, vec3 direction, vec3 normal){
-	direction = normalize(direction);
+vec3 traceSpecularVoxelCone(vec3 from, vec3 direction, vec3 normal) {
+    direction = normalize(direction);
 
-	const float OFFSET = specularConeOriginOffset * voxelSize;
-	const float STEP = voxelSize * specularStepSizeMultiplier;
+    const float OFFSET = specularConeOriginOffset * voxelSize;
+    const float STEP = voxelSize * specularStepSizeMultiplier;
 
-	from += OFFSET * normal;
-	
-	vec4 acc = vec4(0.0f);
-	float dist = OFFSET;
-		
-	// Trace.
-	while(dist < MAX_DISTANCE && acc.a < 1){ 
-		vec3 c = (from + dist * direction) / voxelizationAreaSize;
-		if(!isInsideCube(c, 0)) break;
-		c = scaleAndBias(c); 
-		float level = 0.1 *  roughness * log2(1 + dist / voxelSize);
+    // Offset the starting point to prevent self-reflection artifacts
+    from += OFFSET * normal;
+
+	float angleFactor = log2(clamp(1 - dot(direction, normal), 0.0, 1.0) * 10);
+
+    vec4 acc = vec4(0.0);
+    float dist = OFFSET;
+
+    // Trace the voxel cone
+    while (dist < MAX_DISTANCE && acc.a < 1.0) { 
+        vec3 c = (from + dist * direction) / voxelizationAreaSize;
+        if (!isInsideCube(c, 0)) break;
+        c = scaleAndBias(c);
+		// introduce an angle factor to hide artifact of smooth surfaces reflections when viewed at an angle
+        float level = max(0.1 * roughness * log2(1 + dist / voxelSize) / specularBias, 0.0);
 		vec4 voxel = textureLod(voxelTexture, c, min(level, MIPMAP_HARDCAP));
-		float f = 1 - acc.a;
-		acc.rgb += 0.25 * (1 + roughness) * voxel.rgb * voxel.a * f; 
-		acc.a += 0.25 * voxel.a * f;
-		dist += STEP * (1.0f + 0.125f * level);
-	}
-	return 1.0 * pow(roughness + 1, 0.8) * acc.rgb;
+        float contributionFactor = 1.0 - acc.a;
+        acc.rgb += 0.25 * (1.0 + roughness) * voxel.rgb * voxel.a * contributionFactor;
+        acc.a += 0.25 * voxel.a * contributionFactor;
+        dist += STEP * (1.0 + 0.125 * level);
+    }
+
+    return pow(roughness + 1.0, 0.8) * acc.rgb;
 }
 
-vec3 indirectSpecularLight(vec3 viewDirection, vec3 normal){
-	const vec3 reflection = normalize(reflect(-viewDirection, normal));
-	return  (1 - roughness) * specularBias * traceSpecularVoxelCone(FragPos, reflection, normal);
+vec3 indirectSpecularLight(vec3 viewDirection, vec3 normal) {
+    const vec3 reflection = normalize(reflect(-viewDirection, normal));
+    float grazingAngleFactor = max(dot(normal, reflection), 0.05); // Avoid near-zero artifacts
+
+    // Add grazing angle falloff to reduce artifacts
+    return (1.0 - roughness) * specularBias * traceSpecularVoxelCone(FragPos, reflection, normal) * grazingAngleFactor;
 }
 
 vec3 fresnelSchlick(float cosTheta, vec3 F0)
@@ -609,10 +624,10 @@ float PointShadowCalculation(vec3 fragPos, Light light, int shadowCasterIndex)
 			shadow += 1.0;
 	}
 	shadow /= float(samples) * 1.1;  
-
+		
 	float unitDepth = currentDepth / light.radius.x;
 
-	return mix(shadow, 0, unitDepth / 3);
+	return mix(shadow, 0, unitDepth / 10);
 }
 
 float DirShadowCalculation(vec4 fragPosLightSpace, vec3 normal, vec3 lightDir)

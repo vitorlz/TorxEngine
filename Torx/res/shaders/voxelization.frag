@@ -49,6 +49,8 @@ uniform vec3 camPos;
 
 // shadows 
 uniform samplerCubeArray pointShadowMap;
+in vec4 FragPosLightSpaceDir;
+uniform sampler2D dirShadowMap;
 int pointShadowCasterIndex = 0;
 
 const float PI = 3.14159265359;
@@ -63,6 +65,7 @@ vec3 CalcPointLight(Light light, vec3 N, vec3 V, vec3 F0);
 float PointShadowCalculation(vec3 fragPos, Light light, int shadowCasterIndex);
 float PointShadowCalculation(vec3 fragPos, Light light, int shadowCasterIndex);
 float DirShadowCalculation(vec4 fragPosLightSpace, vec3 normal, vec3 lightDir);
+vec3 CalcDirLight(Light light, vec3 N, vec3 V, vec3 F0);
 vec3 getNormalFromMap();
 
 vec3 albedo;
@@ -78,7 +81,9 @@ bool isInsideCube(const vec3 p, float e) { return abs(p.x) < 1 + e && abs(p.y) <
 
 vec3 fragPosUnscaled;
 
+
 void main(){
+
 	if(!isInsideCube(FragPos, 0)) return;
 	scaledTexCoords = TexCoords;
 
@@ -109,6 +114,15 @@ void main(){
 	vec3 Lo = vec3(0.0); 
 
 	// Calculate diffuse lighting fragment contribution.
+
+	// ------ Directional Light ---------
+	for(int i = 0; i < lights.length(); i++) {
+		if (lights[i].type == vec4(0.0))
+		{
+			Lo += CalcDirLight(lights[i], N, V, F0);
+		}
+	}
+
 	// ------ Point lights ---------
 	for(int i = 0; i < lights.length(); i++) {
 		
@@ -122,18 +136,18 @@ void main(){
 	vec3 voxel = scaleAndBias(FragPos);
 	ivec3 dim = imageSize(texture3D);
 	ivec3 voxelCoord = ivec3(dim * voxel);
-	//float alpha = pow(1 - material.transparency, 4); // For soft shadows to work better with transparent materials.
-	vec4 res = vec4(Lo, 1);
+	vec4 res = vec4(Lo, 1.0);
 
 	vec4 currentColor = imageLoad(texture3D, voxelCoord);
 
-	if(currentColor.r > res.r || currentColor.g > res.g || currentColor.b > res.b)
+	if(currentColor.r != 0.0 || currentColor.g != 0.0 || currentColor.b != 0.0 || currentColor.a != 0.0)
 	{
-		return;
+		res += currentColor;
 	}	
-
 	// notice that we are indexing into the 3d texture using a vector of integers. So dim * voxel is truncated into an integer, which means that 
 	// ivec3(dim * voxel) points to an exact voxel location in the 3d texture.
+
+	
 
     imageStore(texture3D, voxelCoord, res);
 }
@@ -264,11 +278,81 @@ float PointShadowCalculation(vec3 fragPos, Light light, int shadowCasterIndex)
 		if(currentDepth - bias > closestDepth)
 			shadow += 1.0;
 	}
-	shadow /= float(samples) * 1.1;  
+	shadow /= float(samples);  
 
 	float unitDepth = currentDepth / light.radius.x;
 
-	return mix(shadow, 0, unitDepth / 3);
+	return shadow;
+}	
+
+
+vec3 CalcDirLight(Light light, vec3 N, vec3 V, vec3 F0) 
+{
+
+	// same thing as point light calculation, but the light direction L does not depend on the light position. It is a constant direciton.
+	// There is also no attenuation
+
+	vec3 L = normalize(light.position.xyz); // lightDir
+
+	float shadow = 0;
+
+	if (light.shadowCaster.x == 1) 
+	{
+		shadow = DirShadowCalculation(FragPosLightSpaceDir, N, L);
+	}
+
+	vec3 H = normalize(V + L); // halfway vector
+
+	vec3 radiance = light.color.xyz;
+
+	float NDF = DistributionGGX(N, H, roughness);
+	float G = GeometrySmith(N, V, L, roughness);
+	vec3 F = fresnelSchlick(max(dot(H, V), 0.0), F0);
+
+	vec3 numerator = NDF * G * F;
+	float denominator = 4.0 * max(dot(N, V), 0.0) *  max(dot(N, L), 0.0) + 0.0001;
+		
+	vec3 specular = numerator / denominator;
+
+	vec3 kS = F;
+	vec3 kD = vec3(1.0) - kS;
+
+	kD *= 1.0 - metallic;
+
+	float NdotL = max(dot(N, L), 0.0); // scale the light's contribution by its angle to the surface's normal.
+		
+	return (kD * albedo / PI + specular) * radiance * NdotL * clamp(1.0 - shadow, 0.0, 1.0);
+}
+
+float DirShadowCalculation(vec4 fragPosLightSpace, vec3 normal, vec3 lightDir)
+{
+	
+	vec3 projCoords = fragPosLightSpace.xyz / fragPosLightSpace.w; // this returns the fragment's light space position in the range [-1, 1]
+
+	projCoords = projCoords * 0.5 + 0.5;
+
+	float closestDepth = texture(dirShadowMap, projCoords.xy).r;
+
+	float currentDepth = projCoords.z;
+
+	float bias = max(0.04 * (1.0 - dot(normal, lightDir)), 0.00015);
+
+	float shadow = 0.0;
+	vec2 texelSize = 0.2 / textureSize(dirShadowMap, 0);
+	for(float x = -5.5; x <= 5.5; ++x)
+	{
+		for(float y = -5.5; y <= 5.5; ++y)
+		{
+			float pcfDepth = texture(dirShadowMap, projCoords.xy + vec2(x, y) * texelSize).r; 
+			shadow += currentDepth > pcfDepth ? 1.0 : 0.0;        
+		}    
+	}
+	shadow /= 90;
+
+	if(projCoords.z > 1.0)
+        shadow = 0.0;
+
+	return shadow;
 }
 
 vec3 getNormalFromMap()
