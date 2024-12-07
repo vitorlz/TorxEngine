@@ -110,6 +110,18 @@ int main()
     lightSystem->Init();
     physicsSystem->Init();
 
+    GLint numExtensions;
+    glGetIntegerv(GL_NUM_EXTENSIONS, &numExtensions);
+    for (GLint i = 0; i < numExtensions; ++i) {
+        const char* extension = (const char*)glGetStringi(GL_EXTENSIONS, i);
+        if (strcmp(extension, "GL_NV_shader_atomic_fp16_vector") == 0) {
+            std::cout << "GL_NV_shader_atomic_fp16_vector is supported!" << std::endl;
+        }
+    }
+
+    const GLubyte* version = glGetString(GL_VERSION);
+    std::cout << "OpenGL Version: " << version << std::endl;
+
     while (!glfwWindowShouldClose(window.GetWindow()))
     {
         float currentFrame = glfwGetTime();

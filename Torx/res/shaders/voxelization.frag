@@ -1,5 +1,9 @@
 #version 460 core
 
+#extension GL_NV_gpu_shader5 : require
+#extension GL_NV_shader_atomic_fp16_vector : require
+
+
 struct Material 
 {
 	sampler2D texture_albedo1;
@@ -11,8 +15,8 @@ struct Material
 	sampler2D texture_emission1;
 };
 
-uniform Material material;
-layout(rgba8, binding = 0) uniform image3D texture3D;
+uniform Material material;	
+layout(rgba16f, binding = 0) uniform image3D texture3D;
 
 struct Light
 {
@@ -72,7 +76,7 @@ vec3 albedo;
 vec3 emission;
 float roughness; 
 float metallic;
-float ao;
+float ao;		
 vec3 F0;
 
 vec3 scaleAndBias(vec3 p) { return 0.5f * p + vec3(0.5f); }
@@ -80,7 +84,6 @@ vec3 scaleAndBias(vec3 p) { return 0.5f * p + vec3(0.5f); }
 bool isInsideCube(const vec3 p, float e) { return abs(p.x) < 1 + e && abs(p.y) < 1 + e && abs(p.z) < 1 + e; }
 
 vec3 fragPosUnscaled;
-
 
 void main(){
 
@@ -134,22 +137,11 @@ void main(){
 
 	// Output lighting to 3D texture.
 	vec3 voxel = scaleAndBias(FragPos);
-	ivec3 dim = imageSize(texture3D);
+	ivec3 dim = imageSize(texture3D);	
 	ivec3 voxelCoord = ivec3(dim * voxel);
-	vec4 res = vec4(Lo, 1.0);
+	f16vec4 res = f16vec4(Lo, 1.0);
 
-	vec4 currentColor = imageLoad(texture3D, voxelCoord);
-
-	if(currentColor.r != 0.0 || currentColor.g != 0.0 || currentColor.b != 0.0 || currentColor.a != 0.0)
-	{
-		res += currentColor;
-	}	
-	// notice that we are indexing into the 3d texture using a vector of integers. So dim * voxel is truncated into an integer, which means that 
-	// ivec3(dim * voxel) points to an exact voxel location in the 3d texture.
-
-	
-
-    imageStore(texture3D, voxelCoord, res);
+	imageAtomicMax(texture3D, voxelCoord, res);
 }
 
 vec3 fresnelSchlick(float cosTheta, vec3 F0)

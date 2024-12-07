@@ -121,15 +121,6 @@ uniform bool showTotalIndirectSpecularLight;
 uniform float specularConeMaxDistance;
 
 float MAX_DISTANCE;
-	
-vec4 unpackRGBA(uint packedColor) {
-    float r = float(packedColor & 0xFF) / 255.0;
-    float g = float((packedColor >> 8) & 0xFF) / 255.0;
-    float b = float((packedColor >> 16) & 0xFF) / 255.0;
-    float a = float((packedColor >> 24) & 0xFF) / 255.0;
-
-    return vec4(r, g, b, a);
-}
 
 void main()
 {	
@@ -190,6 +181,7 @@ void main()
 			Lo += CalcSpotLight(lights[i], N, V, F0);
 		}
 	}
+
 
 	// We now use the value sampled from our irradiance map as the indirect diffuse lighting, which we put in the ambient component of the light.
 	// indirect lighting has both a diffuse and specular part, so we need to weigh both parts according to the indirect reflectance (specular) ratio 
@@ -296,7 +288,7 @@ vec3 traceDiffuseVoxelCone(const vec3 from, vec3 direction){
 		float l = 1 + CONE_SPREAD * dist / voxelSize;
 		float level = log2(l);
 		float ll = (level + 1) * (level + 1);
-		vec4 voxel = textureLod(voxelTexture, c, min(MIPMAP_HARDCAP, level)).rgba;
+		vec4 voxel = textureLod(voxelTexture, c, min(MIPMAP_HARDCAP, level));
 		acc += 0.075 * ll * voxel * pow(1 - voxel.a, 2);
 		dist += ll * voxelSize * 2;
 	}
@@ -386,7 +378,7 @@ vec3 traceSpecularVoxelCone(vec3 from, vec3 direction, vec3 normal) {
         c = scaleAndBias(c);
 		// introduce an angle factor to hide artifact of smooth surfaces reflections when viewed at an angle
         float level = max(0.1 * roughness * log2(1 + dist / voxelSize) / specularBias, 0.0);
-		vec4 voxel = textureLod(voxelTexture, c, min(level, MIPMAP_HARDCAP));
+		vec4 voxel = textureLod(voxelTexture, c, min(MIPMAP_HARDCAP, level));
         float contributionFactor = 1.0 - acc.a;
         acc.rgb += 0.25 * (1.0 + roughness) * voxel.rgb * voxel.a * contributionFactor;
         acc.a += 0.25 * voxel.a * contributionFactor;

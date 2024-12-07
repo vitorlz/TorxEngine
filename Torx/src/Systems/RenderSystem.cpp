@@ -640,10 +640,9 @@ void RenderSystem::voxelizeScene(glm::vec3 camPos, glm::mat4 dirLightSpaceMatrix
 {
     if (true)
     {
-
         glBindTexture(GL_TEXTURE_3D, RenderingUtil::mVoxelTexture);
-        float clearColor[4] = { 0.0, 0.0, 0.0, 0.0 };
-        glClearTexImage(RenderingUtil::mVoxelTexture, 0, GL_RGBA, GL_FLOAT, clearColor);
+        float clearColor[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
+        glClearTexImage(RenderingUtil::mVoxelTexture, 0, GL_RGBA, GL_HALF_FLOAT, clearColor);
 
         Shader& voxelizationShader = ShaderManager::GetShaderProgram("voxelizationShader");
 
@@ -666,7 +665,7 @@ void RenderSystem::voxelizeScene(glm::vec3 camPos, glm::mat4 dirLightSpaceMatrix
         glDisable(GL_DEPTH_TEST);
         glDisable(GL_BLEND);
 
-        glBindImageTexture(0, RenderingUtil::mVoxelTexture, 0, GL_TRUE, 0, GL_WRITE_ONLY, GL_RGBA8);
+        glBindImageTexture(0, RenderingUtil::mVoxelTexture, 0, GL_TRUE, 0, GL_WRITE_ONLY, GL_RGBA16F);
         glBindTexture(GL_TEXTURE_3D, RenderingUtil::mVoxelTexture);
 
         for (const auto& entity : mEntities)

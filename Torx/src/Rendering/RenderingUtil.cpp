@@ -667,8 +667,7 @@ void RenderingUtil::CreateVoxelTexture(int voxelTextureSize)
     glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
     glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_BORDER);
 
-
-    GLfloat borderColor[] = { 0.0f, 0.0f, 0.0f, 0.0f }; 
+    GLfloat borderColor[] = { 0.0f, 0.0f, 0.0f, 0.0f };
     glTexParameterfv(GL_TEXTURE_3D, GL_TEXTURE_BORDER_COLOR, borderColor);
 
     glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
@@ -678,8 +677,8 @@ void RenderingUtil::CreateVoxelTexture(int voxelTextureSize)
 
     const std::vector <float> texture3D(4 * texSize * texSize * texSize, 0.0f);
 
-    glTexStorage3D(GL_TEXTURE_3D, 7, GL_RGBA8, texSize, texSize, texSize);
-    glTexImage3D(GL_TEXTURE_3D, 0, GL_RGBA8, texSize, texSize, texSize, 0, GL_RGBA, GL_FLOAT, texture3D.data());
+    glTexStorage3D(GL_TEXTURE_3D, 7, GL_RGBA16F, texSize, texSize, texSize);
+    glTexImage3D(GL_TEXTURE_3D, 0, GL_RGBA16F, texSize, texSize, texSize, 0, GL_RGBA, GL_HALF_FLOAT, texture3D.data());
    
     glGenerateMipmap(GL_TEXTURE_3D);
     glBindTexture(GL_TEXTURE_3D, 0);
