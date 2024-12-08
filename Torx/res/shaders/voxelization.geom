@@ -8,12 +8,14 @@ in vec3 NormalGeom[];
 in vec2 TexCoordsGeom[];
 in float voxelizationAreaSizeGeom[];
 in vec4 FragPosLightSpaceDirGeom[];
+in vec3 camPosGeom[];
 
 out vec3 FragPos;
 out vec3 Normal;
 out vec2 TexCoords;
 out float voxelizationAreaSizeFrag;
 out vec4 FragPosLightSpaceDir;
+out vec3 camPosFrag;
 
 void main(){
 
@@ -33,6 +35,7 @@ void main(){
 		Normal = NormalGeom[i];
 		TexCoords = TexCoordsGeom[i];
 		voxelizationAreaSizeFrag = voxelizationAreaSizeGeom[i];
+		camPosFrag = camPosGeom[i];
 		FragPosLightSpaceDir = FragPosLightSpaceDirGeom[i];
 		if(p.z > p.x && p.z > p.y){
 			gl_Position = vec4(FragPos.x * projectionScalingFactor, FragPos.y * projectionScalingFactor, 0, 1);

@@ -10,18 +10,21 @@ uniform float voxelizationAreaSize;
 
 // directional light shadows
 uniform mat4 dirLightSpaceMatrix;
+uniform vec3 camPos;
 out vec4 FragPosLightSpaceDirGeom;
 
 out float voxelizationAreaSizeGeom;
 out vec3 FragPosGeom;
 out vec3 NormalGeom;
 out vec2 TexCoordsGeom;
+out vec3 camPosGeom;
 
 void main()
 {
 	FragPosGeom = vec3(model * vec4(aPos, 1.0));
 	NormalGeom = normalMatrix * aNormal;
 	TexCoordsGeom = aTexCoords;
+	camPosGeom = camPos;
 	voxelizationAreaSizeGeom = voxelizationAreaSize;
 	FragPosLightSpaceDirGeom = dirLightSpaceMatrix * model * vec4(aPos, 1.0);
 
@@ -33,6 +36,6 @@ void main()
 	// fragment shader. After manually clipping the fragment's interpolated world position, we convert it to the [0, 1] range and divide the 3d texture's dimensions
 	// by it. We will use that value to index voxels in the 3d texture and inject lighting information into them.
 
-	gl_Position = vec4(FragPosGeom * 1.0 / voxelizationAreaSize, 1.0); 
+	gl_Position = vec4(FragPosGeom * 1.0 / (vec3(voxelizationAreaSize)), 1.0); 
 
 }	

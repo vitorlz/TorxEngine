@@ -182,7 +182,6 @@ void main()
 		}
 	}
 
-
 	// We now use the value sampled from our irradiance map as the indirect diffuse lighting, which we put in the ambient component of the light.
 	// indirect lighting has both a diffuse and specular part, so we need to weigh both parts according to the indirect reflectance (specular) ratio 
 	// and indirect refractive (diffuse) ratio. We use the fresnelSchlick formula to find the reflectance ratio and use that to find the refractive ratio.
@@ -194,9 +193,14 @@ void main()
 
 	vec3 color = Lo;
 
-	vec3 indirectDiffuseContribution = (kD * indirectDiffuseLight(N));
-	vec3 indirectSpecularContribution = (kS * indirectSpecularLight(V, N));
+	vec3 indirectDiffuseContribution;
+	vec3 indirectSpecularContribution;
 
+	if(vxgi)
+	{
+		indirectDiffuseContribution = (kD * indirectDiffuseLight(N));
+		indirectSpecularContribution = (kS * indirectSpecularLight(V, N));
+	}
 	if(vxgi && !(showTotalIndirectDiffuseLight || showDiffuseAccumulation || showTotalIndirectSpecularLight))
 	{
 		color += indirectDiffuseContribution + indirectSpecularContribution;	
@@ -377,7 +381,7 @@ vec3 traceSpecularVoxelCone(vec3 from, vec3 direction, vec3 normal) {
         if (!isInsideCube(c, 0)) break;
         c = scaleAndBias(c);
 		// introduce an angle factor to hide artifact of smooth surfaces reflections when viewed at an angle
-        float level = max(0.1 * roughness * log2(1 + dist / voxelSize) / specularBias, 0.0);
+        float level = max(roughness * log2(1 + dist / voxelSize) / specularBias, 0.0);
 		vec4 voxel = textureLod(voxelTexture, c, min(MIPMAP_HARDCAP, level));
         float contributionFactor = 1.0 - acc.a;
         acc.rgb += 0.25 * (1.0 + roughness) * voxel.rgb * voxel.a * contributionFactor;

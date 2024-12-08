@@ -262,7 +262,10 @@ void RenderSystem::Update(float deltaTime)
     Common::playerViewMatrix = player.viewMatrix;
 
     // voxelize scene before rendering it
-    voxelizeScene(ecs.GetComponent<CTransform>(playerEntity).position, dirLightSpaceMatrix);
+    if (Common::vxgi)
+    {
+        voxelizeScene(ecs.GetComponent<CTransform>(playerEntity).position, dirLightSpaceMatrix);
+    }
 
     glCullFace(GL_BACK);
 
@@ -434,6 +437,7 @@ void RenderSystem::Update(float deltaTime)
 
         voxelVisualizationShader.setMat4("view", player.viewMatrix);
         voxelVisualizationShader.setMat4("projection", projection);
+        voxelVisualizationShader.setVec3("camPos", ecs.GetComponent<CTransform>(playerEntity).position);
 
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_3D, RenderingUtil::mVoxelTexture);

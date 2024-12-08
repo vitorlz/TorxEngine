@@ -3,7 +3,6 @@
 #extension GL_NV_gpu_shader5 : require
 #extension GL_NV_shader_atomic_fp16_vector : require
 
-
 struct Material 
 {
 	sampler2D texture_albedo1;
@@ -49,7 +48,7 @@ in float voxelizationAreaSizeFrag;
 uniform bool hasAOTexture;
 uniform vec2 textureScaling;
 vec2 scaledTexCoords;
-uniform vec3 camPos;
+in vec3 camPosFrag;
 
 // shadows 
 uniform samplerCubeArray pointShadowMap;
@@ -102,13 +101,10 @@ void main(){
 	roughness = RMA.r;
 	metallic = RMA.g;
 
-	if(albedoSample.a < 0.0)
-		discard;
-
 	albedo = albedoSample.rgb;
 
 	vec3 N = getNormalFromMap();
-	vec3 V = normalize(camPos - fragPosUnscaled); // viewDir
+	vec3 V = normalize(camPosFrag - fragPosUnscaled); // viewDir
 	vec3 R = reflect(-V, N);   
 
 	vec3 F0 = vec3(0.04);
@@ -223,7 +219,7 @@ vec3 CalcPointLight(Light light, vec3 N, vec3 V, vec3 F0)
 
 	//vec3 
 
-	return (kD * albedo / PI + specular) * radiance * NdotL * clamp((1.0 - shadow), 0.0, 1.0);
+	return (kD * albedo / PI) * radiance * NdotL * clamp((1.0 - shadow), 0.0, 1.0);
 }
 
 float PointShadowCalculation(vec3 fragPos, Light light, int shadowCasterIndex) 
@@ -309,11 +305,11 @@ vec3 CalcDirLight(Light light, vec3 N, vec3 V, vec3 F0)
 	vec3 kS = F;
 	vec3 kD = vec3(1.0) - kS;
 
-	kD *= 1.0 - metallic;
+	//kD *= 1.0 - metallic;
 
 	float NdotL = max(dot(N, L), 0.0); // scale the light's contribution by its angle to the surface's normal.
 		
-	return (kD * albedo / PI + specular) * radiance * NdotL * clamp(1.0 - shadow, 0.0, 1.0);
+	return (kD * albedo / PI) * radiance * NdotL * clamp(1.0 - shadow, 0.0, 1.0);
 }
 
 float DirShadowCalculation(vec4 fragPosLightSpace, vec3 normal, vec3 lightDir)

@@ -7,19 +7,12 @@ out vec3 gridCoord;
 out vec4 voxelColor;
 out vec3 worldPos;
 out mat4 projView;
+out vec3 camPosGeom;
 
 uniform mat4 projection;
 uniform mat4 view;
+uniform vec3 camPos;
 
-vec4 decodeFloatToRGBA(float encoded) {
-    // Convert the float to a uint to extract the packed color data.
-    uint packedColor = floatBitsToUint(encoded);
-
-    // Unpack the color data into a vec4 using unpackUnorm4x8 (or manually).
-    vec4 rgba = unpackUnorm4x8(packedColor);
-
-    return rgba.rgba;
-}
 void main()
 {
     // Calculate grid coordinates using gl_VertexID
@@ -34,15 +27,15 @@ void main()
     vec3 texCoord = gridCoord / vec3(gridDimensions);
 
     // Sample the color from the 3D texture
-
-
     //vec4 decodedRGBA = decodeFloatToRGBA(textureLod(voxelTexture, vec3(texCoord.x, texCoord.y, texCoord.z), 0).r);
     voxelColor = textureLod(voxelTexture, vec3(texCoord.x, texCoord.y, texCoord.z), 0);
 
     // Center the voxel position in the world space
-    worldPos = (gridCoord - vec3(gridDimensions) * 0.5 + 0.5) * 0.5f;
-        
+    worldPos = ((gridCoord - vec3(gridDimensions) * 0.5 + 0.5) * 0.5) - camPos;
+    
     projView = projection * view;
+
+    
 
     gl_Position;
 }

@@ -235,8 +235,7 @@ void UI::Update()
             RenderingUtil::DeleteTexture(RenderingUtil::mVoxelTexture);
             Common::voxelGridDimensions = voxelGridDimensions;
             RenderingUtil::CreateVoxelTexture(voxelGridDimensions);
-            Common::voxelize = true;
-            
+            Common::voxelize = true;   
         } 
         ImGui::SameLine();
         if (ImGui::RadioButton("256", &voxelGridDimensions, 256))

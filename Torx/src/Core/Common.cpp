@@ -33,12 +33,10 @@ float Common::bloomIntervalMultiplier{ 0.2f };
 std::vector<float> Common::bloomWeights;
 
 // ------------- TEMPORARY STUFF -------------------------------
-
 glm::mat4 Common::playerViewMatrix;
 bool Common::usingGuizmo{ false };
 
-// --------------- VXGI ---------------------
-
+// --------------- VXGI ----------------------------------------
 bool Common::voxelize{ true };
 bool Common::showVoxelDebug{ false };
 int	Common::voxelGridDimensions{ 128 };

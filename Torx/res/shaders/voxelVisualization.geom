@@ -11,6 +11,7 @@ in mat4 projView[];      // Projection matrix
 
 out vec4 fragColor;              // Output color to fragment shader
 
+
 // Define the 8 vertices of a cube centered at (0, 0, 0)
 const float halfSize = 0.2499; 
 
