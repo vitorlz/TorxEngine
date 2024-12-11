@@ -16,9 +16,15 @@ public:
 	static unsigned int mBlittingFBO;
 	static unsigned int mPointLightShadowMapFBO;
 	static unsigned int mDirLightShadowMapFBO;
+	static unsigned int mSSRFBO;
 	static unsigned int mScreenQuadVAO;
 	static unsigned int mBulletDebugLinesVAO;
 	static unsigned int mBulletDebugLinesVBO;
+	static unsigned int mViewPos;
+	static unsigned int mViewNormalTexture;
+	static unsigned int mRoughnessTexture;
+	static unsigned int mSSRTexture;
+	static unsigned int mDiffuseColorTexture;
 
 	// diffuse indirect lighting
 	static unsigned int mEnvironmentCubemap;
@@ -41,6 +47,7 @@ public:
 	static void LoadNewEnvironmentMap(const char* filename); 
 	static void DeleteTexture(unsigned int textureId);
 	static void CreateVoxelTexture(int voxelTextureSize);
+	static void CreateSSRFBO();
 
 private:
 	static void CreateCubeVAO();

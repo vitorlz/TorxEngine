@@ -8,6 +8,10 @@
 
 layout (location = 0) out vec4 FragColor;
 layout (location = 1) out vec4 BrightColor;
+layout (location = 2) out vec4 ViewPosition;
+layout (location = 3) out vec4 ViewNormals;
+layout (location = 4) out vec4 Roughness;
+layout (location = 5) out vec4 DiffuseColor;
 
 in vec2 TexCoords;	
 in vec3 FragPos;
@@ -26,11 +30,6 @@ struct Material
 };
 
 uniform Material material;
-
-// IBL
-uniform samplerCube irradianceMap;
-uniform samplerCube prefilterMap;
-uniform sampler2D brdfLUT;
 
 // debug
 uniform bool showNormals;
@@ -52,6 +51,19 @@ int pointShadowCasterIndex = 0;
 uniform bool hasAOTexture;
 uniform vec2 textureScaling;
 vec2 scaledTexCoords;
+
+// SSR
+uniform sampler2D gViewPos;
+uniform sampler2D gViewNormals;
+in mat4 ProjectionMatrix;
+in vec4 ViewFragPos;
+uniform mat3 viewNormalMatrix;
+float rayStep = 0.1;
+float minRayStep = 0.1;
+int maxSteps = 30;
+float searchDist = 5;
+int numBinarySearchSteps = 5;
+float reflectionSpecularFalloffExponent = 3.0;
 
 //lights
 struct Light
@@ -98,6 +110,7 @@ vec3 orthogonal(vec3 u);
 vec3 traceDiffuseVoxelCone(const vec3 from, vec3 direction);
 vec3 traceSpecularVoxelCone(vec3 from, vec3 direction, vec3 normal);
 vec3 indirectSpecularLight(vec3 viewDirection, vec3 normal);
+vec4 ssrRayCast(vec3 dir, vec3 hirCoord, float dDepth);
 
 vec3 albedo;
 vec3 emission;
@@ -119,6 +132,10 @@ uniform float specularStepSizeMultiplier;
 uniform float specularConeOriginOffset;
 uniform bool showTotalIndirectSpecularLight;
 uniform float specularConeMaxDistance;
+
+// SSR 
+
+uniform sampler2D ssrTexture;
 
 float MAX_DISTANCE;
 
@@ -157,7 +174,6 @@ void main()
 	F0 = mix(F0, albedo, metallic);
 
 	vec3 Lo = vec3(0.0); // reflectance (total sum of radiance that comes from light sources and get reflected by a point P (the fragment in this case)
-
 	// ------ Directional Light ---------
 	for(int i = 0; i < lights.length(); i++) {
 		if (lights[i].type == vec4(0.0))
@@ -196,10 +212,14 @@ void main()
 	vec3 indirectDiffuseContribution;
 	vec3 indirectSpecularContribution;
 
+	vec2 texSize = textureSize(ssrTexture, 0);
+	float mipLevel = pow(roughness, 2.0) * 3 + 0.5;
+	vec3 ssr = textureLod(ssrTexture, gl_FragCoord.xy / texSize, mipLevel).rgb;
+
 	if(vxgi)
 	{
 		indirectDiffuseContribution = (kD * indirectDiffuseLight(N));
-		indirectSpecularContribution = (kS * indirectSpecularLight(V, N));
+		indirectSpecularContribution = (kS * ssr);
 	}
 	if(vxgi && !(showTotalIndirectDiffuseLight || showDiffuseAccumulation || showTotalIndirectSpecularLight))
 	{
@@ -211,7 +231,7 @@ void main()
 	}
 	else if(showTotalIndirectSpecularLight)
 	{
-		color = indirectSpecularContribution;
+		color = ssr;
 	}
 	if(showNormals) 
 	{
@@ -244,6 +264,7 @@ void main()
 	else 
 	{
 		FragColor = vec4(color + emission * 2, 1.0);	
+		
 
 		if (bloom)
 		{
@@ -254,6 +275,34 @@ void main()
 				BrightColor = vec4(0.0, 0.0, 0.0, 1.0);
 		}
 	}
+
+
+	Roughness = vec4(vec3(roughness), 1.0);
+	ViewPosition = ViewFragPos;
+	ViewNormals = vec4(viewNormalMatrix * N, 1.0);
+	DiffuseColor = vec4(Lo + indirectDiffuseContribution, 1.0);
+}
+
+
+vec4 ssrRayCast(vec3 dir, vec3 hitCoord, float dDepth)
+{
+	dir *= rayStep;
+	
+	float depth = 0.0;
+	int steps = 0;
+	vec4 projectedCoord = vec4(0.0);
+
+	for(int i = 0; i < maxSteps; ++i)
+	{
+		hitCoord += dir;
+
+		projectedCoord = ProjectionMatrix * vec4(hitCoord, 1.0);
+		projectedCoord.xy /= projectedCoord.w;
+		projectedCoord.xy = projectedCoord.xy * 0.5 + 0.5;
+
+		
+	}
+	return vec4(1.0);
 }
 
 // Scales and bias a given vector (i.e. from [-1, 1] to [0, 1]).

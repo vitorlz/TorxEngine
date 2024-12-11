@@ -313,6 +313,9 @@
     <None Include="res\shaders\voxelVisualization.frag" />
     <None Include="res\shaders\voxelVisualization.geom" />
     <None Include="res\shaders\VXGI.frag" />
+    <None Include="res\shaders\VXGI.vert" />
+    <None Include="res\shaders\SSR.vert" />
+    <None Include="res\shaders\SSR.frag" />
   </ItemGroup>
   <ItemGroup>
     <Library Include="vendor\assimp\lib\assimp-vc143-mt.lib" />

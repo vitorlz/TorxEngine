@@ -205,6 +205,8 @@
     <None Include="res\shaders\prefilterConvolution.frag" />
     <None Include="res\shaders\solidColor.frag" />
     <None Include="res\shaders\solidColor.vert" />
+    <None Include="res\shaders\SSR.frag" />
+    <None Include="res\shaders\SSR.vert" />
     <None Include="res\shaders\testShader.frag" />
     <None Include="res\shaders\testShader.vert" />
     <None Include="res\shaders\voxelization.frag" />
@@ -214,6 +216,7 @@
     <None Include="res\shaders\voxelVisualization.geom" />
     <None Include="res\shaders\voxelVisualization.vert" />
     <None Include="res\shaders\VXGI.frag" />
+    <None Include="res\shaders\VXGI.vert" />
     <None Include="vendor\dlls\assimp-vc143-mt.dll" />
     <None Include="vendor\dlls\assimp-vc143-mtd.dll" />
   </ItemGroup>

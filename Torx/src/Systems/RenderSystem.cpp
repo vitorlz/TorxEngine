@@ -241,8 +241,6 @@ void RenderSystem::Update(float deltaTime)
 
     // ------------------------- LIGHTING PASS -----------------------------------
 
-   
-
     glm::mat4 projection = glm::mat4(1.0f);
     projection = glm::perspective(
         glm::radians(45.0f), (float)Window::screenWidth / (float)Window::screenHeight, 0.1f, 100.0f);
@@ -285,14 +283,14 @@ void RenderSystem::Update(float deltaTime)
     // set both color buffer attachments as the draw buffers before clearing them, otherwise only the first color attachment will get cleared.
     // This would mean that the color buffer which we render the bloom brightness texture onto would not get cleared and the bloom would effect would
     // just accumulate over frames.
-    unsigned int attachments[2] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1 };
-    glDrawBuffers(2, attachments);
+    unsigned int attachments[6] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1, GL_COLOR_ATTACHMENT2, GL_COLOR_ATTACHMENT3, GL_COLOR_ATTACHMENT4, GL_COLOR_ATTACHMENT5 };
+    glDrawBuffers(6, attachments);
 
     glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT);
     glClear(GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
     glEnable(GL_DEPTH_TEST);
-
+                
 
     if (!Common::showVoxelDebug)
     {
@@ -313,7 +311,6 @@ void RenderSystem::Update(float deltaTime)
 
         vxgiTestShader.setFloat("voxelSize", (2 * Common::voxelizationAreaSize) / float(Common::voxelGridDimensions));
 
- 
         vxgiTestShader.setBool("vxgi", Common::vxgi);
         vxgiTestShader.setBool("showDiffuseAccumulation", Common::showDiffuseAccumulation);
         vxgiTestShader.setBool("showTotalIndirectDiffuseLight", Common::showTotalIndirectDiffuseLight);
@@ -335,17 +332,31 @@ void RenderSystem::Update(float deltaTime)
         vxgiTestShader.setBool("aoDebug", Common::aoDebug);
         vxgiTestShader.setBool("emissionDebug", Common::emissionDebug);
         vxgiTestShader.setBool("bloom", Common::bloomOn);
-        vxgiTestShader.setInt("irradianceMap", 6);
-        vxgiTestShader.setInt("prefilterMap", 7);
-        vxgiTestShader.setInt("brdfLUT", 8);
         vxgiTestShader.setInt("dirShadowMap", 9);
         vxgiTestShader.setMat4("dirLightSpaceMatrix", dirLightSpaceMatrix);
+
+        glm::mat3 viewNormalMatrix = glm::transpose(glm::inverse(player.viewMatrix));
+        vxgiTestShader.setMat3("viewNormalMatrix", viewNormalMatrix);
 
         glActiveTexture(GL_TEXTURE9);
         glBindTexture(GL_TEXTURE_2D, RenderingUtil::mDirLightShadowMap);
         glActiveTexture(GL_TEXTURE15);
         glBindTexture(GL_TEXTURE_3D, RenderingUtil::mVoxelTexture);
         vxgiTestShader.setInt("voxelTexture", 15);
+
+        glActiveTexture(GL_TEXTURE16);
+        glBindTexture(GL_TEXTURE_2D, RenderingUtil::mViewPos);
+        vxgiTestShader.setInt("gViewPos", 16);
+
+        glActiveTexture(GL_TEXTURE17);
+        glBindTexture(GL_TEXTURE_2D, RenderingUtil::mViewNormalTexture);
+        vxgiTestShader.setInt("gViewNormals", 17);
+
+        glActiveTexture(GL_TEXTURE18);
+        glBindTexture(GL_TEXTURE_2D, RenderingUtil::mSSRTexture);
+        glGenerateMipmap(GL_TEXTURE_2D);
+        vxgiTestShader.setInt("ssrTexture", 18);
+
 
         for (const auto& entity : mEntities)
         {
@@ -386,11 +397,13 @@ void RenderSystem::Update(float deltaTime)
             model = glm::scale(model, transform.scale);
 
             glm::mat3 normalMatrix = glm::transpose(glm::inverse(model));
+           
 
             vxgiTestShader.use();
 
             vxgiTestShader.setMat4("model", model);
             vxgiTestShader.setMat3("normalMatrix", normalMatrix);
+            
 
             if (ecs.HasComponent<CModel>(entity))
             {
@@ -561,6 +574,38 @@ void RenderSystem::Update(float deltaTime)
         glBlitFramebuffer(0, 0, Window::screenWidth, Window::screenHeight, 0, 0, Window::screenWidth, Window::screenHeight, GL_COLOR_BUFFER_BIT, GL_NEAREST);
     }
 
+    // viewPosTexture
+
+    glReadBuffer(GL_COLOR_ATTACHMENT2);  // Read from the second color attachment
+
+    glDrawBuffer(GL_COLOR_ATTACHMENT2);  // Draw to the second color attachment
+
+    glBlitFramebuffer(0, 0, Window::screenWidth, Window::screenHeight, 0, 0, Window::screenWidth, Window::screenHeight, GL_COLOR_BUFFER_BIT, GL_NEAREST);
+
+    // normalTexture
+
+    glReadBuffer(GL_COLOR_ATTACHMENT3);  // Read from the second color attachment
+
+    glDrawBuffer(GL_COLOR_ATTACHMENT3);  // Draw to the second color attachment
+
+    glBlitFramebuffer(0, 0, Window::screenWidth, Window::screenHeight, 0, 0, Window::screenWidth, Window::screenHeight, GL_COLOR_BUFFER_BIT, GL_NEAREST);
+
+    // roughnessTexture
+
+    glReadBuffer(GL_COLOR_ATTACHMENT4);  // Read from the second color attachment
+
+    glDrawBuffer(GL_COLOR_ATTACHMENT4);  // Draw to the second color attachment
+
+    glBlitFramebuffer(0, 0, Window::screenWidth, Window::screenHeight, 0, 0, Window::screenWidth, Window::screenHeight, GL_COLOR_BUFFER_BIT, GL_NEAREST);
+
+    // diffuseColorTexture
+
+    glReadBuffer(GL_COLOR_ATTACHMENT5);  // Read from the second color attachment
+
+    glDrawBuffer(GL_COLOR_ATTACHMENT5);  // Draw to the second color attachment
+
+    glBlitFramebuffer(0, 0, Window::screenWidth, Window::screenHeight, 0, 0, Window::screenWidth, Window::screenHeight, GL_COLOR_BUFFER_BIT, GL_NEAREST);
+
     // ---------------------------------- BLOOM PASS -----------------------------------------------------------------
 
     bool horizontal = true, first_iteration = true;
@@ -602,10 +647,47 @@ void RenderSystem::Update(float deltaTime)
                 first_iteration = false;
         }
     }
-        
-    // ------------------------------ POST PROCESSING PASS -----------------------------------------------------------
     
+    // ------------------------------ SSR PASS -----------------------------------------------------------
+
     glDisable(GL_CULL_FACE);
+
+    glBindFramebuffer(GL_FRAMEBUFFER, RenderingUtil::mSSRFBO);
+    glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+    glClear(GL_COLOR_BUFFER_BIT);
+
+    Shader& ssrShader = ShaderManager::GetShaderProgram("ssrShader");
+    ssrShader.use();
+    //ssrShader.setMat4("invView", glm::inverse(player.viewMatrix));
+
+    projection = glm::perspective(
+        glm::radians(45.0f), (float)Window::screenWidth / (float)Window::screenHeight, 0.1f, 100.0f);
+    ssrShader.setMat4("projection", projection);
+    //ssrShader.setMat4("invProjection", glm::inverse(projection));
+    //ssrShader.setMat4("view", player.viewMatrix);
+
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, RenderingUtil::mViewPos);
+    ssrShader.setInt("gViewPosition", 0);
+
+    glActiveTexture(GL_TEXTURE1);
+    glBindTexture(GL_TEXTURE_2D, RenderingUtil::mViewNormalTexture);
+    ssrShader.setInt("gViewNormal", 1);
+
+    glActiveTexture(GL_TEXTURE2);
+    glBindTexture(GL_TEXTURE_2D, RenderingUtil::mRoughnessTexture);
+    ssrShader.setInt("gRoughness", 2);
+
+    glActiveTexture(GL_TEXTURE3);
+    glBindTexture(GL_TEXTURE_2D, RenderingUtil::mDiffuseColorTexture);
+    glGenerateMipmap(GL_TEXTURE_2D);
+    ssrShader.setInt("gFinalImage", 3);
+
+    glBindVertexArray(RenderingUtil::mScreenQuadVAO);
+    glDisable(GL_DEPTH_TEST);
+    glDrawArrays(GL_TRIANGLES, 0, 6);
+
+    // ------------------------------ POST PROCESSING PASS -----------------------------------------------------------
 
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
     glClearColor(0.2f, 0.3f, 0.3f, 1.0f);

@@ -27,15 +27,12 @@ void main()
     vec3 texCoord = gridCoord / vec3(gridDimensions);
 
     // Sample the color from the 3D texture
-    //vec4 decodedRGBA = decodeFloatToRGBA(textureLod(voxelTexture, vec3(texCoord.x, texCoord.y, texCoord.z), 0).r);
     voxelColor = textureLod(voxelTexture, vec3(texCoord.x, texCoord.y, texCoord.z), 0);
 
     // Center the voxel position in the world space
     worldPos = ((gridCoord - vec3(gridDimensions) * 0.5 + 0.5) * 0.5) - camPos;
     
     projView = projection * view;
-
-    
 
     gl_Position;
 }
