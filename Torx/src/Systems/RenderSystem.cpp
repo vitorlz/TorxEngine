@@ -354,8 +354,11 @@ void RenderSystem::Update(float deltaTime)
 
         glActiveTexture(GL_TEXTURE18);
         glBindTexture(GL_TEXTURE_2D, RenderingUtil::mSSRTexture);
-        glGenerateMipmap(GL_TEXTURE_2D);
         vxgiTestShader.setInt("ssrTexture", 18);
+
+        glActiveTexture(GL_TEXTURE19);
+        glBindTexture(GL_TEXTURE_2D, RenderingUtil::mSSRBlurredTexture);
+        vxgiTestShader.setInt("ssrTextureBlur", 19);
 
 
         for (const auto& entity : mEntities)
@@ -680,8 +683,25 @@ void RenderSystem::Update(float deltaTime)
 
     glActiveTexture(GL_TEXTURE3);
     glBindTexture(GL_TEXTURE_2D, RenderingUtil::mDiffuseColorTexture);
-    glGenerateMipmap(GL_TEXTURE_2D);
     ssrShader.setInt("gFinalImage", 3);
+
+    glBindVertexArray(RenderingUtil::mScreenQuadVAO);
+    glDisable(GL_DEPTH_TEST);
+    glDrawArrays(GL_TRIANGLES, 0, 6);
+
+
+    // blur the ssr texture
+
+    glBindFramebuffer(GL_FRAMEBUFFER, RenderingUtil::mBoxBlurFBO);
+    glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+    glClear(GL_COLOR_BUFFER_BIT);
+
+    Shader& boxBlurShader = ShaderManager::GetShaderProgram("boxBlurShader");
+    boxBlurShader.use();
+
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, RenderingUtil::mSSRTexture);
+    boxBlurShader.setInt("colorTexture", 0);
 
     glBindVertexArray(RenderingUtil::mScreenQuadVAO);
     glDisable(GL_DEPTH_TEST);

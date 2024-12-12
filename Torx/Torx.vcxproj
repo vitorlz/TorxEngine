@@ -180,6 +180,8 @@
     <ClInclude Include="vendor\imgui\imstb_truetype.h" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="res\shaders\boxBlur.frag" />
+    <None Include="res\shaders\boxBlur.vert" />
     <None Include="res\shaders\brdfConvolution.frag" />
     <None Include="res\shaders\brdfConvolution.vert" />
     <None Include="res\shaders\cubemap.frag" />

@@ -53,8 +53,11 @@ uniform vec2 textureScaling;
 vec2 scaledTexCoords;
 
 // SSR
+uniform sampler2D ssrTexture;
+uniform sampler2D ssrTextureBlur;
 uniform sampler2D gViewPos;
 uniform sampler2D gViewNormals;
+uniform sampler2D gDiffuseColor;
 in mat4 ProjectionMatrix;
 in vec4 ViewFragPos;
 uniform mat3 viewNormalMatrix;
@@ -129,13 +132,9 @@ uniform float diffuseConeSpread;
 uniform float voxelizationAreaSize;
 uniform float specularBias;
 uniform float specularStepSizeMultiplier;
-uniform float specularConeOriginOffset;
+uniform float specularConeOriginOffset;	
 uniform bool showTotalIndirectSpecularLight;
 uniform float specularConeMaxDistance;
-
-// SSR 
-
-uniform sampler2D ssrTexture;
 
 float MAX_DISTANCE;
 
@@ -152,14 +151,7 @@ void main()
 	roughness = RMA.r;
 	metallic = RMA.g;
 	
-	if(hasAOTexture)
-	{
-		ao = RMA.b;
-	}
-	else
-	{
-		ao = 1.0;
-	}
+	ao = 1.0;
 
 	if(albedoSample.a < 0.5)
 		discard;
@@ -213,13 +205,19 @@ void main()
 	vec3 indirectSpecularContribution;
 
 	vec2 texSize = textureSize(ssrTexture, 0);
-	float mipLevel = pow(roughness, 2.0) * 3 + 0.5;
-	vec3 ssr = textureLod(ssrTexture, gl_FragCoord.xy / texSize, mipLevel).rgb;
+
+	vec3 ssrOriginal = texture(ssrTexture, gl_FragCoord.xy / texSize).rgb;
+
+	vec3 ssrBlurred = texture(ssrTextureBlur, gl_FragCoord.xy / texSize).rgb;
+
+	vec3 ssr = mix(ssrOriginal, ssrBlurred, roughness) * (1-roughness) * specularBias;
+	
+
 
 	if(vxgi)
 	{
 		indirectDiffuseContribution = (kD * indirectDiffuseLight(N));
-		indirectSpecularContribution = (kS * ssr);
+		indirectSpecularContribution =  (kS * ssr); //(kS * indirectSpecularLight(V, N));
 	}
 	if(vxgi && !(showTotalIndirectDiffuseLight || showDiffuseAccumulation || showTotalIndirectSpecularLight))
 	{
@@ -231,7 +229,7 @@ void main()
 	}
 	else if(showTotalIndirectSpecularLight)
 	{
-		color = ssr;
+		color =  (kS * ssr);	
 	}
 	if(showNormals) 
 	{
@@ -278,8 +276,8 @@ void main()
 
 
 	Roughness = vec4(vec3(roughness), 1.0);
-	ViewPosition = ViewFragPos;
-	ViewNormals = vec4(viewNormalMatrix * N, 1.0);
+	ViewPosition = vec4(ViewFragPos.xyz, 1.0);
+	ViewNormals = vec4(normalize(viewNormalMatrix * N), 1.0);
 	DiffuseColor = vec4(Lo + indirectDiffuseContribution, 1.0);
 }
 

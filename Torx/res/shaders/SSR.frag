@@ -2,7 +2,7 @@
 
 uniform sampler2D gViewPosition;
 uniform sampler2D gViewNormal;
-//uniform sampler2D gRoughness;
+uniform sampler2D gRoughness;
 uniform sampler2D gFinalImage;
 
 //uniform mat4 invView;
@@ -14,9 +14,9 @@ in vec2 TexCoords;
 
 out vec4 FragColor;
 
-float maxDistance = 15;
-float resolution  = 0.3;
-int   steps       = 100;
+float maxDistance = 30  ;
+float resolution  = 1.0;
+int   steps       = 30;
 float thickness   = 0.4;
 
 void main()
@@ -74,7 +74,7 @@ void main()
 
   for (i = 0; i < int(delta); ++i) {
     
-    if(i > 500)
+    if(i > 240)
     {
         break;
     }
@@ -93,12 +93,15 @@ void main()
     search1 = clamp(search1, 0.0, 1.0);
 
     viewDistance = (startView.z * endView.z) / mix(endView.z, startView.z, search1);
-    depth        = viewDistance - positionTo.z;
+    depth        = (viewDistance) - positionTo.z;
 
-    if (depth < 0 /*&& depth > -thickness */) {
+    if (depth < 0 && depth > -thickness) 
+    {
       hit0 = 1;
       break;
-    } else {
+    } 
+    else 
+    {
       search0 = search1;
     }
   }
@@ -107,18 +110,22 @@ void main()
 
   steps *= hit0;
 
-  for (i = 0; i < steps; ++i) {
+  for (i = 0; i < steps; ++i) 
+  {
     frag       = mix(startFrag.xy, endFrag.xy, search1);
     uv.xy      = frag / texSize;
     positionTo = texture(gViewPosition, uv.xy);
 
     viewDistance = (startView.z * endView.z) / mix(endView.z, startView.z, search1);
-    depth        = viewDistance - positionTo.z;
+    depth        = (viewDistance) - positionTo.z;
 
-    if (depth < 0 /*&& depth > -thickness */) {
+    if (depth < 0 && depth > -thickness ) {
       hit1 = 1;
       search1 = search0 + ((search1 - search0) / 2);
-    } else {
+    
+    } 
+    else 
+    {
       float temp = search1;
       search1 = search1 + ((search1 - search0) / 2);
       search0 = temp;
@@ -160,6 +167,10 @@ void main()
 
   vec4 color = texture(gFinalImage, uv.xy);
 
-  FragColor = vec4(mix(vec3(0.0), color.rgb, alpha), alpha);;
+  float roughness = texture(gRoughness, texCoord).r;
+
+  FragColor = vec4(mix(vec3(0.0), color.rgb , alpha) * (1 - pow(roughness, 0.5)), alpha);
+  
+  //vec4(mix(vec3(0.0), color.rgb, alpha), alpha);;
 
 }

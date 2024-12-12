@@ -26,6 +26,7 @@ void ShaderManager::LoadShaders()
 	std::shared_ptr<Shader>	voxelVisualizationShader = std::make_shared<Shader>("res/shaders/voxelVisualization.vert", "res/shaders/voxelVisualization.frag", "res/shaders/voxelVisualization.geom");
 	std::shared_ptr<Shader>	vxgiTestShader = std::make_shared<Shader>("res/shaders/VXGI.vert", "res/shaders/VXGI.frag");
 	std::shared_ptr<Shader>	ssrShader = std::make_shared<Shader>("res/shaders/SSR.vert", "res/shaders/SSR.frag");
+	std::shared_ptr<Shader>	boxBlurShader = std::make_shared<Shader>("res/shaders/boxBlur.vert", "res/shaders/boxBlur.frag");
 
 	shaderPrograms.clear();
 
@@ -48,6 +49,7 @@ void ShaderManager::LoadShaders()
 	shaderPrograms.insert({ "voxelVisualizationShader", voxelVisualizationShader });
 	shaderPrograms.insert({ "vxgiTestShader", vxgiTestShader });
 	shaderPrograms.insert({ "ssrShader", ssrShader });
+	shaderPrograms.insert({ "boxBlurShader", boxBlurShader });
 }
 
 // maybe make this more efficient in the future.

@@ -316,6 +316,8 @@
     <None Include="res\shaders\VXGI.vert" />
     <None Include="res\shaders\SSR.vert" />
     <None Include="res\shaders\SSR.frag" />
+    <None Include="res\shaders\boxBlur.vert" />
+    <None Include="res\shaders\boxBlur.frag" />
   </ItemGroup>
   <ItemGroup>
     <Library Include="vendor\assimp\lib\assimp-vc143-mt.lib" />

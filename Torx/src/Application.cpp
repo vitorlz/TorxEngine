@@ -103,7 +103,7 @@ int main()
 
     RenderingUtil::Init();
 
-    Scene::LoadSceneFromJson("sponzascene.json");
+    Scene::LoadSceneFromJson("testscene2.json");
     
     renderSystem->Init();
     generalInputSystem->Init();

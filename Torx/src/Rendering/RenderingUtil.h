@@ -25,6 +25,8 @@ public:
 	static unsigned int mRoughnessTexture;
 	static unsigned int mSSRTexture;
 	static unsigned int mDiffuseColorTexture;
+	static unsigned int mBoxBlurFBO;
+	static unsigned int mSSRBlurredTexture;
 
 	// diffuse indirect lighting
 	static unsigned int mEnvironmentCubemap;
@@ -48,6 +50,7 @@ public:
 	static void DeleteTexture(unsigned int textureId);
 	static void CreateVoxelTexture(int voxelTextureSize);
 	static void CreateSSRFBO();
+	static void CreateSSRBoxBlurFBO();
 
 private:
 	static void CreateCubeVAO();
@@ -57,5 +60,4 @@ private:
 	static void CreateDirLightShadowMapFBO(unsigned int shadowWidth, unsigned int shadowHeight);
 	static void CreatePointLightShadowMapFBO(unsigned int shadowWidth, unsigned int shadowHeight);
 	static void CreatePingPongFBOs();
-	static void CreateVoxelizationFBO();
 };

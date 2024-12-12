@@ -36,6 +36,8 @@ unsigned int RenderingUtil::mRoughnessTexture;
 unsigned int RenderingUtil::mSSRTexture;
 unsigned int RenderingUtil::mSSRFBO;
 unsigned int RenderingUtil::mDiffuseColorTexture;
+unsigned int RenderingUtil::mSSRBlurredTexture;
+unsigned int RenderingUtil::mBoxBlurFBO;
 
 void RenderingUtil::Init()
 {
@@ -52,6 +54,7 @@ void RenderingUtil::Init()
     RenderingUtil::CreateVoxelTexture(Common::voxelGridDimensions);
 
     RenderingUtil::CreateSSRFBO();
+    RenderingUtil::CreateSSRBoxBlurFBO();
 }
 
 float cubeVertices[] = 
@@ -274,7 +277,7 @@ void RenderingUtil::CreateBlittingFBO()
 
     glGenTextures(1, &mViewPos);
     glBindTexture(GL_TEXTURE_2D, mViewPos);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, Common::SCR_WIDTH, Common::SCR_HEIGHT, 0, GL_RGBA, GL_FLOAT, NULL);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, Common::SCR_WIDTH, Common::SCR_HEIGHT, 0, GL_RGBA, GL_FLOAT, NULL);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
@@ -288,7 +291,7 @@ void RenderingUtil::CreateBlittingFBO()
 
     glGenTextures(1, &mViewNormalTexture);
     glBindTexture(GL_TEXTURE_2D, mViewNormalTexture);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB16F, Common::SCR_WIDTH, Common::SCR_HEIGHT, 0, GL_RGB, GL_FLOAT, NULL);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB32F, Common::SCR_WIDTH, Common::SCR_HEIGHT, 0, GL_RGB, GL_FLOAT, NULL);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
@@ -318,10 +321,10 @@ void RenderingUtil::CreateBlittingFBO()
     glGenTextures(1, &mDiffuseColorTexture);
     glBindTexture(GL_TEXTURE_2D, mDiffuseColorTexture);
 
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB16F, Common::SCR_WIDTH, Common::SCR_HEIGHT, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB32F, Common::SCR_WIDTH, Common::SCR_HEIGHT, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
 
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 
     glBindTexture(GL_TEXTURE_2D, 0);
 
@@ -761,14 +764,13 @@ void RenderingUtil::CreateSSRFBO()
    
     glBindTexture(GL_TEXTURE_2D, mSSRTexture);
 
-    const std::vector <float> texture2D(Common::SCR_WIDTH * Common::SCR_HEIGHT, 0.0f);
 
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    //glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    //glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB16F, Common::SCR_WIDTH, Common::SCR_HEIGHT, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, Common::SCR_WIDTH, Common::SCR_HEIGHT, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
   
     glGenerateMipmap(GL_TEXTURE_2D);
 
@@ -785,6 +787,39 @@ void RenderingUtil::CreateSSRFBO()
     }
 
     
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+}
+
+void RenderingUtil::CreateSSRBoxBlurFBO()
+{
+    glGenFramebuffers(1, &mBoxBlurFBO);
+    glGenTextures(1, &mSSRBlurredTexture);
+
+    glBindTexture(GL_TEXTURE_2D, mSSRBlurredTexture);
+
+
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    //glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    //glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, Common::SCR_WIDTH, Common::SCR_HEIGHT, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
+
+    glGenerateMipmap(GL_TEXTURE_2D);
+
+    glBindTexture(GL_TEXTURE_2D, 0);
+
+    glBindFramebuffer(GL_FRAMEBUFFER, mBoxBlurFBO);
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, mSSRBlurredTexture, 0);
+
+    const int status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
+    if (status != GL_FRAMEBUFFER_COMPLETE)
+    {
+        std::cout << "ERROR::FRAMEBUFFER:: Framebuffer is not complete!\n";
+        throw 0;
+    }
+
+
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
