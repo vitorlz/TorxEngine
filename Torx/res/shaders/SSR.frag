@@ -29,7 +29,7 @@ void main()
 
   vec4 uv = vec4(0.0);
 
-  vec4 positionFrom = vec4(texture(gViewPosition, TexCoords).xyz, 1.0);
+  vec4 positionFrom = vec4(texture(gViewPosition, texCoord).xyz, 1.0);
 
   if(positionFrom.a == 0.0)
   {
@@ -43,7 +43,7 @@ void main()
 
   vec4 positionTo = positionFrom;
 
-  vec4 startView = vec4(positionFrom.xyz + (pivot *         0.0), 1.0);
+  vec4 startView = vec4(positionFrom.xyz + (pivot * 0.0), 1.0);
   vec4 endView   = vec4(positionFrom.xyz + (pivot * maxDistance), 1.0);
 
   vec4 startFrag      = startView;
@@ -56,12 +56,6 @@ void main()
        endFrag      = Projection * endView;
        endFrag.xyz /= endFrag.w;
        endFrag.xy   = endFrag.xy * 0.5 + 0.5;
-
-       if(endFrag.x > 1 || endFrag.y > 1)
-       {
-            return;
-       }
-
        endFrag.xy  *= texSize;
 
 
@@ -73,7 +67,7 @@ void main()
   float deltaY    = endFrag.y - startFrag.y;
   float useX      = abs(deltaX) >= abs(deltaY) ? 1.0 : 0.0;
   float delta     = mix(abs(deltaY), abs(deltaX), useX) * clamp(resolution, 0.0, 1.0);
-  vec2  increment = vec2(deltaX, deltaY) / max(delta, 0.01);
+  vec2  increment = vec2(deltaX, deltaY) / max(delta, 0.001);
 
   float search0 = 0;
   float search1 = 0;
@@ -117,18 +111,17 @@ void main()
         , useX
         );
 
-    search1 = clamp(search1, 0.0, 1.0);
+    search1 = clamp(search1, 0.0, 1.0); 
 
     viewDistance = (startView.z * endView.z) / mix(endView.z, startView.z, search1);
     depth        = (viewDistance) - positionTo.z;
 
     if (depth < 0 && abs(depth) < thickness) 
     {
-        if(positionTo.z < 0.0)
-        {
+       
             hit0 = 1;
             break;
-        }
+        
        
     } 
     else 
@@ -151,7 +144,7 @@ void main()
     viewDistance = (startView.z * endView.z) / mix(endView.z, startView.z, search1);
     depth        = (viewDistance) - positionTo.z;
 
-    if (depth < 0 && depth > -thickness) {
+    if (depth < 0 && abs(depth) < thickness) {
       hit1 = 1;
       search1 = search0 + ((search1 - search0) / 2);
     
@@ -214,7 +207,7 @@ void main()
     }
     else
     {   
-        FragColor = vec4(mix(vec3(0.0), color.rgb , alpha) * (1 - pow(roughness, 0.5)), alpha);
+        FragColor = vec4(mix(vec3(0.0), color.rgb , alpha) * (1 - pow(roughness, 0.5)), alpha);;
         //vec4(mix(vec3(0.0), color.rgb , alpha) * (1 - pow(roughness, 0.5)), alpha);
     }
   

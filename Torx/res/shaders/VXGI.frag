@@ -210,12 +210,13 @@ void main()
 
 	vec3 ssrBlurred = texture(ssrTextureBlur, gl_FragCoord.xy / texSize).rgb;
 
-	vec3 ssr = mix(ssrOriginal, ssrBlurred, 0) * (1 - roughness) * specularBias;
+	vec3 ssr = mix(ssrOriginal, ssrBlurred, roughness + clamp(length(camPos - FragPos) / 15, 0, 1)) * (1 - roughness) * specularBias;
 	
-	if(vxgi)
+	if(vxgi)	
 	{
 		indirectDiffuseContribution = (kD * indirectDiffuseLight(N));
-		indirectSpecularContribution =  (kS * ssr); //(kS * indirectSpecularLight(V, N));
+		// mix vxgi specular with ssr based on the angle between the campos and 
+		indirectSpecularContribution =  (kS * mix(ssr, indirectSpecularLight(V, N),  smoothstep(0.0, 1.0, dot(V,reflect(-V, N))))); //(kS * indirectSpecularLight(V, N));
 	}
 	if(vxgi && !(showTotalIndirectDiffuseLight || showDiffuseAccumulation || showTotalIndirectSpecularLight))
 	{
@@ -227,7 +228,7 @@ void main()
 	}
 	else if(showTotalIndirectSpecularLight)
 	{
-		color =  (kS * ssr);	
+		color =  indirectSpecularContribution;	
 	}
 	if(showNormals) 
 	{
