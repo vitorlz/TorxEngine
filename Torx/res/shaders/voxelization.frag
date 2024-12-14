@@ -266,11 +266,11 @@ float PointShadowCalculation(vec3 fragPos, Light light, int shadowCasterIndex)
 		if(currentDepth - bias > closestDepth)
 			shadow += 1.0;
 	}
-	shadow /= float(samples);  
-
+	shadow /= float(samples) * 1.1;  
+		
 	float unitDepth = currentDepth / light.radius.x;
 
-	return shadow;
+	return mix(shadow, 0, unitDepth / 10);
 }	
 
 

@@ -286,7 +286,7 @@ void RenderSystem::Update(float deltaTime)
     unsigned int attachments[6] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1, GL_COLOR_ATTACHMENT2, GL_COLOR_ATTACHMENT3, GL_COLOR_ATTACHMENT4, GL_COLOR_ATTACHMENT5 };
     glDrawBuffers(6, attachments);
 
-    glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+    glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
     glClear(GL_COLOR_BUFFER_BIT);
     glClear(GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
     glEnable(GL_DEPTH_TEST);
@@ -531,7 +531,10 @@ void RenderSystem::Update(float deltaTime)
     }
 
     // ---------------------------- SKYBOX PASS ---------------------------------------
-    glDrawBuffers(1, attachments);
+
+    unsigned int attachmentsSkybox[2] = {GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT5};
+
+    glDrawBuffers(2, attachmentsSkybox);
     
     if (Common::wireframeDebug) {
         glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
@@ -664,8 +667,10 @@ void RenderSystem::Update(float deltaTime)
     //ssrShader.setMat4("invView", glm::inverse(player.viewMatrix));
 
     projection = glm::perspective(
-        glm::radians(45.0f), (float)Window::screenWidth / (float)Window::screenHeight, 0.1f, 100.0f);
+        glm::radians(45.0f), (float)Window::screenWidth / (float)Window::screenHeight, 0.1f, 1000.0f);
     ssrShader.setMat4("projection", projection);
+    ssrShader.setMat4("inverseViewMatrix", glm::inverse(player.viewMatrix));
+    ssrShader.setMat3("inverseViewNormalMatrix", glm::inverse(glm::transpose(glm::inverse(player.viewMatrix))));
     //ssrShader.setMat4("invProjection", glm::inverse(projection));
     //ssrShader.setMat4("view", player.viewMatrix);
 
@@ -684,6 +689,11 @@ void RenderSystem::Update(float deltaTime)
     glActiveTexture(GL_TEXTURE3);
     glBindTexture(GL_TEXTURE_2D, RenderingUtil::mDiffuseColorTexture);
     ssrShader.setInt("gFinalImage", 3);
+
+   
+    glActiveTexture(GL_TEXTURE4);
+    glBindTexture(GL_TEXTURE_CUBE_MAP, RenderingUtil::mEnvironmentCubemap);
+    ssrShader.setInt("skybox", 4);
 
     glBindVertexArray(RenderingUtil::mScreenQuadVAO);
     glDisable(GL_DEPTH_TEST);

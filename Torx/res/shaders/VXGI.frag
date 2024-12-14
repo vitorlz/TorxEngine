@@ -210,10 +210,8 @@ void main()
 
 	vec3 ssrBlurred = texture(ssrTextureBlur, gl_FragCoord.xy / texSize).rgb;
 
-	vec3 ssr = mix(ssrOriginal, ssrBlurred, roughness) * (1-roughness) * specularBias;
+	vec3 ssr = mix(ssrOriginal, ssrBlurred, 0) * (1 - roughness) * specularBias;
 	
-
-
 	if(vxgi)
 	{
 		indirectDiffuseContribution = (kD * indirectDiffuseLight(N));
@@ -274,34 +272,18 @@ void main()
 		}
 	}
 
-
 	Roughness = vec4(vec3(roughness), 1.0);
-	ViewPosition = vec4(ViewFragPos.xyz, 1.0);
+	
+	
+	
+	ViewPosition = ViewFragPos;
+	
+	
+	
 	ViewNormals = vec4(normalize(viewNormalMatrix * N), 1.0);
 	DiffuseColor = vec4(Lo + indirectDiffuseContribution, 1.0);
 }
 
-
-vec4 ssrRayCast(vec3 dir, vec3 hitCoord, float dDepth)
-{
-	dir *= rayStep;
-	
-	float depth = 0.0;
-	int steps = 0;
-	vec4 projectedCoord = vec4(0.0);
-
-	for(int i = 0; i < maxSteps; ++i)
-	{
-		hitCoord += dir;
-
-		projectedCoord = ProjectionMatrix * vec4(hitCoord, 1.0);
-		projectedCoord.xy /= projectedCoord.w;
-		projectedCoord.xy = projectedCoord.xy * 0.5 + 0.5;
-
-		
-	}
-	return vec4(1.0);
-}
 
 // Scales and bias a given vector (i.e. from [-1, 1] to [0, 1]).
 vec3 scaleAndBias(const vec3 p) { return 0.5f * p + vec3(0.5f); }
@@ -619,7 +601,6 @@ vec3 CalcSpotLight(Light light, vec3 N, vec3 V, vec3 F0)
 	float NdotL = max(dot(N, L), 0.0); // scale the light's contribution by its angle to the surface's normal.
 		
 	return (kD * albedo / PI + specular) * radiance * NdotL;
-
 }
 
 float PointShadowCalculation(vec3 fragPos, Light light, int shadowCasterIndex) 
