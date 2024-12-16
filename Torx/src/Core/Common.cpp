@@ -43,13 +43,21 @@ int	Common::voxelGridDimensions{ 128 };
 bool Common::vxgi{ true };
 bool Common::showDiffuseAccumulation{ false };
 bool Common::showTotalIndirectDiffuseLight{ false };
-float Common::diffuseConeSpread{ 2.1 };
+float Common::diffuseConeSpread{ 2.1f };
 float Common::voxelizationAreaSize{ 12.0f };
-float Common::specularBias{ 1 };
+float Common::vxSpecularBias{ 1 };
 float Common::specularStepSizeMultiplier{ 1 };
-float Common::specularConeOriginOffset{ 0.8 };
+float Common::specularConeOriginOffset{ 0.8f };
 bool Common::showTotalIndirectSpecularLight{ false };
 float Common::specularConeMaxDistance{ 1 };
+
+// --------------- SSR ----------------------------------------
+float Common::ssrMaxDistance{ 20 };
+float Common::ssrResolution{ 1.0f };
+int   Common::ssrSteps{ 50 };
+float Common::ssrThickness{ 0.5f };
+float Common::ssrSpecularBias{ 1.0f };
+float Common::ssrMaxBlurDistance{ 10 };
 
 
 

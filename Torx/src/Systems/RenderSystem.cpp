@@ -316,7 +316,9 @@ void RenderSystem::Update(float deltaTime)
         vxgiTestShader.setBool("showTotalIndirectDiffuseLight", Common::showTotalIndirectDiffuseLight);
         vxgiTestShader.setFloat("diffuseConeSpread", Common::diffuseConeSpread);
         vxgiTestShader.setFloat("voxelizationAreaSize", Common::voxelizationAreaSize);
-        vxgiTestShader.setFloat("specularBias", Common::specularBias);
+        vxgiTestShader.setFloat("vxSpecularBias", Common::vxSpecularBias);
+        vxgiTestShader.setFloat("ssrSpecularBias", Common::ssrSpecularBias);
+        vxgiTestShader.setFloat("ssrMaxBlurDistance", Common::ssrMaxBlurDistance);
         vxgiTestShader.setFloat("specularStepSizeMultiplier", Common::specularStepSizeMultiplier);
         vxgiTestShader.setFloat("specularConeOriginOffset", Common::specularConeOriginOffset);
         vxgiTestShader.setFloat("showTotalIndirectSpecularLight", Common::showTotalIndirectSpecularLight);
@@ -666,13 +668,17 @@ void RenderSystem::Update(float deltaTime)
     ssrShader.use();
     //ssrShader.setMat4("invView", glm::inverse(player.viewMatrix));
 
-    projection = glm::perspective(
-        glm::radians(45.0f), (float)Window::screenWidth / (float)Window::screenHeight, 0.1f, 1000.0f);
     ssrShader.setMat4("projection", projection);
     ssrShader.setMat4("inverseViewMatrix", glm::inverse(player.viewMatrix));
     ssrShader.setMat3("inverseViewNormalMatrix", glm::inverse(glm::transpose(glm::inverse(player.viewMatrix))));
     //ssrShader.setMat4("invProjection", glm::inverse(projection));
     //ssrShader.setMat4("view", player.viewMatrix);
+
+    ssrShader.setFloat("maxDistance", Common::ssrMaxDistance);
+    ssrShader.setFloat("resolution", Common::ssrResolution);
+    ssrShader.setInt("steps", Common::ssrSteps);
+    ssrShader.setFloat("thickness", Common::ssrThickness);
+
 
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, RenderingUtil::mViewPos);
@@ -689,11 +695,6 @@ void RenderSystem::Update(float deltaTime)
     glActiveTexture(GL_TEXTURE3);
     glBindTexture(GL_TEXTURE_2D, RenderingUtil::mDiffuseColorTexture);
     ssrShader.setInt("gFinalImage", 3);
-
-   
-    glActiveTexture(GL_TEXTURE4);
-    glBindTexture(GL_TEXTURE_CUBE_MAP, RenderingUtil::mEnvironmentCubemap);
-    ssrShader.setInt("skybox", 4);
 
     glBindVertexArray(RenderingUtil::mScreenQuadVAO);
     glDisable(GL_DEPTH_TEST);

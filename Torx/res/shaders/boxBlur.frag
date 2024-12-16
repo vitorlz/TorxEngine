@@ -7,8 +7,8 @@ in vec2 TexCoords;
 uniform sampler2D colorTexture;
 
 // control how blurry the result is
-int size = 6;
-float separation = 1;
+int size = 8;
+float separation = 2;
 
 void main()
 {

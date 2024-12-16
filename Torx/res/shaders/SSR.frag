@@ -16,10 +16,10 @@ in vec2 TexCoords;
 
 out vec4 FragColor;
 
-float maxDistance = 20;
-float resolution  = 1.0;
-int   steps       = 50;
-float thickness   = 0.5;
+uniform float maxDistance;
+uniform float resolution;
+uniform int   steps;
+uniform float thickness;
 
 void main()
 {
@@ -132,9 +132,11 @@ void main()
 
   search1 = search0 + ((search1 - search0) / 2.0);
 
-  steps *= hit0;
+  float nSteps = steps;
 
-  for (i = 0; i < steps; ++i) 
+  nSteps *= hit0;
+
+  for (i = 0; i < nSteps; ++i) 
   {
 
     frag       = mix(startFrag.xy, endFrag.xy, search1);

@@ -53,20 +53,12 @@ uniform vec2 textureScaling;
 vec2 scaledTexCoords;
 
 // SSR
+in vec4 ViewFragPos;
 uniform sampler2D ssrTexture;
 uniform sampler2D ssrTextureBlur;
-uniform sampler2D gViewPos;
-uniform sampler2D gViewNormals;
-uniform sampler2D gDiffuseColor;
-in mat4 ProjectionMatrix;
-in vec4 ViewFragPos;
 uniform mat3 viewNormalMatrix;
-float rayStep = 0.1;
-float minRayStep = 0.1;
-int maxSteps = 30;
-float searchDist = 5;
-int numBinarySearchSteps = 5;
-float reflectionSpecularFalloffExponent = 3.0;
+uniform float ssrSpecularBias;
+uniform float ssrMaxBlurDistance;
 
 //lights
 struct Light
@@ -130,7 +122,7 @@ uniform bool showDiffuseAccumulation;
 uniform bool showTotalIndirectDiffuseLight;
 uniform float diffuseConeSpread;
 uniform float voxelizationAreaSize;
-uniform float specularBias;
+uniform float vxSpecularBias;
 uniform float specularStepSizeMultiplier;
 uniform float specularConeOriginOffset;	
 uniform bool showTotalIndirectSpecularLight;
@@ -153,8 +145,8 @@ void main()
 	
 	ao = 1.0;
 
-	if(albedoSample.a < 0.5)
-		discard;
+	//if(albedoSample.a < 0.5)
+		//discard;
 
 	albedo = albedoSample.rgb;
 
@@ -210,13 +202,13 @@ void main()
 
 	vec3 ssrBlurred = texture(ssrTextureBlur, gl_FragCoord.xy / texSize).rgb;
 
-	vec3 ssr = mix(ssrOriginal, ssrBlurred, roughness + clamp(length(camPos - FragPos) / 15, 0, 1)) * (1 - roughness) * specularBias;
+	vec3 ssr = mix(ssrOriginal, ssrBlurred,   clamp(roughness + clamp(length(camPos - FragPos) / ssrMaxBlurDistance, 0, 1), 0,1)) * (1 - roughness) * ssrSpecularBias;
 	
 	if(vxgi)	
 	{
 		indirectDiffuseContribution = (kD * indirectDiffuseLight(N));
-		// mix vxgi specular with ssr based on the angle between the campos and 
-		indirectSpecularContribution =  (kS * mix(ssr, indirectSpecularLight(V, N),  smoothstep(0.0, 1.0, dot(V,reflect(-V, N))))); //(kS * indirectSpecularLight(V, N));
+		// mix vxgi specular with ssr based on the angle between the vector from the camera to the fragment and the fragment's normal 
+		indirectSpecularContribution =  (kS * mix(ssr, indirectSpecularLight(V, N),  smoothstep(0.0, 1.0, dot(V,reflect(-V, N))))); 
 	}
 	if(vxgi && !(showTotalIndirectDiffuseLight || showDiffuseAccumulation || showTotalIndirectSpecularLight))
 	{
@@ -411,7 +403,7 @@ vec3 traceSpecularVoxelCone(vec3 from, vec3 direction, vec3 normal) {
         if (!isInsideCube(c, 0)) break;
         c = scaleAndBias(c);
 		// introduce an angle factor to hide artifact of smooth surfaces reflections when viewed at an angle
-        float level = max(roughness * log2(1 + dist / voxelSize) / specularBias, 0.0);
+        float level = max(roughness * log2(1 + dist / voxelSize) / vxSpecularBias, 0.0);
 		vec4 voxel = textureLod(voxelTexture, c, min(MIPMAP_HARDCAP, level));
         float contributionFactor = 1.0 - acc.a;
         acc.rgb += 0.25 * (1.0 + roughness) * voxel.rgb * voxel.a * contributionFactor;
@@ -427,7 +419,7 @@ vec3 indirectSpecularLight(vec3 viewDirection, vec3 normal) {
     float grazingAngleFactor = max(dot(normal, reflection), 0.05); // Avoid near-zero artifacts
 
     // Add grazing angle falloff to reduce artifacts
-    return (1.0 - roughness) * specularBias * traceSpecularVoxelCone(FragPos, reflection, normal) * grazingAngleFactor;
+    return (1.0 - roughness) * vxSpecularBias * traceSpecularVoxelCone(FragPos, reflection, normal) * grazingAngleFactor;
 }
 
 vec3 fresnelSchlick(float cosTheta, vec3 F0)

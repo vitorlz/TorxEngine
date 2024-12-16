@@ -215,7 +215,7 @@ void UI::Update()
         ImGui::SliderFloat("Diffuse cone spread", &Common::diffuseConeSpread, 0.001f, 5.0f);
 
         ImGui::SeparatorText("Indirect specular lighting");
-        ImGui::SliderFloat("Specular bias", &Common::specularBias, 0.0f, 20.0f);
+        ImGui::SliderFloat("Specular bias", &Common::vxSpecularBias, 0.0f, 100.0f);
         ImGui::SliderFloat("Cone origin offset", &Common::specularConeOriginOffset, 0.0f, 20.0f);
         ImGui::SliderFloat("Cone max. distance", &Common::specularConeMaxDistance, 0.1f, 20.0f);
         ImGui::SliderFloat("Step size multiplier", &Common::specularStepSizeMultiplier, 0.1f, 10.0f);
@@ -262,9 +262,22 @@ void UI::Update()
         ImGui::TreePop();
     }
 
+    if (ImGui::TreeNode("SSR"))
+    {
+        ImGui::SliderFloat("Max. Distance", &Common::ssrMaxDistance, 0.0f, 100.0f);
+        ImGui::SliderFloat("Resolution", &Common::ssrResolution, 0.0f, 1.0f);
+        ImGui::SliderFloat("Thickness", &Common::ssrThickness, 0.0f, 1.0f);
+        ImGui::SliderFloat("Specular Bias", &Common::ssrSpecularBias, 0.0f, 100.0f);
+        ImGui::SliderInt("Steps", &Common::ssrSteps, 0, 100);
+        ImGui::SliderFloat("Max. Blur Distance", &Common::ssrMaxBlurDistance, 0.0f, 100.0f);
+
+        ImGui::TreePop();
+    }
+
+
     if (ImGui::Button("Save scene"))
     {
-        Scene::SaveSceneToJson("testscene2.json");
+        Scene::SaveSceneToJson("sponzascene.json");
     }
 
     //ImGui::Checkbox("Show voxel debug", &Common::showVoxelDebug);

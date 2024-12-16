@@ -67,9 +67,15 @@ public:
 	static bool showTotalIndirectDiffuseLight;
 	static float diffuseConeSpread;
 	static float voxelizationAreaSize;
-	static float specularBias;
+	static float vxSpecularBias;
 	static float specularStepSizeMultiplier;
 	static float specularConeOriginOffset;
 	static bool showTotalIndirectSpecularLight;
 	static float specularConeMaxDistance;
+	static float ssrMaxDistance;
+	static float ssrResolution;
+	static int ssrSteps;
+	static float ssrThickness;
+	static float ssrSpecularBias;
+	static float ssrMaxBlurDistance;
 };
