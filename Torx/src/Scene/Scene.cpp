@@ -107,6 +107,27 @@ namespace Scene
 
 		json["config"]["environmentMap"] = environmentMap;
 
+		// VXGI
+		
+		json["config"]["vxgi"]["vxgi"] = Common::vxgi;
+		json["config"]["vxgi"]["voxelGridDimensions"] = Common::voxelGridDimensions;
+		json["config"]["vxgi"]["diffuseConeSpread"] = Common::diffuseConeSpread;
+		json["config"]["vxgi"]["voxelizationAreaSize"] = Common::voxelizationAreaSize;
+		json["config"]["vxgi"]["vxSpecularBias"] = Common::vxSpecularBias;
+		json["config"]["vxgi"]["specularStepSizeMultiplier"] = Common::specularStepSizeMultiplier;
+		json["config"]["vxgi"]["specularConeOriginOffset"] = Common::specularConeOriginOffset;
+		json["config"]["vxgi"]["specularConeMaxDistance"] = Common::specularConeMaxDistance;
+
+		// SSR
+
+		json["config"]["ssr"]["ssrMaxDistance"] = Common::ssrMaxDistance;
+		json["config"]["ssr"]["ssrResolution"] = Common::ssrResolution;
+		json["config"]["ssr"]["ssrSteps"] = Common::ssrSteps;
+		json["config"]["ssr"]["ssrThickness"] = Common::ssrThickness;
+		json["config"]["ssr"]["ssrSpecularBias"] = Common::ssrSpecularBias;
+		json["config"]["ssr"]["ssrMaxBlurDistance"] = Common::ssrMaxBlurDistance;
+		
+
 		std::ofstream o("res/scenes/" + filename);
 		if (!o.is_open())
 		{
@@ -226,13 +247,29 @@ namespace Scene
 		}
 
 		std::string envMapPath = "res/textures/hdr/" + jsonData["config"]["environmentMap"].get<std::string>();
-		std::cout << envMapPath << "\n";
-		std::cout << "env map id before: " << RenderingUtil::mEnvironmentCubemap << "\n";
 		SetEnvironmentMap(jsonData["config"]["environmentMap"].get<std::string>());
 		RenderingUtil::LoadNewEnvironmentMap(jsonData["config"]["environmentMap"].get<std::string>().c_str());
-		std::cout << "env map id after: " << RenderingUtil::mEnvironmentCubemap << "\n";
-
 		
+
+		// VXGI
+
+		Common::vxgi = jsonData["config"]["vxgi"]["vxgi"].get<bool>();
+		Common::voxelGridDimensions = jsonData["config"]["vxgi"]["voxelGridDimensions"].get<int>();
+		Common::diffuseConeSpread = jsonData["config"]["vxgi"]["diffuseConeSpread"].get<float>();
+		Common::voxelizationAreaSize = jsonData["config"]["vxgi"]["voxelizationAreaSize"].get<float>();
+		Common::vxSpecularBias = jsonData["config"]["vxgi"]["vxSpecularBias"].get<float>();
+		Common::specularStepSizeMultiplier = jsonData["config"]["vxgi"]["specularStepSizeMultiplier"].get<float>();
+		Common::specularConeOriginOffset = jsonData["config"]["vxgi"]["specularConeOriginOffset"].get<float>();
+		Common::specularConeMaxDistance = jsonData["config"]["vxgi"]["specularConeMaxDistance"].get<float>();
+
+		// SSR
+
+		Common::ssrMaxDistance = jsonData["config"]["ssr"]["ssrMaxDistance"].get<float>();
+		Common::ssrResolution = jsonData["config"]["ssr"]["ssrResolution"].get<float>();
+		Common::ssrSteps = jsonData["config"]["ssr"]["ssrSteps"].get<int>();
+		Common::ssrThickness = jsonData["config"]["ssr"]["ssrThickness"].get<float>();
+		Common::ssrSpecularBias = jsonData["config"]["ssr"]["ssrSpecularBias"].get<float>();
+		Common::ssrMaxBlurDistance = jsonData["config"]["ssr"]["ssrMaxBlurDistance"].get<float>();
 
 		std::cout << "scene loaded " << "\n";
 	}

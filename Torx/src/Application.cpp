@@ -45,8 +45,6 @@ int main()
 
     Window window(Common::SCR_WIDTH, Common::SCR_HEIGHT, "Torx");
 
-    window.DisableVsync();
-
     float deltaTime{};
     float lastFrame{};
 
@@ -103,7 +101,7 @@ int main()
 
     RenderingUtil::Init();
 
-    Scene::LoadSceneFromJson("sponzascene.json");
+    Scene::LoadSceneFromJson("testscene3.json");
     
     renderSystem->Init();
     generalInputSystem->Init();

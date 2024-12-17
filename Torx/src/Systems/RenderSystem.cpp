@@ -27,6 +27,7 @@ extern Coordinator ecs;
 
 void RenderSystem::Init() 
 {
+    RenderingUtil::CreateVoxelTexture(Common::voxelGridDimensions);
 }
 
 const int MAX_OMNISHADOWS = 10;
@@ -135,6 +136,8 @@ void RenderSystem::Update(float deltaTime)
 
     // ------------------------- OMNIDIRECTIONAL SHADOWS PASS -----------------------------------
 
+    glPushDebugGroup(GL_DEBUG_SOURCE_APPLICATION, 0, -1, "Omni Shadows Pass");
+
     glEnable(GL_CULL_FACE);
     glCullFace(GL_FRONT);
     glEnable(GL_DEPTH_TEST);
@@ -239,7 +242,11 @@ void RenderSystem::Update(float deltaTime)
         }
     }
 
+    glPopDebugGroup();
+
     // ------------------------- LIGHTING PASS -----------------------------------
+
+    glPushDebugGroup(GL_DEBUG_SOURCE_APPLICATION, 0, -1, "Lighting Pass");
 
     glm::mat4 projection = glm::mat4(1.0f);
     projection = glm::perspective(
@@ -426,8 +433,12 @@ void RenderSystem::Update(float deltaTime)
                 glEnable(GL_CULL_FACE);
             }
         }
-    }
 
+       
+    }
+    
+    glPopDebugGroup();
+    
     if (Common::showVoxelDebug)
     {
         // voxel visualization
@@ -658,6 +669,8 @@ void RenderSystem::Update(float deltaTime)
     
     // ------------------------------ SSR PASS -----------------------------------------------------------
 
+    glPushDebugGroup(GL_DEBUG_SOURCE_APPLICATION, 0, -1, "SSR Pass");
+
     glDisable(GL_CULL_FACE);
 
     glBindFramebuffer(GL_FRAMEBUFFER, RenderingUtil::mSSRFBO);
@@ -669,8 +682,8 @@ void RenderSystem::Update(float deltaTime)
     //ssrShader.setMat4("invView", glm::inverse(player.viewMatrix));
 
     ssrShader.setMat4("projection", projection);
-    ssrShader.setMat4("inverseViewMatrix", glm::inverse(player.viewMatrix));
-    ssrShader.setMat3("inverseViewNormalMatrix", glm::inverse(glm::transpose(glm::inverse(player.viewMatrix))));
+    //ssrShader.setMat4("inverseViewMatrix", glm::inverse(player.viewMatrix));
+    //ssrShader.setMat3("inverseViewNormalMatrix", glm::inverse(glm::transpose(glm::inverse(player.viewMatrix))));
     //ssrShader.setMat4("invProjection", glm::inverse(projection));
     //ssrShader.setMat4("view", player.viewMatrix);
 
@@ -700,8 +713,11 @@ void RenderSystem::Update(float deltaTime)
     glDisable(GL_DEPTH_TEST);
     glDrawArrays(GL_TRIANGLES, 0, 6);
 
+    glPopDebugGroup();
 
     // blur the ssr texture
+
+    glPushDebugGroup(GL_DEBUG_SOURCE_APPLICATION, 0, -1, "SSR Blur Pass");
 
     glBindFramebuffer(GL_FRAMEBUFFER, RenderingUtil::mBoxBlurFBO);
     glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
@@ -717,6 +733,8 @@ void RenderSystem::Update(float deltaTime)
     glBindVertexArray(RenderingUtil::mScreenQuadVAO);
     glDisable(GL_DEPTH_TEST);
     glDrawArrays(GL_TRIANGLES, 0, 6);
+
+    glPopDebugGroup();
 
     // ------------------------------ POST PROCESSING PASS -----------------------------------------------------------
 
@@ -757,6 +775,8 @@ void RenderSystem::voxelizeScene(glm::vec3 camPos, glm::mat4 dirLightSpaceMatrix
 {
     if (true)
     {
+        glPushDebugGroup(GL_DEBUG_SOURCE_APPLICATION, 0, -1, "Voxelization");
+
         glBindTexture(GL_TEXTURE_3D, RenderingUtil::mVoxelTexture);
         float clearColor[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
         glClearTexImage(RenderingUtil::mVoxelTexture, 0, GL_RGBA, GL_HALF_FLOAT, clearColor);
@@ -832,5 +852,7 @@ void RenderSystem::voxelizeScene(glm::vec3 camPos, glm::mat4 dirLightSpaceMatrix
 
         glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
         //glEnable(GL_DEPTH_TEST);
+
+        glPopDebugGroup();
     }
 }

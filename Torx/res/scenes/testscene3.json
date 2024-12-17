@@ -1,0 +1,1730 @@
+{
+    "config": {
+        "environmentMap": "lilienstein_2k.hdr",
+        "ssr": {
+            "ssrMaxBlurDistance": 10.958000183105469,
+            "ssrMaxDistance": 15.0,
+            "ssrResolution": 0.3179999887943268,
+            "ssrSpecularBias": 1.0,
+            "ssrSteps": 8,
+            "ssrThickness": 0.6430000066757202
+        },
+        "vxgi": {
+            "diffuseConeSpread": 2.4140000343322754,
+            "specularConeMaxDistance": 1.0,
+            "specularConeOriginOffset": 0.800000011920929,
+            "specularStepSizeMultiplier": 1.0,
+            "voxelGridDimensions": 64,
+            "voxelizationAreaSize": 16.27400016784668,
+            "vxSpecularBias": 1.0,
+            "vxgi": true
+        }
+    },
+    "entities": [
+        {
+            "components": {
+                "light": {
+                    "color": [
+                        1.0,
+                        1.0,
+                        1.0
+                    ],
+                    "direction": [
+                        0.0853181853890419,
+                        -0.048849932849407196,
+                        -0.9951555132865906
+                    ],
+                    "innerCutoff": 12.5,
+                    "isDirty": false,
+                    "offset": [
+                        0.0,
+                        0.0,
+                        0.0
+                    ],
+                    "outerCutoff": 17.5,
+                    "radius": 0.0,
+                    "shadowCaster": false,
+                    "strength": 7.099999904632568,
+                    "type": 2
+                },
+                "player": {
+                    "flashlightOn": false,
+                    "movementSpeed": 3.0
+                },
+                "transform": {
+                    "position": [
+                        0.07714022696018219,
+                        1.648519515991211,
+                        0.4558091461658478
+                    ],
+                    "rotation": [
+                        -0.9987876415252686,
+                        0.02440992370247841,
+                        0.04273639991879463,
+                        0.0010444584768265486
+                    ],
+                    "scale": [
+                        0.0,
+                        0.0,
+                        0.0
+                    ]
+                }
+            },
+            "id": 0
+        },
+        {
+            "components": {
+                "mesh": {
+                    "meshType": "quad",
+                    "texture": "office-carpet-fabric",
+                    "textureScaling": [
+                        5.4730000495910645,
+                        5.318999767303467
+                    ]
+                },
+                "rigidbody": {
+                    "mass": 0.0
+                },
+                "transform": {
+                    "position": [
+                        -10.0,
+                        0.0,
+                        0.0
+                    ],
+                    "rotation": [
+                        0.7071068286895752,
+                        -0.7071068286895752,
+                        -0.0,
+                        0.0
+                    ],
+                    "scale": [
+                        10.0,
+                        10.0,
+                        10.0
+                    ]
+                }
+            },
+            "id": 1
+        },
+        {
+            "components": {
+                "mesh": {
+                    "meshType": "cube",
+                    "texture": "darkmarble",
+                    "textureScaling": [
+                        1.0,
+                        1.0
+                    ]
+                },
+                "rigidbody": {
+                    "mass": 1.0
+                },
+                "transform": {
+                    "position": [
+                        -12.978109359741211,
+                        0.19500002264976501,
+                        1.4413068294525146
+                    ],
+                    "rotation": [
+                        0.7036377787590027,
+                        0.06995686143636703,
+                        0.06995667517185211,
+                        0.7036376595497131
+                    ],
+                    "scale": [
+                        0.3799999952316284,
+                        0.3799999952316284,
+                        0.3799999952316284
+                    ]
+                }
+            },
+            "id": 2
+        },
+        {
+            "components": {
+                "mesh": {
+                    "meshType": "cube",
+                    "texture": "darkmarble",
+                    "textureScaling": [
+                        1.0,
+                        1.0
+                    ]
+                },
+                "rigidbody": {
+                    "mass": 1.0
+                },
+                "transform": {
+                    "position": [
+                        1.303512692451477,
+                        0.19500000774860382,
+                        4.360058784484863
+                    ],
+                    "rotation": [
+                        -0.2646314203739166,
+                        6.794763862671971e-08,
+                        0.964349627494812,
+                        -1.7581855971116056e-08
+                    ],
+                    "scale": [
+                        0.3799999952316284,
+                        0.3799999952316284,
+                        0.3799999952316284
+                    ]
+                }
+            },
+            "id": 3
+        },
+        {
+            "components": {
+                "mesh": {
+                    "meshType": "cube",
+                    "texture": "darkmarble",
+                    "textureScaling": [
+                        1.0,
+                        1.0
+                    ]
+                },
+                "rigidbody": {
+                    "mass": 1.0
+                },
+                "transform": {
+                    "position": [
+                        0.7169615626335144,
+                        0.19500000774860382,
+                        4.639965057373047
+                    ],
+                    "rotation": [
+                        -0.21908512711524963,
+                        0.6723114848136902,
+                        -0.6723101139068604,
+                        0.21908459067344666
+                    ],
+                    "scale": [
+                        0.3799999952316284,
+                        0.3799999952316284,
+                        0.3799999952316284
+                    ]
+                }
+            },
+            "id": 4
+        },
+        {
+            "components": {
+                "mesh": {
+                    "meshType": "cube",
+                    "texture": "darkmarble",
+                    "textureScaling": [
+                        1.0,
+                        1.0
+                    ]
+                },
+                "rigidbody": {
+                    "mass": 1.0
+                },
+                "transform": {
+                    "position": [
+                        -13.940543174743652,
+                        2.694999933242798,
+                        -0.4102911651134491
+                    ],
+                    "rotation": [
+                        0.7531536817550659,
+                        3.9295844800335544e-08,
+                        0.657844603061676,
+                        -3.5306857171235606e-07
+                    ],
+                    "scale": [
+                        0.3799999952316284,
+                        0.3799999952316284,
+                        0.3799999952316284
+                    ]
+                }
+            },
+            "id": 5
+        },
+        {
+            "components": {
+                "mesh": {
+                    "meshType": "cube",
+                    "texture": "darkmarble",
+                    "textureScaling": [
+                        1.0,
+                        1.0
+                    ]
+                },
+                "rigidbody": {
+                    "mass": 1.0
+                },
+                "transform": {
+                    "position": [
+                        -14.673385620117188,
+                        0.19499993324279785,
+                        3.2779855728149414
+                    ],
+                    "rotation": [
+                        -0.4112260937690735,
+                        0.41122594475746155,
+                        0.5752329230308533,
+                        0.5752333402633667
+                    ],
+                    "scale": [
+                        0.3799999952316284,
+                        0.3799999952316284,
+                        0.3799999952316284
+                    ]
+                }
+            },
+            "id": 6
+        },
+        {
+            "components": {
+                "mesh": {
+                    "meshType": "cube",
+                    "texture": "darkmarble",
+                    "textureScaling": [
+                        1.0,
+                        1.0
+                    ]
+                },
+                "rigidbody": {
+                    "mass": 1.0
+                },
+                "transform": {
+                    "position": [
+                        3.170602798461914,
+                        0.19499996304512024,
+                        4.571866989135742
+                    ],
+                    "rotation": [
+                        0.11569304764270782,
+                        0.11569313704967499,
+                        0.6975781321525574,
+                        -0.697577953338623
+                    ],
+                    "scale": [
+                        0.3799999952316284,
+                        0.3799999952316284,
+                        0.3799999952316284
+                    ]
+                }
+            },
+            "id": 7
+        },
+        {
+            "components": {
+                "mesh": {
+                    "meshType": "cube",
+                    "texture": "darkmarble",
+                    "textureScaling": [
+                        1.0,
+                        1.0
+                    ]
+                },
+                "rigidbody": {
+                    "mass": 1.0
+                },
+                "transform": {
+                    "position": [
+                        3.723666191101074,
+                        0.19499991834163666,
+                        4.666414260864258
+                    ],
+                    "rotation": [
+                        0.6751897931098938,
+                        0.6751897931098938,
+                        0.21004457771778107,
+                        -0.21004466712474823
+                    ],
+                    "scale": [
+                        0.3799999952316284,
+                        0.3799999952316284,
+                        0.3799999952316284
+                    ]
+                }
+            },
+            "id": 8
+        },
+        {
+            "components": {
+                "mesh": {
+                    "meshType": "cube",
+                    "texture": "darkmarble",
+                    "textureScaling": [
+                        1.0,
+                        1.0
+                    ]
+                },
+                "rigidbody": {
+                    "mass": 1.0
+                },
+                "transform": {
+                    "position": [
+                        4.77729606628418,
+                        0.19499969482421875,
+                        4.797102928161621
+                    ],
+                    "rotation": [
+                        -0.007244348060339689,
+                        0.7070688605308533,
+                        0.7070704698562622,
+                        -0.007244333159178495
+                    ],
+                    "scale": [
+                        0.3799999952316284,
+                        0.3799999952316284,
+                        0.3799999952316284
+                    ]
+                }
+            },
+            "id": 9
+        },
+        {
+            "components": {
+                "mesh": {
+                    "meshType": "cube",
+                    "texture": "christmas-wrapping-paper",
+                    "textureScaling": [
+                        1.0,
+                        1.0
+                    ]
+                },
+                "rigidbody": {
+                    "mass": 1.0
+                },
+                "transform": {
+                    "position": [
+                        -2.631147623062134,
+                        0.5977999567985535,
+                        -7.074912071228027
+                    ],
+                    "rotation": [
+                        0.6055957078933716,
+                        0.605595588684082,
+                        -0.3650397062301636,
+                        0.36503955721855164
+                    ],
+                    "scale": [
+                        1.18559992313385,
+                        1.18559992313385,
+                        1.18559992313385
+                    ]
+                }
+            },
+            "id": 10
+        },
+        {
+            "components": {
+                "mesh": {
+                    "meshType": "quad",
+                    "texture": "whitepaper",
+                    "textureScaling": [
+                        5.4730000495910645,
+                        5.318999767303467
+                    ]
+                },
+                "rigidbody": {
+                    "mass": 0.0
+                },
+                "transform": {
+                    "position": [
+                        0.0,
+                        -0.0,
+                        -7.5
+                    ],
+                    "rotation": [
+                        0.7071068286895752,
+                        -0.7071068286895752,
+                        -0.0,
+                        0.0
+                    ],
+                    "scale": [
+                        10.0,
+                        5.0,
+                        1.0
+                    ]
+                }
+            },
+            "id": 11
+        },
+        {
+            "components": {
+                "light": {
+                    "color": [
+                        1.0,
+                        1.0,
+                        1.0
+                    ],
+                    "direction": [
+                        0.0,
+                        0.0,
+                        0.0
+                    ],
+                    "innerCutoff": 0.0,
+                    "isDirty": false,
+                    "offset": [
+                        0.0,
+                        -0.4819999933242798,
+                        0.0
+                    ],
+                    "outerCutoff": 0.0,
+                    "radius": 6.123390197753906,
+                    "shadowCaster": true,
+                    "strength": 3.4000000953674316,
+                    "type": 1
+                },
+                "model": {
+                    "hasAOTexture": true,
+                    "modelName": "ceilingLamp1"
+                },
+                "rigidbody": {
+                    "mass": 0.0
+                },
+                "transform": {
+                    "position": [
+                        -9.936264038085938,
+                        2.4207143783569336,
+                        -0.23917388916015625
+                    ],
+                    "rotation": [
+                        1.0,
+                        0.0,
+                        0.0,
+                        0.0
+                    ],
+                    "scale": [
+                        0.29325002431869507,
+                        0.29325002431869507,
+                        0.29325002431869507
+                    ]
+                }
+            },
+            "id": 12
+        },
+        {
+            "components": {
+                "mesh": {
+                    "meshType": "quad",
+                    "texture": "art-deco-scales-wallpaper",
+                    "textureScaling": [
+                        7.0,
+                        5.0
+                    ]
+                },
+                "rigidbody": {
+                    "mass": 0.0
+                },
+                "transform": {
+                    "position": [
+                        8.5,
+                        1.25,
+                        -2.0
+                    ],
+                    "rotation": [
+                        -4.371138828673793e-08,
+                        -0.0,
+                        0.0,
+                        -1.0
+                    ],
+                    "scale": [
+                        7.0,
+                        2.5,
+                        1.0
+                    ]
+                }
+            },
+            "id": 13
+        },
+        {
+            "components": {
+                "mesh": {
+                    "meshType": "quad",
+                    "texture": "art-deco-scales-wallpaper",
+                    "textureScaling": [
+                        0.20000000298023224,
+                        5.0
+                    ]
+                },
+                "rigidbody": {
+                    "mass": 0.0
+                },
+                "transform": {
+                    "position": [
+                        0.10000000149011612,
+                        1.25,
+                        -5.0
+                    ],
+                    "rotation": [
+                        -4.371138828673793e-08,
+                        -0.0,
+                        0.0,
+                        -1.0
+                    ],
+                    "scale": [
+                        0.20000000298023224,
+                        2.5,
+                        1.0
+                    ]
+                }
+            },
+            "id": 14
+        },
+        {
+            "components": {
+                "mesh": {
+                    "meshType": "quad",
+                    "texture": "whitepaper",
+                    "textureScaling": [
+                        5.0,
+                        5.0
+                    ]
+                },
+                "rigidbody": {
+                    "mass": 0.0
+                },
+                "transform": {
+                    "position": [
+                        -5.0,
+                        1.25,
+                        -7.5
+                    ],
+                    "rotation": [
+                        -3.090862321641907e-08,
+                        0.7071068286895752,
+                        3.090862321641907e-08,
+                        0.7071068286895752
+                    ],
+                    "scale": [
+                        5.0,
+                        2.5,
+                        1.0
+                    ]
+                }
+            },
+            "id": 15
+        },
+        {
+            "components": {
+                "mesh": {
+                    "meshType": "quad",
+                    "texture": "art-deco-scales-wallpaper",
+                    "textureScaling": [
+                        5.0,
+                        5.0
+                    ]
+                },
+                "rigidbody": {
+                    "mass": 0.0
+                },
+                "transform": {
+                    "position": [
+                        5.0,
+                        1.25,
+                        -3.5
+                    ],
+                    "rotation": [
+                        -3.090862321641907e-08,
+                        0.7071068286895752,
+                        -3.090862321641907e-08,
+                        -0.7071068286895752
+                    ],
+                    "scale": [
+                        3.0,
+                        2.5,
+                        1.0
+                    ]
+                }
+            },
+            "id": 16
+        },
+        {
+            "components": {
+                "mesh": {
+                    "meshType": "quad",
+                    "texture": "whitepaper",
+                    "textureScaling": [
+                        5.0,
+                        5.0
+                    ]
+                },
+                "rigidbody": {
+                    "mass": 0.0
+                },
+                "transform": {
+                    "position": [
+                        -0.0,
+                        1.25,
+                        -7.5
+                    ],
+                    "rotation": [
+                        -3.090862321641907e-08,
+                        0.7071068286895752,
+                        -3.090862321641907e-08,
+                        -0.7071068286895752
+                    ],
+                    "scale": [
+                        5.0,
+                        2.5,
+                        1.0
+                    ]
+                }
+            },
+            "id": 17
+        },
+        {
+            "components": {
+                "mesh": {
+                    "meshType": "quad",
+                    "texture": "whitepaper",
+                    "textureScaling": [
+                        5.0,
+                        5.0
+                    ]
+                },
+                "rigidbody": {
+                    "mass": 0.0
+                },
+                "transform": {
+                    "position": [
+                        0.20000000298023224,
+                        1.25,
+                        -7.5
+                    ],
+                    "rotation": [
+                        -3.090862321641907e-08,
+                        0.7071068286895752,
+                        3.090862321641907e-08,
+                        0.7071068286895752
+                    ],
+                    "scale": [
+                        5.0,
+                        2.5,
+                        1.0
+                    ]
+                }
+            },
+            "id": 18
+        },
+        {
+            "components": {
+                "mesh": {
+                    "meshType": "quad",
+                    "texture": "older-wood-flooring",
+                    "textureScaling": [
+                        5.4730000495910645,
+                        5.318999767303467
+                    ]
+                },
+                "rigidbody": {
+                    "mass": 0.0
+                },
+                "transform": {
+                    "position": [
+                        8.5,
+                        0.0,
+                        1.5
+                    ],
+                    "rotation": [
+                        0.7071068286895752,
+                        -0.7071068286895752,
+                        -0.0,
+                        0.0
+                    ],
+                    "scale": [
+                        7.0,
+                        7.0,
+                        10.0
+                    ]
+                }
+            },
+            "id": 19
+        },
+        {
+            "components": {
+                "mesh": {
+                    "meshType": "quad",
+                    "texture": "office-carpet-fabric",
+                    "textureScaling": [
+                        5.0,
+                        5.0
+                    ]
+                },
+                "rigidbody": {
+                    "mass": 0.0
+                },
+                "transform": {
+                    "position": [
+                        -2.5,
+                        1.25,
+                        -10.0
+                    ],
+                    "rotation": [
+                        -4.371138828673793e-08,
+                        -0.0,
+                        0.0,
+                        -1.0
+                    ],
+                    "scale": [
+                        5.0,
+                        2.5,
+                        1.0
+                    ]
+                }
+            },
+            "id": 20
+        },
+        {
+            "components": {
+                "mesh": {
+                    "meshType": "quad",
+                    "texture": "office-carpet-fabric",
+                    "textureScaling": [
+                        10.0,
+                        5.0
+                    ]
+                },
+                "rigidbody": {
+                    "mass": 0.0
+                },
+                "transform": {
+                    "position": [
+                        -10.0,
+                        1.25,
+                        -5.0
+                    ],
+                    "rotation": [
+                        -4.371138828673793e-08,
+                        -0.0,
+                        0.0,
+                        -1.0
+                    ],
+                    "scale": [
+                        10.0,
+                        2.5,
+                        1.0
+                    ]
+                }
+            },
+            "id": 21
+        },
+        {
+            "components": {
+                "mesh": {
+                    "meshType": "quad",
+                    "texture": "art-deco-scales-wallpaper",
+                    "textureScaling": [
+                        10.0,
+                        5.0
+                    ]
+                },
+                "rigidbody": {
+                    "mass": 0.0
+                },
+                "transform": {
+                    "position": [
+                        0.0,
+                        1.25,
+                        5.0
+                    ],
+                    "rotation": [
+                        -4.371138828673793e-08,
+                        1.0,
+                        0.0,
+                        0.0
+                    ],
+                    "scale": [
+                        10.0,
+                        2.5,
+                        1.0
+                    ]
+                }
+            },
+            "id": 22
+        },
+        {
+            "components": {
+                "mesh": {
+                    "meshType": "quad",
+                    "texture": "office-carpet-fabric",
+                    "textureScaling": [
+                        5.0,
+                        5.0
+                    ]
+                },
+                "rigidbody": {
+                    "mass": 0.0
+                },
+                "transform": {
+                    "position": [
+                        2.5,
+                        1.25,
+                        -10.0
+                    ],
+                    "rotation": [
+                        -4.371138828673793e-08,
+                        -0.0,
+                        0.0,
+                        -1.0
+                    ],
+                    "scale": [
+                        5.0,
+                        2.5,
+                        1.0
+                    ]
+                }
+            },
+            "id": 23
+        },
+        {
+            "components": {
+                "mesh": {
+                    "meshType": "quad",
+                    "texture": "art-deco-scales-wallpaper",
+                    "textureScaling": [
+                        7.0,
+                        5.0
+                    ]
+                },
+                "rigidbody": {
+                    "mass": 0.0
+                },
+                "transform": {
+                    "position": [
+                        8.5,
+                        1.25,
+                        5.0
+                    ],
+                    "rotation": [
+                        -4.371138828673793e-08,
+                        -1.0,
+                        0.0,
+                        -0.0
+                    ],
+                    "scale": [
+                        7.0,
+                        2.5,
+                        1.0
+                    ]
+                }
+            },
+            "id": 24
+        },
+        {
+            "components": {
+                "mesh": {
+                    "meshType": "quad",
+                    "texture": "office-carpet-fabric",
+                    "textureScaling": [
+                        2.0,
+                        5.0
+                    ]
+                },
+                "rigidbody": {
+                    "mass": 0.0
+                },
+                "transform": {
+                    "position": [
+                        -15.0,
+                        1.25,
+                        -4.0
+                    ],
+                    "rotation": [
+                        -3.090862321641907e-08,
+                        0.7071068286895752,
+                        3.090862321641907e-08,
+                        0.7071068286895752
+                    ],
+                    "scale": [
+                        2.0,
+                        2.5,
+                        1.0
+                    ]
+                }
+            },
+            "id": 25
+        },
+        {
+            "components": {
+                "mesh": {
+                    "meshType": "quad",
+                    "texture": "whitepaper",
+                    "textureScaling": [
+                        5.0,
+                        5.0
+                    ]
+                },
+                "rigidbody": {
+                    "mass": 0.0
+                },
+                "transform": {
+                    "position": [
+                        5.0,
+                        1.25,
+                        -7.5
+                    ],
+                    "rotation": [
+                        -3.090862321641907e-08,
+                        0.7071068286895752,
+                        -3.090862321641907e-08,
+                        -0.7071068286895752
+                    ],
+                    "scale": [
+                        5.0,
+                        2.5,
+                        1.0
+                    ]
+                }
+            },
+            "id": 26
+        },
+        {
+            "components": {
+                "mesh": {
+                    "meshType": "quad",
+                    "texture": "office-carpet-fabric",
+                    "textureScaling": [
+                        5.4730000495910645,
+                        5.318999767303467
+                    ]
+                },
+                "rigidbody": {
+                    "mass": 0.0
+                },
+                "transform": {
+                    "position": [
+                        -10.0,
+                        2.5,
+                        -0.0
+                    ],
+                    "rotation": [
+                        -3.090862321641907e-08,
+                        3.090862321641907e-08,
+                        0.7071068286895752,
+                        -0.7071068286895752
+                    ],
+                    "scale": [
+                        10.0,
+                        10.0,
+                        10.0
+                    ]
+                }
+            },
+            "id": 27
+        },
+        {
+            "components": {
+                "mesh": {
+                    "meshType": "quad",
+                    "texture": "grainy-concrete",
+                    "textureScaling": [
+                        5.473999977111816,
+                        5.473999977111816
+                    ]
+                },
+                "rigidbody": {
+                    "mass": 0.0
+                },
+                "transform": {
+                    "position": [
+                        0.0,
+                        2.5,
+                        -7.5
+                    ],
+                    "rotation": [
+                        0.7071068286895752,
+                        0.7071068286895752,
+                        0.0,
+                        0.0
+                    ],
+                    "scale": [
+                        10.0,
+                        5.0,
+                        10.0
+                    ]
+                }
+            },
+            "id": 28
+        },
+        {
+            "components": {
+                "mesh": {
+                    "meshType": "quad",
+                    "texture": "art-deco-scales-wallpaper",
+                    "textureScaling": [
+                        7.0,
+                        5.0
+                    ]
+                },
+                "rigidbody": {
+                    "mass": 0.0
+                },
+                "transform": {
+                    "position": [
+                        12.0,
+                        1.25,
+                        1.5
+                    ],
+                    "rotation": [
+                        -3.090862321641907e-08,
+                        0.7071068286895752,
+                        -3.090862321641907e-08,
+                        -0.7071068286895752
+                    ],
+                    "scale": [
+                        7.0,
+                        2.5,
+                        1.0
+                    ]
+                }
+            },
+            "id": 29
+        },
+        {
+            "components": {
+                "mesh": {
+                    "meshType": "quad",
+                    "texture": "office-carpet-fabric",
+                    "textureScaling": [
+                        2.0,
+                        5.0
+                    ]
+                },
+                "rigidbody": {
+                    "mass": 0.0
+                },
+                "transform": {
+                    "position": [
+                        -15.0,
+                        1.25,
+                        4.0
+                    ],
+                    "rotation": [
+                        -3.090862321641907e-08,
+                        0.7071068286895752,
+                        3.090862321641907e-08,
+                        0.7071068286895752
+                    ],
+                    "scale": [
+                        2.0,
+                        2.5,
+                        1.0
+                    ]
+                }
+            },
+            "id": 30
+        },
+        {
+            "components": {
+                "mesh": {
+                    "meshType": "quad",
+                    "texture": "office-carpet-fabric",
+                    "textureScaling": [
+                        1.0,
+                        1.0
+                    ]
+                },
+                "rigidbody": {
+                    "mass": 0.0
+                },
+                "transform": {
+                    "position": [
+                        -15.0,
+                        2.25,
+                        -2.5
+                    ],
+                    "rotation": [
+                        -3.090862321641907e-08,
+                        0.7071068286895752,
+                        3.090862321641907e-08,
+                        0.7071068286895752
+                    ],
+                    "scale": [
+                        1.0,
+                        0.5,
+                        1.0
+                    ]
+                }
+            },
+            "id": 31
+        },
+        {
+            "components": {
+                "mesh": {
+                    "meshType": "quad",
+                    "texture": "office-carpet-fabric",
+                    "textureScaling": [
+                        1.0,
+                        1.0
+                    ]
+                },
+                "rigidbody": {
+                    "mass": 0.0
+                },
+                "transform": {
+                    "position": [
+                        -15.0,
+                        0.25,
+                        -2.5
+                    ],
+                    "rotation": [
+                        -3.090862321641907e-08,
+                        0.7071068286895752,
+                        3.090862321641907e-08,
+                        0.7071068286895752
+                    ],
+                    "scale": [
+                        1.0,
+                        0.5,
+                        1.0
+                    ]
+                }
+            },
+            "id": 32
+        },
+        {
+            "components": {
+                "mesh": {
+                    "meshType": "quad",
+                    "texture": "office-carpet-fabric",
+                    "textureScaling": [
+                        1.0,
+                        1.0
+                    ]
+                },
+                "rigidbody": {
+                    "mass": 0.0
+                },
+                "transform": {
+                    "position": [
+                        -15.0,
+                        2.25,
+                        2.5
+                    ],
+                    "rotation": [
+                        -3.090862321641907e-08,
+                        0.7071068286895752,
+                        3.090862321641907e-08,
+                        0.7071068286895752
+                    ],
+                    "scale": [
+                        1.0,
+                        0.5,
+                        1.0
+                    ]
+                }
+            },
+            "id": 33
+        },
+        {
+            "components": {
+                "mesh": {
+                    "meshType": "quad",
+                    "texture": "office-carpet-fabric",
+                    "textureScaling": [
+                        1.0,
+                        1.0
+                    ]
+                },
+                "rigidbody": {
+                    "mass": 0.0
+                },
+                "transform": {
+                    "position": [
+                        -15.0,
+                        0.25,
+                        2.5
+                    ],
+                    "rotation": [
+                        -3.090862321641907e-08,
+                        0.7071068286895752,
+                        3.090862321641907e-08,
+                        0.7071068286895752
+                    ],
+                    "scale": [
+                        1.0,
+                        0.5,
+                        1.0
+                    ]
+                }
+            },
+            "id": 34
+        },
+        {
+            "components": {
+                "mesh": {
+                    "meshType": "quad",
+                    "texture": "grainy-concrete",
+                    "textureScaling": [
+                        5.473999977111816,
+                        5.473999977111816
+                    ]
+                },
+                "rigidbody": {
+                    "mass": 0.0
+                },
+                "transform": {
+                    "position": [
+                        8.5,
+                        2.5,
+                        1.5
+                    ],
+                    "rotation": [
+                        0.7071068286895752,
+                        0.7071068286895752,
+                        0.0,
+                        0.0
+                    ],
+                    "scale": [
+                        7.0,
+                        7.0,
+                        10.0
+                    ]
+                }
+            },
+            "id": 35
+        },
+        {
+            "components": {
+                "mesh": {
+                    "meshType": "quad",
+                    "texture": "office-carpet-fabric",
+                    "textureScaling": [
+                        3.0,
+                        5.0
+                    ]
+                },
+                "rigidbody": {
+                    "mass": 0.0
+                },
+                "transform": {
+                    "position": [
+                        -15.0,
+                        1.25,
+                        -2.25
+                    ],
+                    "rotation": [
+                        -3.090862321641907e-08,
+                        0.7071068286895752,
+                        3.090862321641907e-08,
+                        0.7071068286895752
+                    ],
+                    "scale": [
+                        4.0,
+                        2.5,
+                        1.0
+                    ]
+                }
+            },
+            "id": 36
+        },
+        {
+            "components": {
+                "mesh": {
+                    "meshType": "cube",
+                    "texture": "christmas-wrapping-paper",
+                    "textureScaling": [
+                        1.0,
+                        1.0
+                    ]
+                },
+                "rigidbody": {
+                    "mass": 0.0
+                },
+                "transform": {
+                    "position": [
+                        -11.5,
+                        1.0,
+                        -1.25
+                    ],
+                    "rotation": [
+                        1.0,
+                        0.0,
+                        0.0,
+                        0.0
+                    ],
+                    "scale": [
+                        1.0,
+                        2.4299161434173584,
+                        1.0
+                    ]
+                }
+            },
+            "id": 37
+        },
+        {
+            "components": {
+                "mesh": {
+                    "meshType": "cube",
+                    "texture": "plasticpattern1",
+                    "textureScaling": [
+                        1.0,
+                        1.0
+                    ]
+                },
+                "rigidbody": {
+                    "mass": 0.0
+                },
+                "transform": {
+                    "position": [
+                        -9.25,
+                        1.0,
+                        3.25
+                    ],
+                    "rotation": [
+                        0.8125987648963928,
+                        0.0,
+                        0.5828235149383545,
+                        0.0
+                    ],
+                    "scale": [
+                        1.0,
+                        2.4299161434173584,
+                        1.0
+                    ]
+                }
+            },
+            "id": 38
+        },
+        {
+            "components": {
+                "mesh": {
+                    "meshType": "quad",
+                    "texture": "office-carpet-fabric",
+                    "textureScaling": [
+                        10.0,
+                        5.0
+                    ]
+                },
+                "rigidbody": {
+                    "mass": 0.0
+                },
+                "transform": {
+                    "position": [
+                        -10.0,
+                        1.25,
+                        5.0
+                    ],
+                    "rotation": [
+                        -4.371138828673793e-08,
+                        1.0,
+                        0.0,
+                        0.0
+                    ],
+                    "scale": [
+                        10.0,
+                        2.5,
+                        1.0
+                    ]
+                }
+            },
+            "id": 39
+        },
+        {
+            "components": {
+                "mesh": {
+                    "meshType": "quad",
+                    "texture": "reinforced-metal",
+                    "textureScaling": [
+                        5.4730000495910645,
+                        5.318999767303467
+                    ]
+                },
+                "rigidbody": {
+                    "mass": 0.0
+                },
+                "transform": {
+                    "position": [
+                        0.0,
+                        0.0,
+                        -0.0
+                    ],
+                    "rotation": [
+                        0.7071068286895752,
+                        -0.7071068286895752,
+                        -0.0,
+                        0.0
+                    ],
+                    "scale": [
+                        10.0,
+                        10.0,
+                        10.0
+                    ]
+                }
+            },
+            "id": 40
+        },
+        {
+            "components": {
+                "mesh": {
+                    "meshType": "quad",
+                    "texture": "office-carpet-fabric",
+                    "textureScaling": [
+                        3.0,
+                        5.0
+                    ]
+                },
+                "rigidbody": {
+                    "mass": 0.0
+                },
+                "transform": {
+                    "position": [
+                        -15.0,
+                        1.25,
+                        0.0
+                    ],
+                    "rotation": [
+                        -3.090862321641907e-08,
+                        0.7071068286895752,
+                        3.090862321641907e-08,
+                        0.7071068286895752
+                    ],
+                    "scale": [
+                        4.0,
+                        2.5,
+                        1.0
+                    ]
+                }
+            },
+            "id": 41
+        },
+        {
+            "components": {
+                "mesh": {
+                    "meshType": "quad",
+                    "texture": "office-carpet-fabric",
+                    "textureScaling": [
+                        3.0,
+                        5.0
+                    ]
+                },
+                "rigidbody": {
+                    "mass": 0.0
+                },
+                "transform": {
+                    "position": [
+                        -15.0,
+                        1.25,
+                        1.5
+                    ],
+                    "rotation": [
+                        -3.090862321641907e-08,
+                        0.7071068286895752,
+                        3.090862321641907e-08,
+                        0.7071068286895752
+                    ],
+                    "scale": [
+                        4.0,
+                        2.5,
+                        1.0
+                    ]
+                }
+            },
+            "id": 42
+        },
+        {
+            "components": {
+                "mesh": {
+                    "meshType": "cube",
+                    "texture": "plasticpattern1",
+                    "textureScaling": [
+                        1.0,
+                        1.0
+                    ]
+                },
+                "rigidbody": {
+                    "mass": 1.0
+                },
+                "transform": {
+                    "position": [
+                        2.529712438583374,
+                        0.5977998375892639,
+                        -6.876556396484375
+                    ],
+                    "rotation": [
+                        0.5460376739501953,
+                        0.5460373163223267,
+                        -0.44926974177360535,
+                        0.44926917552948
+                    ],
+                    "scale": [
+                        1.18559992313385,
+                        1.18559992313385,
+                        1.18559992313385
+                    ]
+                }
+            },
+            "id": 43
+        },
+        {
+            "components": {
+                "light": {
+                    "color": [
+                        1.0,
+                        1.0,
+                        1.0
+                    ],
+                    "direction": [
+                        0.0,
+                        0.0,
+                        0.0
+                    ],
+                    "innerCutoff": 0.0,
+                    "isDirty": false,
+                    "offset": [
+                        0.0,
+                        -0.4819999933242798,
+                        0.0
+                    ],
+                    "outerCutoff": 0.0,
+                    "radius": 2.5,
+                    "shadowCaster": false,
+                    "strength": 16.549999237060547,
+                    "type": 1
+                },
+                "model": {
+                    "hasAOTexture": true,
+                    "modelName": "ceilingLamp1"
+                },
+                "rigidbody": {
+                    "mass": 0.0
+                },
+                "transform": {
+                    "position": [
+                        2.460421562194824,
+                        2.2062079906463623,
+                        -5.009850978851318
+                    ],
+                    "rotation": [
+                        1.0,
+                        0.0,
+                        0.0,
+                        0.0
+                    ],
+                    "scale": [
+                        0.29325002431869507,
+                        0.29325002431869507,
+                        0.29325002431869507
+                    ]
+                }
+            },
+            "id": 44
+        },
+        {
+            "components": {
+                "light": {
+                    "color": [
+                        1.0,
+                        1.0,
+                        1.0
+                    ],
+                    "direction": [
+                        0.0,
+                        0.0,
+                        0.0
+                    ],
+                    "innerCutoff": 0.0,
+                    "isDirty": false,
+                    "offset": [
+                        0.0,
+                        -0.4819999933242798,
+                        0.0
+                    ],
+                    "outerCutoff": 0.0,
+                    "radius": 2.700010061264038,
+                    "shadowCaster": false,
+                    "strength": 23.200000762939453,
+                    "type": 1
+                },
+                "model": {
+                    "hasAOTexture": true,
+                    "modelName": "ceilingLamp1"
+                },
+                "rigidbody": {
+                    "mass": 0.0
+                },
+                "transform": {
+                    "position": [
+                        -2.5874545574188232,
+                        2.2062079906463623,
+                        -5.052359580993652
+                    ],
+                    "rotation": [
+                        1.0,
+                        0.0,
+                        0.0,
+                        0.0
+                    ],
+                    "scale": [
+                        0.29325002431869507,
+                        0.29325002431869507,
+                        0.29325002431869507
+                    ]
+                }
+            },
+            "id": 45
+        },
+        {
+            "components": {
+                "mesh": {
+                    "meshType": "quad",
+                    "texture": "office-carpet-fabric",
+                    "textureScaling": [
+                        5.4730000495910645,
+                        5.318999767303467
+                    ]
+                },
+                "rigidbody": {
+                    "mass": 0.0
+                },
+                "transform": {
+                    "position": [
+                        0.0,
+                        2.5,
+                        0.0
+                    ],
+                    "rotation": [
+                        -3.090862321641907e-08,
+                        3.090862321641907e-08,
+                        0.7071068286895752,
+                        -0.7071068286895752
+                    ],
+                    "scale": [
+                        10.0,
+                        10.0,
+                        10.0
+                    ]
+                }
+            },
+            "id": 46
+        },
+        {
+            "components": {
+                "model": {
+                    "hasAOTexture": true,
+                    "modelName": "camera"
+                },
+                "rigidbody": {
+                    "mass": 0.0
+                },
+                "transform": {
+                    "position": [
+                        2.395829439163208,
+                        0.894598126411438,
+                        -5.355244159698486
+                    ],
+                    "rotation": [
+                        0.3257793188095093,
+                        0.0,
+                        0.9454458355903625,
+                        0.0
+                    ],
+                    "scale": [
+                        3.929999828338623,
+                        3.929999828338623,
+                        3.929999828338623
+                    ]
+                }
+            },
+            "id": 47
+        }
+    ]
+}

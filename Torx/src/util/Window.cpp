@@ -30,7 +30,7 @@ Window::Window(int width, int height, const char* windowTitle)
 
 	glfwMakeContextCurrent(mWindow);
 	gladLoadGLLoader((GLADloadproc)glfwGetProcAddress);
-	glfwSwapInterval(1);
+	Window::DisableVsync();
 	glfwSetInputMode(mWindow, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 	
 	glfwSetFramebufferSizeCallback(mWindow, framebuffer_size_callback);

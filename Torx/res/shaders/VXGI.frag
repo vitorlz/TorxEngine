@@ -267,11 +267,7 @@ void main()
 
 	Roughness = vec4(vec3(roughness), 1.0);
 	
-	
-	
 	ViewPosition = ViewFragPos;
-	
-	
 	
 	ViewNormals = vec4(normalize(viewNormalMatrix * N), 1.0);
 	DiffuseColor = vec4(Lo + indirectDiffuseContribution, 1.0);

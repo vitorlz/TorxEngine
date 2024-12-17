@@ -8,7 +8,7 @@ uniform sampler2D colorTexture;
 
 // control how blurry the result is
 int size = 8;
-float separation = 2;
+float separation = 1;
 
 void main()
 {

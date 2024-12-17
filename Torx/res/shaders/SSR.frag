@@ -5,8 +5,8 @@ uniform sampler2D gViewNormal;
 uniform sampler2D gRoughness;
 uniform sampler2D gFinalImage;
 //uniform samplerCube skybox;
-uniform mat3 inverseViewNormalMatrix;
-uniform mat4 inverseViewMatrix;
+//uniform mat3 inverseViewNormalMatrix;
+//uniform mat4 inverseViewMatrix;
 //uniform mat4 invView;
 in mat4 Projection;
 //uniform mat4 invProjection;
@@ -118,11 +118,8 @@ void main()
 
     if (depth < 0 && abs(depth) < thickness) 
     {
-       
             hit0 = 1;
             break;
-        
-       
     } 
     else 
     {
@@ -205,12 +202,12 @@ void main()
     
     if(false)
     {
-         FragColor = vec4(mix(vec3(0.0), color.rgb , alpha), alpha);
+        FragColor = vec4(mix(vec3(0.0), color.rgb , alpha), alpha);
     }
     else
     {   
-        FragColor = vec4(mix(vec3(0.0), color.rgb , alpha) * (1 - pow(roughness, 0.5)), alpha);;
-        //vec4(mix(vec3(0.0), color.rgb , alpha) * (1 - pow(roughness, 0.5)), alpha);
+        FragColor = vec4(mix(vec3(0.0), color.rgb , alpha) *  0.25 * (1.0 + roughness), alpha);
+        //vec4(mix(vec3(0.0), color.rgb , alpha) * (1 - pow(roughness   sa, 0.5)), alpha);
     }
   
 
