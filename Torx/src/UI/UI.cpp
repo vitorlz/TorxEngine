@@ -212,7 +212,7 @@ void UI::Update()
         ImGui::SeparatorText("Indirect Diffuse Lighting");
         ImGui::Checkbox("Show indirect diffuse light accumulation", &Common::showDiffuseAccumulation);
         ImGui::Checkbox("Show total indirect diffuse light", &Common::showTotalIndirectDiffuseLight);
-        ImGui::SliderFloat("Diffuse cone spread", &Common::diffuseConeSpread, 0.001f, 5.0f);
+        ImGui::SliderFloat("Diffuse cone spread", &Common::diffuseConeSpread, 0.001f, 20.0f);
 
         ImGui::SeparatorText("Indirect specular lighting");
         ImGui::SliderFloat("Specular bias", &Common::vxSpecularBias, 0.0f, 100.0f);

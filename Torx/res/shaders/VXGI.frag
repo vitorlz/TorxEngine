@@ -145,8 +145,8 @@ void main()
 	
 	ao = 1.0;
 
-	//if(albedoSample.a < 0.5)
-		//discard;
+	if(albedoSample.a < 0.5)
+		discard;
 
 	albedo = albedoSample.rgb;
 

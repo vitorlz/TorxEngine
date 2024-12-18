@@ -213,7 +213,7 @@ void RenderingUtil::CreateMSAAFBO()
     unsigned int msRbo;
     glGenRenderbuffers(1, &msRbo);
     glBindRenderbuffer(GL_RENDERBUFFER, msRbo);
-    glRenderbufferStorageMultisample(GL_RENDERBUFFER, 1, GL_DEPTH32F_STENCIL8, Common::SCR_WIDTH, Common::SCR_HEIGHT);
+    glRenderbufferStorageMultisample(GL_RENDERBUFFER, 1, GL_DEPTH24_STENCIL8, Common::SCR_WIDTH, Common::SCR_HEIGHT);
     glBindRenderbuffer(GL_RENDERBUFFER, 0);
 
     glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, msRbo);
@@ -275,7 +275,7 @@ void RenderingUtil::CreateBlittingFBO()
 
     glGenTextures(1, &mViewPos);
     glBindTexture(GL_TEXTURE_2D, mViewPos);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, Common::SCR_WIDTH, Common::SCR_HEIGHT, 0, GL_RGBA, GL_FLOAT, NULL);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, Common::SCR_WIDTH, Common::SCR_HEIGHT, 0, GL_RGBA, GL_FLOAT, NULL);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
@@ -289,7 +289,7 @@ void RenderingUtil::CreateBlittingFBO()
 
     glGenTextures(1, &mViewNormalTexture);
     glBindTexture(GL_TEXTURE_2D, mViewNormalTexture);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB32F, Common::SCR_WIDTH, Common::SCR_HEIGHT, 0, GL_RGB, GL_FLOAT, NULL);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB16F, Common::SCR_WIDTH, Common::SCR_HEIGHT, 0, GL_RGB, GL_FLOAT, NULL);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
@@ -319,7 +319,7 @@ void RenderingUtil::CreateBlittingFBO()
     glGenTextures(1, &mDiffuseColorTexture);
     glBindTexture(GL_TEXTURE_2D, mDiffuseColorTexture);
 
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, Common::SCR_WIDTH, Common::SCR_HEIGHT, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, Common::SCR_WIDTH, Common::SCR_HEIGHT, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
 
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
@@ -401,7 +401,6 @@ void RenderingUtil::CreatePointLightShadowMapFBO(unsigned int shadowWidth, unsig
 
 void RenderingUtil::CreatePingPongFBOs() 
 {
- 
     glGenFramebuffers(2, mPingPongFBOs);
     glGenTextures(2, mPingPongBuffers);
 

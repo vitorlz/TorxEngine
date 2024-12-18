@@ -67,6 +67,12 @@ void main()
   float deltaY    = endFrag.y - startFrag.y;
   float useX      = abs(deltaX) >= abs(deltaY) ? 1.0 : 0.0;
   float delta     = mix(abs(deltaY), abs(deltaX), useX) * clamp(resolution, 0.0, 1.0);
+
+  if(delta > max(texSize.x - 0.001, texSize.y - 0.001) || delta < 0.001)
+  {
+    return;
+  }
+
   vec2  increment = vec2(deltaX, deltaY) / max(delta, 0.001);
 
   float search0 = 0;
@@ -190,14 +196,18 @@ void main()
 
 
 
-  uv.ba = vec2(visibility);
+    uv.ba = vec2(visibility);
 
-  float alpha = clamp(uv.b, 0, 1);
+    float alpha = clamp(uv.b, 0, 1);
 
-  vec4 color = texture(gFinalImage, uv.xy);
+    vec4 color = texture(gFinalImage, uv.xy);
 
-  float roughness = texture(gRoughness, texCoord).r;
+    float roughness = texture(gRoughness, texCoord).r;
+    
+    vec2 dCoords = smoothstep(0.2, 0.6, abs(vec2(0.5, 0.5) - uv.xy));
  
+ 
+    float screenEdgefactor = clamp(1.0 - (dCoords.x + dCoords.y), 0.0, 1.0);
 
     
     if(false)
@@ -206,7 +216,7 @@ void main()
     }
     else
     {   
-        FragColor = vec4(mix(vec3(0.0), color.rgb , alpha) *  0.25 * (1.0 + roughness), alpha);
+        FragColor = vec4(mix(vec3(0.0), color.rgb , alpha) *  0.25 * (1.0 + roughness) * screenEdgefactor, alpha);
         //vec4(mix(vec3(0.0), color.rgb , alpha) * (1 - pow(roughness   sa, 0.5)), alpha);
     }
   

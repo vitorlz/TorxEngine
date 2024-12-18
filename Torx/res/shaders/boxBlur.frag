@@ -27,7 +27,7 @@ void main()
 	{
 		for (int j = -size; j <= size; ++j) 
 		{
-		   FragColor += texture(colorTexture, (gl_FragCoord.xy + (vec2(i, j) * separation)) / texSize); 
+		   FragColor += texture(colorTexture, clamp((gl_FragCoord.xy + (vec2(i, j) * separation)), vec2(0.0), texSize - 0.01)/texSize) ; 
 		}
 	}
 
