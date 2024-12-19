@@ -477,7 +477,7 @@ vec3 CalcPointLight(Light light, vec3 N, vec3 V, vec3 F0)
 	vec3 L = normalize(light.position.xyz - FragPos); // lightDir
 	vec3 H = normalize(V + L); // halfway vector
 
-	float distance = length(light.position.xyz - FragPos);
+	//float distance = length(light.position.xyz - FragPos);
 	float attenuation = smoothstep(light.radius.x, 0.0, length(light.position.xyz - FragPos));
 	vec3 radiance = light.color.xyz * attenuation; // the scaling by the angle between the normal of the surface and the solid angle (which is just the direction vector
 	// of the fragment to the light in this case) is in the final reflectance formula.
@@ -649,8 +649,6 @@ float DirShadowCalculation(vec4 fragPosLightSpace, vec3 normal, vec3 lightDir)
 	vec3 projCoords = fragPosLightSpace.xyz / fragPosLightSpace.w; // this returns the fragment's light space position in the range [-1, 1]
 
 	projCoords = projCoords * 0.5 + 0.5;
-
-	float closestDepth = texture(dirShadowMap, projCoords.xy).r;
 
 	float currentDepth = projCoords.z;
 

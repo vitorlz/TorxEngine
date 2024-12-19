@@ -30,30 +30,10 @@ void RenderSystem::Init()
     RenderingUtil::CreateVoxelTexture(Common::voxelGridDimensions);
 }
 
-const int MAX_OMNISHADOWS = 10;
-
-// PBR testing 
-glm::vec3 lightPositions[] = {
-    glm::vec3(-10.0f,  10.0f, 10.0f),
-    glm::vec3(10.0f,  10.0f, 10.0f),
-    glm::vec3(-10.0f, -10.0f, 10.0f),
-    glm::vec3(10.0f, -10.0f, 10.0f),
-};
-glm::vec3 lightColors[] = {
-    glm::vec3(300.0f, 300.0f, 300.0f),
-    glm::vec3(300.0f, 300.0f, 300.0f),
-    glm::vec3(300.0f, 300.0f, 300.0f),
-    glm::vec3(300.0f, 300.0f, 300.0f)
-};
-int nrRows = 7;
-int nrColumns = 7;
-float spacing = 0.4;
-// PBR testing 
 glm::mat4 dirLightSpaceMatrix;
 void RenderSystem::Update(float deltaTime)
 {
     // ------------------------- DIRECTIONAL SHADOWS PASS ---------------------------------------
-
 
     // this probably should not be here. For something to go through the render system it has to have a model. This means that we have to add a model to 
     // the directional light and scale it to 0 if we want it to go through the process below.
@@ -272,8 +252,6 @@ void RenderSystem::Update(float deltaTime)
         voxelizeScene(ecs.GetComponent<CTransform>(playerEntity).position, dirLightSpaceMatrix);
     }
 
-    glCullFace(GL_BACK);
-
     if (Common::wireframeDebug)
     {
         glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
@@ -297,7 +275,8 @@ void RenderSystem::Update(float deltaTime)
     glClear(GL_COLOR_BUFFER_BIT);
     glClear(GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
     glEnable(GL_DEPTH_TEST);
-                
+    glEnable(GL_CULL_FACE);
+    glCullFace(GL_BACK);
 
     if (!Common::showVoxelDebug)
     {
@@ -369,7 +348,6 @@ void RenderSystem::Update(float deltaTime)
         glBindTexture(GL_TEXTURE_2D, RenderingUtil::mSSRBlurredTexture);
         vxgiTestShader.setInt("ssrTextureBlur", 19);
 
-
         for (const auto& entity : mEntities)
         {
             auto& transform = ecs.GetComponent<CTransform>(entity);
@@ -410,13 +388,11 @@ void RenderSystem::Update(float deltaTime)
 
             glm::mat3 normalMatrix = glm::transpose(glm::inverse(model));
            
-
             vxgiTestShader.use();
 
             vxgiTestShader.setMat4("model", model);
             vxgiTestShader.setMat3("normalMatrix", normalMatrix);
             
-
             if (ecs.HasComponent<CModel>(entity))
             {
                 auto& model3d = ecs.GetComponent<CModel>(entity);
@@ -426,15 +402,13 @@ void RenderSystem::Update(float deltaTime)
             }
             else
             {
-                glDisable(GL_CULL_FACE);
+                //glDisable(GL_CULL_FACE);
                 auto& meshComponent = ecs.GetComponent<CMesh>(entity);
                 vxgiTestShader.setVec2("textureScaling", meshComponent.textureScaling);
                 meshComponent.mesh.Draw(vxgiTestShader);
-                glEnable(GL_CULL_FACE);
+                //glEnable(GL_CULL_FACE);
             }
         }
-
-       
     }
     
     glPopDebugGroup();
@@ -490,58 +464,6 @@ void RenderSystem::Update(float deltaTime)
        
         BulletDebugDrawer::drawLines();
    }
-
-    // ----------------------------- PBR TESTING -----------------------------------------------------------------------------------------
-
-    if (Common::pbrDemonstration)
-    {
-        glDrawBuffers(1, attachments);
-        glEnable(GL_DEPTH_TEST);
-
-        Shader& pbrLightingTestShader = ShaderManager::GetShaderProgram("pbrLightingTestShader");
-        pbrLightingTestShader.use();
-        pbrLightingTestShader.setMat4("view", player.viewMatrix);
-        pbrLightingTestShader.setVec3("camPos", ecs.GetComponent<CTransform>(playerEntity).position);
-        pbrLightingTestShader.setVec3("albedo", 0.5f, 0.0f, 0.0f);
-        pbrLightingTestShader.setFloat("ao", 1.0f);
-        pbrLightingTestShader.setInt("irradianceMap", 2);
-        pbrLightingTestShader.setInt("prefilterMap", 3);
-        pbrLightingTestShader.setInt("brdfLUT", 4);
-       
-        glActiveTexture(GL_TEXTURE2);
-        glBindTexture(GL_TEXTURE_CUBE_MAP, RenderingUtil::mIrradianceCubemap);
-        glActiveTexture(GL_TEXTURE3);
-        glBindTexture(GL_TEXTURE_CUBE_MAP, RenderingUtil::mPrefilteredEnvMap);
-        glActiveTexture(GL_TEXTURE4);
-        glBindTexture(GL_TEXTURE_2D, RenderingUtil::mBrdfLUT);
-
-        pbrLightingTestShader.setMat4("projection", projection);
-
-        // render rows*column number of spheres with varying metallic/roughness values scaled by rows and columns respectively
-        glm::mat4 model = glm::mat4(1.0f);
-        for (int row = 0; row < nrRows; ++row)
-        {
-            pbrLightingTestShader.setFloat("metallic", (float)row / (float)nrRows);
-            for (int col = 0; col < nrColumns; ++col)
-            {
-                // we clamp the roughness to 0.05 - 1.0 as perfectly smooth surfaces (roughness of 0.0) tend to look a bit off
-                // on direct lighting.
-                pbrLightingTestShader.setFloat("roughness", glm::clamp((float)col / (float)nrColumns, 0.05f, 1.0f));
-
-                model = glm::mat4(1.0f);
-                model = glm::translate(model, glm::vec3(
-                    (col - (nrColumns / 2)) * spacing,
-                    (row - (nrRows / 2)) * spacing,
-                    0.0f
-                ));
-                model = glm::translate(model, glm::vec3(0.0f, 2.0f, 0.0f));
-                model = glm::scale(model, glm::vec3(0.15f));
-                pbrLightingTestShader.setMat4("model", model);
-                pbrLightingTestShader.setMat3("normalMatrix", glm::transpose(glm::inverse(glm::mat3(model))));
-                Util::renderSphere();
-            }
-        }
-    }
 
     // ---------------------------- SKYBOX PASS ---------------------------------------
 
@@ -682,11 +604,6 @@ void RenderSystem::Update(float deltaTime)
     //ssrShader.setMat4("invView", glm::inverse(player.viewMatrix));
 
     ssrShader.setMat4("projection", projection);
-    //ssrShader.setMat4("inverseViewMatrix", glm::inverse(player.viewMatrix));
-    //ssrShader.setMat3("inverseViewNormalMatrix", glm::inverse(glm::transpose(glm::inverse(player.viewMatrix))));
-    //ssrShader.setMat4("invProjection", glm::inverse(projection));
-    //ssrShader.setMat4("view", player.viewMatrix);
-
     ssrShader.setFloat("maxDistance", Common::ssrMaxDistance);
     ssrShader.setFloat("resolution", Common::ssrResolution);
     ssrShader.setInt("steps", Common::ssrSteps);
@@ -777,7 +694,6 @@ void RenderSystem::voxelizeScene(glm::vec3 camPos, glm::mat4 dirLightSpaceMatrix
     {
         glPushDebugGroup(GL_DEBUG_SOURCE_APPLICATION, 0, -1, "Voxelization");
 
-        glBindTexture(GL_TEXTURE_3D, RenderingUtil::mVoxelTexture);
         float clearColor[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
         glClearTexImage(RenderingUtil::mVoxelTexture, 0, GL_RGBA, GL_HALF_FLOAT, clearColor);
 
@@ -803,8 +719,7 @@ void RenderSystem::voxelizeScene(glm::vec3 camPos, glm::mat4 dirLightSpaceMatrix
         glDisable(GL_BLEND);
 
         glBindImageTexture(0, RenderingUtil::mVoxelTexture, 0, GL_TRUE, 0, GL_WRITE_ONLY, GL_RGBA16F);
-        glBindTexture(GL_TEXTURE_3D, RenderingUtil::mVoxelTexture);
-
+        
         for (const auto& entity : mEntities)
         {
             auto& transform = ecs.GetComponent<CTransform>(entity);
@@ -838,21 +753,19 @@ void RenderSystem::voxelizeScene(glm::vec3 camPos, glm::mat4 dirLightSpaceMatrix
             }
             else
             {
-                glDisable(GL_CULL_FACE);
                 auto& meshComponent = ecs.GetComponent<CMesh>(entity);
                 voxelizationShader.setVec2("textureScaling", meshComponent.textureScaling);
                 meshComponent.mesh.Draw(voxelizationShader);
-                glEnable(GL_CULL_FACE);
             }
         }
 
+        glBindTexture(GL_TEXTURE_3D, RenderingUtil::mVoxelTexture);
         glGenerateMipmap(GL_TEXTURE_3D);
 
         Common::voxelize = false;
 
         glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
-        //glEnable(GL_DEPTH_TEST);
-
+        
         glPopDebugGroup();
     }
 }

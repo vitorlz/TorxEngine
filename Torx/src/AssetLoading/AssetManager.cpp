@@ -167,8 +167,6 @@ std::vector<std::string> AssetManager::GetModelNames()
 	for (auto& pair : m_Models)
 	{
 		names.push_back(pair.first);
-
-		
 	}
 	return names;
 }

@@ -193,21 +193,21 @@ vec3 CalcPointLight(Light light, vec3 N, vec3 V, vec3 F0)
 	vec3 L = normalize(light.position.xyz - fragPosUnscaled); // lightDir
 	vec3 H = normalize(V + L); // halfway vector
 
-	float distance = length(light.position.xyz - fragPosUnscaled);
+	//float distance = length(light.position.xyz - fragPosUnscaled);
 	float attenuation = smoothstep(light.radius.x, 0.0, length(light.position.xyz - fragPosUnscaled));
 	vec3 radiance = light.color.xyz * attenuation; // the scaling by the angle between the normal of the surface and the solid angle (which is just the direction vector
 	// of the fragment to the light in this case) is in the final reflectance formula.
 
-	float NDF = DistributionGGX(N, H, roughness);
-	float G = GeometrySmith(N, V, L, roughness);
+	//float NDF = DistributionGGX(N, H, roughness);
+	//float G = GeometrySmith(N, V, L, roughness);
 	vec3 F = fresnelSchlick(max(dot(H, V), 0.0), F0);
 
 	// Cook-Torrance BRDF --> gives us how much each individual light ray (direction vector from fragment to light in this case) contributes 
 	// to the final refleted light of an opaque surface (the current fragment) given its material properties.
-	vec3 numerator = NDF * G * F;
-	float denominator = 4.0 * max(dot(N, V), 0.0) *  max(dot(N, L), 0.0) + 0.0001;
+	//vec3 numerator = NDF * G * F;
+	//float denominator = 4.0 * max(dot(N, V), 0.0) *  max(dot(N, L), 0.0) + 0.0001;
 	
-	vec3 specular = numerator / denominator;
+	//vec3 specular = numerator / denominator;
 
 	vec3 kS = F;
 	vec3 kD = vec3(1.0) - kS;
@@ -229,48 +229,21 @@ float PointShadowCalculation(vec3 fragPos, Light light, int shadowCasterIndex)
 	// to create point shadow map, so the depth values stored would not be linear, and that is why we had to do it ourselves.
 	// (2) we also use this vector to sample a depth value from the shadow cubemap.
 
+	float shadow = 0.0;
+
 	vec3 fragToLight = fragPos - light.position.xyz;
 
 	float currentDepth = length(fragToLight);
-
-	vec3 sampleOffsetDirections[56] = vec3[]
-	(
-		vec3( 1,  1,  1), vec3( 1, -1,  1), vec3(-1, -1,  1), vec3(-1,  1,  1),
-		vec3( 1,  1, -1), vec3( 1, -1, -1), vec3(-1, -1, -1), vec3(-1,  1, -1),
-		vec3( 1,  1,  0), vec3( 1, -1,  0), vec3(-1, -1,  0), vec3(-1,  1,  0),
-		vec3( 1,  0,  1), vec3(-1,  0,  1), vec3( 1,  0, -1), vec3(-1,  0, -1),
-		vec3( 0,  1,  1), vec3( 0, -1,  1), vec3( 0, -1, -1), vec3( 0,  1, -1),
-		vec3( 0.5,  0.5,  0.5), vec3(-0.5, -0.5,  0.5), vec3(0.5, -0.5, 0.5), vec3(-0.5, 0.5, 0.5),
-		vec3( 0.5,  0.5, -0.5), vec3(-0.5, -0.5, -0.5), vec3(0.5, -0.5, -0.5), vec3(-0.5, 0.5, -0.5),
-		vec3( 0.5,  1,  0), vec3(-0.5,  1,  0), vec3(0.5, -1, 0), vec3(-0.5, -1, 0),
-		vec3( 1,  0.5,  0), vec3(-1,  0.5,  0), vec3(1, -0.5, 0), vec3(-1, -0.5, 0),
-		vec3( 0,  0.5,  1), vec3(0, -0.5, 1), vec3(0, 0.5, -1), vec3(0, -0.5, -1),
-		vec3( 0.5,  0,  1), vec3(-0.5,  0,  1), vec3(0.5, 0, -1), vec3(-0.5, 0, -1),
-		vec3( 0.25,  0.25,  0.25), vec3(-0.25, -0.25,  0.25), vec3(0.25, -0.25, 0.25), vec3(-0.25, 0.25, 0.25),
-		vec3( 0.25,  0.25, -0.25), vec3(-0.25, -0.25, -0.25), vec3(0.25, -0.25, -0.25), vec3(-0.25, 0.25, -0.25),
-		vec3( 1,  0,  0), vec3(-1,  0,  0), vec3(0, 1, 0), vec3(0, -1, 0)
-	);
-
-	// this is PCF but in 3D. We sample a "disk" around a given texel, test to see if it is in shadow or not, add the result to the shadow variable,
-	// and then take the average. This gets us smoother shadows.
-
-	float shadow = 0.0;
-	float bias   = 0.0;	
-	int samples  = 56;
-	// this diskradis is what is causing light bleed.
-	float diskRadius = 0.01;
-	for(int i = 0; i < samples; ++i)
+	
+	float closestDepth = texture(pointShadowMap, vec4(fragToLight, shadowCasterIndex)).r;
+	closestDepth *= light.radius.x;   // undo mapping [0;1]
+	
+	if(currentDepth > closestDepth)
 	{
-		float closestDepth = texture(pointShadowMap, vec4(fragToLight + sampleOffsetDirections[i] * diskRadius, shadowCasterIndex)).r;
-		closestDepth *= light.radius.x;   // undo mapping [0;1]
-		if(currentDepth - bias > closestDepth)
-			shadow += 1.0;
+		shadow = 1.0;
 	}
-	shadow /= float(samples) * 1.1;  
-		
-	float unitDepth = currentDepth / light.radius.x;
 
-	return mix(shadow, 0, unitDepth / 10);
+	return shadow;
 }	
 
 
@@ -293,23 +266,23 @@ vec3 CalcDirLight(Light light, vec3 N, vec3 V, vec3 F0)
 
 	vec3 radiance = light.color.xyz;
 
-	float NDF = DistributionGGX(N, H, roughness);
-	float G = GeometrySmith(N, V, L, roughness);
+	//float NDF = DistributionGGX(N, H, roughness);
+	//float G = GeometrySmith(N, V, L, roughness);
 	vec3 F = fresnelSchlick(max(dot(H, V), 0.0), F0);
 
-	vec3 numerator = NDF * G * F;
-	float denominator = 4.0 * max(dot(N, V), 0.0) *  max(dot(N, L), 0.0) + 0.0001;
+	//vec3 numerator = NDF * G * F;
+	//float denominator = 4.0 * max(dot(N, V), 0.0) *  max(dot(N, L), 0.0) + 0.0001;
 		
-	vec3 specular = numerator / denominator;
+	//vec3 specular = numerator / denominator;
 
 	vec3 kS = F;
 	vec3 kD = vec3(1.0) - kS;
 
-	//kD *= 1.0 - metallic;
+	kD *= 1.0 - metallic;
 
 	float NdotL = max(dot(N, L), 0.0); // scale the light's contribution by its angle to the surface's normal.
 		
-	return (kD * albedo / PI) * radiance * NdotL * clamp(1.0 - shadow, 0.0, 1.0);
+	return (kD * albedo / PI) * radiance * NdotL * clamp((1.0 - shadow), 0.0, 1.0);
 }
 
 float DirShadowCalculation(vec4 fragPosLightSpace, vec3 normal, vec3 lightDir)
@@ -319,23 +292,12 @@ float DirShadowCalculation(vec4 fragPosLightSpace, vec3 normal, vec3 lightDir)
 
 	projCoords = projCoords * 0.5 + 0.5;
 
-	float closestDepth = texture(dirShadowMap, projCoords.xy).r;
-
 	float currentDepth = projCoords.z;
 
-	float bias = max(0.04 * (1.0 - dot(normal, lightDir)), 0.00015);
-
 	float shadow = 0.0;
-	vec2 texelSize = 0.2 / textureSize(dirShadowMap, 0);
-	for(float x = -5.5; x <= 5.5; ++x)
-	{
-		for(float y = -5.5; y <= 5.5; ++y)
-		{
-			float pcfDepth = texture(dirShadowMap, projCoords.xy + vec2(x, y) * texelSize).r; 
-			shadow += currentDepth > pcfDepth ? 1.0 : 0.0;        
-		}    
-	}
-	shadow /= 90;
+
+	float closestDepth = texture(dirShadowMap, projCoords.xy).r; 
+	shadow += currentDepth > closestDepth ? 1.0 : 0.0;        
 
 	if(projCoords.z > 1.0)
         shadow = 0.0;
