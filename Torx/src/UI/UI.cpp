@@ -277,7 +277,7 @@ void UI::Update()
 
     if (ImGui::Button("Save scene"))
     {
-        Scene::SaveSceneToJson("testscene3.json");
+        Scene::SaveSceneToJson("sponzascene.json");
     }
 
     //ImGui::Checkbox("Show voxel debug", &Common::showVoxelDebug);

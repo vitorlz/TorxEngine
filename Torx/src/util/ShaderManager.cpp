@@ -27,6 +27,8 @@ void ShaderManager::LoadShaders()
 	std::shared_ptr<Shader>	vxgiTestShader = std::make_shared<Shader>("res/shaders/VXGI.vert", "res/shaders/VXGI.frag");
 	std::shared_ptr<Shader>	ssrShader = std::make_shared<Shader>("res/shaders/SSR.vert", "res/shaders/SSR.frag");
 	std::shared_ptr<Shader>	boxBlurShader = std::make_shared<Shader>("res/shaders/boxBlur.vert", "res/shaders/boxBlur.frag");
+	std::shared_ptr<Shader>	ssaoShader = std::make_shared<Shader>("res/shaders/SSAO.vert", "res/shaders/SSAO.frag");
+	std::shared_ptr<Shader>	ssaoBlurShader = std::make_shared<Shader>("res/shaders/SSAOBlur.vert", "res/shaders/SSAOBlur.frag");
 
 	shaderPrograms.clear();
 
@@ -50,6 +52,8 @@ void ShaderManager::LoadShaders()
 	shaderPrograms.insert({ "vxgiTestShader", vxgiTestShader });
 	shaderPrograms.insert({ "ssrShader", ssrShader });
 	shaderPrograms.insert({ "boxBlurShader", boxBlurShader });
+	shaderPrograms.insert({ "ssaoShader", ssaoShader });
+	shaderPrograms.insert({ "ssaoBlurShader", ssaoBlurShader });
 }
 
 // maybe make this more efficient in the future.

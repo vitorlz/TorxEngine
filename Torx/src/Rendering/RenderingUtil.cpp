@@ -8,6 +8,7 @@
 #include "../Util/ShaderManager.h"
 #include "../Util/TextureLoader.h"
 #include <LinearMath/btScalar.h>
+#include <random>;
 
 unsigned int RenderingUtil::mScreenQuadTexture;
 unsigned int RenderingUtil::mBloomBrightnessTexture;
@@ -38,6 +39,13 @@ unsigned int RenderingUtil::mSSRFBO;
 unsigned int RenderingUtil::mDiffuseColorTexture;
 unsigned int RenderingUtil::mSSRBlurredTexture;
 unsigned int RenderingUtil::mBoxBlurFBO;
+std::vector<glm::vec3>  RenderingUtil::mSSAOKernel;
+unsigned int RenderingUtil::mSSAONoiseTexture;
+std::vector<glm::vec3> RenderingUtil::mSSAONoise;
+unsigned int RenderingUtil::mSSAOTexture;
+unsigned int RenderingUtil::mSSAOFBO;
+unsigned int RenderingUtil::mSSAOBlurTexture;
+unsigned int RenderingUtil::mSSAOBlurFBO;
 
 void RenderingUtil::Init()
 {
@@ -53,6 +61,11 @@ void RenderingUtil::Init()
 
     RenderingUtil::CreateSSRFBO();
     RenderingUtil::CreateSSRBoxBlurFBO();
+
+    RenderingUtil::CreateSSAOKernelAndNoise(64);
+    RenderingUtil::CreateSSAONoiseTexture();
+    RenderingUtil::CreateSSAOFBO();
+    RenderingUtil::CreateSSAOBlurFBO();
 }
 
 float cubeVertices[] = 
@@ -826,6 +839,77 @@ void RenderingUtil::CreateSSRBoxBlurFBO()
 
 
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
+}
+
+void RenderingUtil::CreateSSAOKernelAndNoise(int kernelSize)
+{
+    std::uniform_real_distribution<float> randomFloats(0.0, 1.0);
+    std::default_random_engine generator;
+
+    for (unsigned int i = 0; i < kernelSize; ++i)
+    {
+        glm::vec3 sample(
+            randomFloats(generator) * 2.0 - 1.0,
+            randomFloats(generator) * 2.0 - 1.0,
+            randomFloats(generator)
+        );
+        sample = glm::normalize(sample);
+        sample *= randomFloats(generator);
+        mSSAOKernel.push_back(sample);
+    }
+
+    for (unsigned int i = 0; i < 16; i++)
+    {
+        glm::vec3 noise(
+            randomFloats(generator) * 2.0 - 1.0,
+            randomFloats(generator) * 2.0 - 1.0,
+            0.0f);
+        mSSAONoise.push_back(noise);
+    }
+}
+
+void RenderingUtil::CreateSSAONoiseTexture()
+{
+    glGenTextures(1, &mSSAONoiseTexture);
+    glBindTexture(GL_TEXTURE_2D, mSSAONoiseTexture);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, 4, 4, 0, GL_RGB, GL_FLOAT, &mSSAONoise[0]);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+}
+
+void RenderingUtil::CreateSSAOFBO()
+{
+    glGenFramebuffers(1, &mSSAOFBO);
+    glBindFramebuffer(GL_FRAMEBUFFER, mSSAOFBO);
+
+    glGenTextures(1, &mSSAOTexture);
+    glBindTexture(GL_TEXTURE_2D, mSSAOTexture);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RED, Common::SCR_WIDTH, Common::SCR_HEIGHT, 0, GL_RED, GL_FLOAT, NULL);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, mSSAOTexture, 0);
+}
+
+void RenderingUtil::CreateSSAOBlurFBO()
+{
+    glGenFramebuffers(1, &mSSAOBlurFBO);
+    glBindFramebuffer(GL_FRAMEBUFFER, mSSAOBlurFBO);
+    glGenTextures(1, &mSSAOBlurTexture);
+    glBindTexture(GL_TEXTURE_2D, mSSAOBlurTexture);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RED, Common::SCR_WIDTH, Common::SCR_HEIGHT, 0, GL_RED, GL_FLOAT, NULL);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, mSSAOBlurTexture, 0);
+
+    const int status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
+    if (status != GL_FRAMEBUFFER_COMPLETE)
+    {
+        std::cout << "ERROR::FRAMEBUFFER:: Framebuffer is not complete!\n";
+        throw 0;
+    }
 }
 
 void RenderingUtil::DeleteTexture(unsigned int textureId) 

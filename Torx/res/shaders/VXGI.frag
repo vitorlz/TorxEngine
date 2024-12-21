@@ -60,6 +60,9 @@ uniform mat3 viewNormalMatrix;
 uniform float ssrSpecularBias;
 uniform float ssrMaxBlurDistance;
 
+// SSAO
+uniform sampler2D SSAO;
+
 //lights
 struct Light
 {
@@ -204,6 +207,8 @@ void main()
 
 	vec3 ssr = mix(ssrOriginal, ssrBlurred,   clamp(roughness + clamp(length(camPos - FragPos) / ssrMaxBlurDistance, 0, 1), 0,1)) * (1 - roughness) * ssrSpecularBias;
 	
+	float AO = texture(SSAO, gl_FragCoord.xy / texSize).r;
+
 	if(vxgi)	
 	{
 		indirectDiffuseContribution = (kD * indirectDiffuseLight(N));
@@ -212,7 +217,7 @@ void main()
 	}
 	if(vxgi && !(showTotalIndirectDiffuseLight || showDiffuseAccumulation || showTotalIndirectSpecularLight))
 	{
-		color += indirectDiffuseContribution + indirectSpecularContribution;	
+		color += (indirectDiffuseContribution + indirectSpecularContribution) * AO;	
 	}
 	else if(showTotalIndirectDiffuseLight || showDiffuseAccumulation)
 	{

@@ -99,6 +99,7 @@
     <ClCompile Include="src\Physics\BulletDebugDrawer.cpp" />
     <ClCompile Include="src\Physics\Raycast.cpp" />
     <ClCompile Include="src\Rendering\RenderingUtil.cpp" />
+    <ClCompile Include="src\Rendering\SSAO.cpp" />
     <ClCompile Include="src\Scene\Scene.cpp" />
     <ClCompile Include="src\Systems\GeneralInputSystem.cpp" />
     <ClCompile Include="src\Systems\LightSystem.cpp" />
@@ -142,6 +143,7 @@
     <ClInclude Include="src\Physics\BulletDebugDrawer.h" />
     <ClInclude Include="src\Physics\Raycast.h" />
     <ClInclude Include="src\Rendering\RenderingUtil.h" />
+    <ClInclude Include="src\Rendering\SSAO.h" />
     <ClInclude Include="src\Scene\Scene.h" />
     <ClInclude Include="src\Systems\GeneralInputSystem.h" />
     <ClInclude Include="src\Systems\LightSystem.h" />
@@ -207,6 +209,10 @@
     <None Include="res\shaders\prefilterConvolution.frag" />
     <None Include="res\shaders\solidColor.frag" />
     <None Include="res\shaders\solidColor.vert" />
+    <None Include="res\shaders\SSAO.frag" />
+    <None Include="res\shaders\SSAO.vert" />
+    <None Include="res\shaders\SSAOBlur.vert" />
+    <None Include="res\shaders\SSAOBlur.frag" />
     <None Include="res\shaders\SSR.frag" />
     <None Include="res\shaders\SSR.vert" />
     <None Include="res\shaders\testShader.frag" />

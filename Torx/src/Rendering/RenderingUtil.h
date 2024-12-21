@@ -1,5 +1,8 @@
 #pragma once
 
+#include <glm/glm.hpp>
+#include <vector>
+
 class RenderingUtil 
 {
 public:
@@ -27,6 +30,12 @@ public:
 	static unsigned int mDiffuseColorTexture;
 	static unsigned int mBoxBlurFBO;
 	static unsigned int mSSRBlurredTexture;
+	static unsigned int mSSAONoiseTexture;
+	static std::vector<glm::vec3> mSSAOKernel;
+	static unsigned int mSSAOFBO;
+	static unsigned int mSSAOTexture;
+	static unsigned int mSSAOBlurFBO;
+	static unsigned int mSSAOBlurTexture;
 
 	// diffuse indirect lighting
 	static unsigned int mEnvironmentCubemap;
@@ -60,4 +69,9 @@ private:
 	static void CreateDirLightShadowMapFBO(unsigned int shadowWidth, unsigned int shadowHeight);
 	static void CreatePointLightShadowMapFBO(unsigned int shadowWidth, unsigned int shadowHeight);
 	static void CreatePingPongFBOs();
+	static void CreateSSAOKernelAndNoise(int kernelSize);
+	static void CreateSSAONoiseTexture();
+	static void CreateSSAOFBO();
+	static void CreateSSAOBlurFBO();
+	static std::vector<glm::vec3> mSSAONoise;
 };

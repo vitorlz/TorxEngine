@@ -348,6 +348,11 @@ void RenderSystem::Update(float deltaTime)
         glBindTexture(GL_TEXTURE_2D, RenderingUtil::mSSRBlurredTexture);
         vxgiTestShader.setInt("ssrTextureBlur", 19);
 
+
+        glActiveTexture(GL_TEXTURE20);
+        glBindTexture(GL_TEXTURE_2D, RenderingUtil::mSSAOBlurTexture);
+        vxgiTestShader.setInt("SSAO", 20);
+
         for (const auto& entity : mEntities)
         {
             auto& transform = ecs.GetComponent<CTransform>(entity);
@@ -652,6 +657,67 @@ void RenderSystem::Update(float deltaTime)
     glDrawArrays(GL_TRIANGLES, 0, 6);
 
     glPopDebugGroup();
+
+    //  ------------------------------ SSAO PASS ---------------------------------------------------------------------
+
+    glPushDebugGroup(GL_DEBUG_SOURCE_APPLICATION, 0, -1, "SSAO Pass");
+
+    glBindFramebuffer(GL_FRAMEBUFFER, RenderingUtil::mSSAOFBO);
+    glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+    glClear(GL_COLOR_BUFFER_BIT);
+
+    Shader& ssaoShader = ShaderManager::GetShaderProgram("ssaoShader");
+    ssaoShader.use();
+  
+    ssaoShader.setMat4("projection", projection);
+
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, RenderingUtil::mViewPos);
+    ssaoShader.setInt("gViewPosition", 0);
+
+    glActiveTexture(GL_TEXTURE1);
+    glBindTexture(GL_TEXTURE_2D, RenderingUtil::mViewNormalTexture);
+    ssaoShader.setInt("gViewNormal", 1);
+
+    glActiveTexture(GL_TEXTURE2);
+    glBindTexture(GL_TEXTURE_2D, RenderingUtil::mSSAONoiseTexture);
+    ssaoShader.setInt("texNoise", 2);
+
+    glUniform3fv(glGetUniformLocation(ssaoShader.ID, "samples"), RenderingUtil::mSSAOKernel.size(), glm::value_ptr(RenderingUtil::mSSAOKernel[0]));
+
+    ssaoShader.setInt("screenWidth", Common::SCR_WIDTH);
+    ssaoShader.setInt("screenHeight", Common::SCR_HEIGHT);
+    ssaoShader.setInt("kernelSize", 64);
+    ssaoShader.setFloat("radius", 0.5f);
+    ssaoShader.setFloat("power", 1.0f);
+
+    glBindVertexArray(RenderingUtil::mScreenQuadVAO);
+    glDisable(GL_DEPTH_TEST);
+    glDrawArrays(GL_TRIANGLES, 0, 6);
+
+    glPopDebugGroup();
+
+    // blur the ssao texture
+
+    glPushDebugGroup(GL_DEBUG_SOURCE_APPLICATION, 0, -1, "SSAO Blur Pass");
+
+    glBindFramebuffer(GL_FRAMEBUFFER, RenderingUtil::mSSAOBlurFBO);
+    glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+    glClear(GL_COLOR_BUFFER_BIT);
+
+    Shader& ssaoBlurShader = ShaderManager::GetShaderProgram("ssaoBlurShader");
+    ssaoBlurShader.use();
+
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, RenderingUtil::mSSAOTexture);
+    ssaoBlurShader.setInt("ssaoTexture", 0);
+
+    glBindVertexArray(RenderingUtil::mScreenQuadVAO);
+    glDisable(GL_DEPTH_TEST);
+    glDrawArrays(GL_TRIANGLES, 0, 6);
+
+    glPopDebugGroup();
+
 
     // ------------------------------ POST PROCESSING PASS -----------------------------------------------------------
 
