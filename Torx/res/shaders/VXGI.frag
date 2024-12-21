@@ -62,6 +62,8 @@ uniform float ssrMaxBlurDistance;
 
 // SSAO
 uniform sampler2D SSAO;
+uniform bool ssaoOn;
+uniform bool showAO;
 
 //lights
 struct Light
@@ -215,9 +217,9 @@ void main()
 		// mix vxgi specular with ssr based on the angle between the vector from the camera to the fragment and the fragment's normal 
 		indirectSpecularContribution =  (kS * mix(ssr, indirectSpecularLight(V, N),  smoothstep(0.0, 1.0, dot(V,reflect(-V, N))))); 
 	}
-	if(vxgi && !(showTotalIndirectDiffuseLight || showDiffuseAccumulation || showTotalIndirectSpecularLight))
+	if(vxgi && !(showTotalIndirectDiffuseLight || showDiffuseAccumulation || showTotalIndirectSpecularLight || showAO))
 	{
-		color += (indirectDiffuseContribution + indirectSpecularContribution) * AO;	
+		color += (indirectDiffuseContribution + indirectSpecularContribution) * (ssaoOn ? AO : 1.0);	
 	}
 	else if(showTotalIndirectDiffuseLight || showDiffuseAccumulation)
 	{
@@ -226,6 +228,10 @@ void main()
 	else if(showTotalIndirectSpecularLight)
 	{
 		color =  indirectSpecularContribution;	
+	}
+	else if(showAO)
+	{
+		color = vec3(AO);
 	}
 	if(showNormals) 
 	{

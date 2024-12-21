@@ -78,4 +78,9 @@ public:
 	static float ssrThickness;
 	static float ssrSpecularBias;
 	static float ssrMaxBlurDistance;
+	static int ssaoKernelSize;
+	static float ssaoRadius;
+	static float ssaoPower;
+	static bool ssaoOn;
+	static bool showAO;
 };

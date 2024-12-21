@@ -60,6 +60,7 @@ public:
 	static void CreateVoxelTexture(int voxelTextureSize);
 	static void CreateSSRFBO();
 	static void CreateSSRBoxBlurFBO();
+	static void CreateSSAOKernel(int kernelSize);
 
 private:
 	static void CreateCubeVAO();
@@ -69,7 +70,7 @@ private:
 	static void CreateDirLightShadowMapFBO(unsigned int shadowWidth, unsigned int shadowHeight);
 	static void CreatePointLightShadowMapFBO(unsigned int shadowWidth, unsigned int shadowHeight);
 	static void CreatePingPongFBOs();
-	static void CreateSSAOKernelAndNoise(int kernelSize);
+	static void CreateSSAONoise();
 	static void CreateSSAONoiseTexture();
 	static void CreateSSAOFBO();
 	static void CreateSSAOBlurFBO();

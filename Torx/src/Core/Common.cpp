@@ -54,10 +54,17 @@ float Common::specularConeMaxDistance{ 1 };
 // --------------- SSR ----------------------------------------
 float Common::ssrMaxDistance{ 20 };
 float Common::ssrResolution{ 1.0f };
-int   Common::ssrSteps{ 50 };
 float Common::ssrThickness{ 0.5f };
 float Common::ssrSpecularBias{ 1.0f };
 float Common::ssrMaxBlurDistance{ 10 };
+int   Common::ssrSteps{ 50 };
+
+// --------------- SSAO ----------------------------------------
+float Common::ssaoRadius{ 0.5f };
+float Common::ssaoPower{ 1.0f };
+int Common::ssaoKernelSize{ 64 };
+bool Common::ssaoOn{ true };
+bool Common::showAO{ false };
 
 
 

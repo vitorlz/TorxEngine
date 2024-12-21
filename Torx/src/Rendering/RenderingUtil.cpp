@@ -62,7 +62,8 @@ void RenderingUtil::Init()
     RenderingUtil::CreateSSRFBO();
     RenderingUtil::CreateSSRBoxBlurFBO();
 
-    RenderingUtil::CreateSSAOKernelAndNoise(64);
+    RenderingUtil::CreateSSAOKernel(Common::ssaoKernelSize);
+    RenderingUtil::CreateSSAONoise();
     RenderingUtil::CreateSSAONoiseTexture();
     RenderingUtil::CreateSSAOFBO();
     RenderingUtil::CreateSSAOBlurFBO();
@@ -841,10 +842,12 @@ void RenderingUtil::CreateSSRBoxBlurFBO()
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
-void RenderingUtil::CreateSSAOKernelAndNoise(int kernelSize)
+void RenderingUtil::CreateSSAOKernel(int kernelSize)
 {
     std::uniform_real_distribution<float> randomFloats(0.0, 1.0);
     std::default_random_engine generator;
+
+    mSSAOKernel.clear();
 
     for (unsigned int i = 0; i < kernelSize; ++i)
     {
@@ -857,6 +860,12 @@ void RenderingUtil::CreateSSAOKernelAndNoise(int kernelSize)
         sample *= randomFloats(generator);
         mSSAOKernel.push_back(sample);
     }
+}
+
+void RenderingUtil::CreateSSAONoise()
+{
+    std::uniform_real_distribution<float> randomFloats(0.0, 1.0);
+    std::default_random_engine generator;
 
     for (unsigned int i = 0; i < 16; i++)
     {

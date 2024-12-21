@@ -274,10 +274,23 @@ void UI::Update()
         ImGui::TreePop();
     }
 
+    if (ImGui::TreeNode("SSAO"))
+    {
+        ImGui::Checkbox("SSAO on", &Common::ssaoOn);
+        ImGui::Checkbox("Show SSAO", &Common::showAO);
+        ImGui::SliderFloat("Max. Distance", &Common::ssaoRadius, 0.0f, 10.0f);
+        ImGui::SliderFloat("Strength", &Common::ssaoPower, 0.0f, 10.0f);
+        if (ImGui::SliderInt("Kernel Size", &Common::ssaoKernelSize, 0, 200))
+        {
+            RenderingUtil::CreateSSAOKernel(Common::ssaoKernelSize);
+        };
+
+        ImGui::TreePop();
+    }
 
     if (ImGui::Button("Save scene"))
     {
-        Scene::SaveSceneToJson("sponzascene.json");
+        Scene::SaveSceneToJson("testscene3.json");
     }
 
     //ImGui::Checkbox("Show voxel debug", &Common::showVoxelDebug);
