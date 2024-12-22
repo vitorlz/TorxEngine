@@ -1,12 +1,18 @@
 {
     "config": {
         "environmentMap": "rogland_clear_night_2k.hdr",
+        "ssao": {
+            "ssaoKernelSize": 64,
+            "ssaoOn": true,
+            "ssaoPower": 1.0,
+            "ssaoRadius": 0.5
+        },
         "ssr": {
             "ssrMaxBlurDistance": 10.0,
             "ssrMaxDistance": 20.0,
-            "ssrResolution": 1.0,
+            "ssrResolution": 0.5149999856948853,
             "ssrSpecularBias": 1.0,
-            "ssrSteps": 50,
+            "ssrSteps": 15,
             "ssrThickness": 0.5
         },
         "vxgi": {
@@ -14,7 +20,7 @@
             "specularConeMaxDistance": 1.0,
             "specularConeOriginOffset": 0.800000011920929,
             "specularStepSizeMultiplier": 1.0,
-            "voxelGridDimensions": 128,
+            "voxelGridDimensions": 64,
             "voxelizationAreaSize": 12.0,
             "vxSpecularBias": 1.0,
             "vxgi": true
@@ -30,9 +36,9 @@
                         1.0
                     ],
                     "direction": [
-                        0.01398701686412096,
-                        -0.3329840898513794,
-                        0.9428286552429199
+                        -0.006100933998823166,
+                        -0.05320746451616287,
+                        0.9985648393630981
                     ],
                     "innerCutoff": 12.5,
                     "isDirty": false,
@@ -53,15 +59,15 @@
                 },
                 "transform": {
                     "position": [
-                        0.2428758442401886,
-                        6.025656223297119,
-                        -11.151721000671387
+                        -0.043053947389125824,
+                        3.590461254119873,
+                        -2.9423227310180664
                     ],
                     "rotation": [
-                        0.007310388144105673,
-                        -0.001252870773896575,
-                        -0.9856027960777283,
-                        -0.1689148247241974
+                        0.0030537268612533808,
+                        -8.12981161288917e-05,
+                        0.9996411800384521,
+                        0.026613038033246994
                     ],
                     "scale": [
                         0.0,

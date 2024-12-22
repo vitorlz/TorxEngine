@@ -126,7 +126,13 @@ namespace Scene
 		json["config"]["ssr"]["ssrThickness"] = Common::ssrThickness;
 		json["config"]["ssr"]["ssrSpecularBias"] = Common::ssrSpecularBias;
 		json["config"]["ssr"]["ssrMaxBlurDistance"] = Common::ssrMaxBlurDistance;
-		
+
+		// SSAO
+
+		json["config"]["ssao"]["ssaoRadius"] = Common::ssaoRadius;
+		json["config"]["ssao"]["ssaoPower"] = Common::ssaoPower;
+		json["config"]["ssao"]["ssaoKernelSize"] = Common::ssaoKernelSize;
+		json["config"]["ssao"]["ssaoOn"] = Common::ssaoOn;
 
 		std::ofstream o("res/scenes/" + filename);
 		if (!o.is_open())
@@ -252,24 +258,37 @@ namespace Scene
 		
 
 		// VXGI
-
-		Common::vxgi = jsonData["config"]["vxgi"]["vxgi"].get<bool>();
-		Common::voxelGridDimensions = jsonData["config"]["vxgi"]["voxelGridDimensions"].get<int>();
-		Common::diffuseConeSpread = jsonData["config"]["vxgi"]["diffuseConeSpread"].get<float>();
-		Common::voxelizationAreaSize = jsonData["config"]["vxgi"]["voxelizationAreaSize"].get<float>();
-		Common::vxSpecularBias = jsonData["config"]["vxgi"]["vxSpecularBias"].get<float>();
-		Common::specularStepSizeMultiplier = jsonData["config"]["vxgi"]["specularStepSizeMultiplier"].get<float>();
-		Common::specularConeOriginOffset = jsonData["config"]["vxgi"]["specularConeOriginOffset"].get<float>();
-		Common::specularConeMaxDistance = jsonData["config"]["vxgi"]["specularConeMaxDistance"].get<float>();
+		if (jsonData["config"].contains("vxgi"))
+		{
+			Common::vxgi = jsonData["config"]["vxgi"]["vxgi"].get<bool>();
+			Common::voxelGridDimensions = jsonData["config"]["vxgi"]["voxelGridDimensions"].get<int>();
+			Common::diffuseConeSpread = jsonData["config"]["vxgi"]["diffuseConeSpread"].get<float>();
+			Common::voxelizationAreaSize = jsonData["config"]["vxgi"]["voxelizationAreaSize"].get<float>();
+			Common::vxSpecularBias = jsonData["config"]["vxgi"]["vxSpecularBias"].get<float>();
+			Common::specularStepSizeMultiplier = jsonData["config"]["vxgi"]["specularStepSizeMultiplier"].get<float>();
+			Common::specularConeOriginOffset = jsonData["config"]["vxgi"]["specularConeOriginOffset"].get<float>();
+			Common::specularConeMaxDistance = jsonData["config"]["vxgi"]["specularConeMaxDistance"].get<float>();
+		}
 
 		// SSR
+		if (jsonData["config"].contains("ssr"))
+		{
+			Common::ssrMaxDistance = jsonData["config"]["ssr"]["ssrMaxDistance"].get<float>();
+			Common::ssrResolution = jsonData["config"]["ssr"]["ssrResolution"].get<float>();
+			Common::ssrSteps = jsonData["config"]["ssr"]["ssrSteps"].get<int>();
+			Common::ssrThickness = jsonData["config"]["ssr"]["ssrThickness"].get<float>();
+			Common::ssrSpecularBias = jsonData["config"]["ssr"]["ssrSpecularBias"].get<float>();
+			Common::ssrMaxBlurDistance = jsonData["config"]["ssr"]["ssrMaxBlurDistance"].get<float>();
+		}
 
-		Common::ssrMaxDistance = jsonData["config"]["ssr"]["ssrMaxDistance"].get<float>();
-		Common::ssrResolution = jsonData["config"]["ssr"]["ssrResolution"].get<float>();
-		Common::ssrSteps = jsonData["config"]["ssr"]["ssrSteps"].get<int>();
-		Common::ssrThickness = jsonData["config"]["ssr"]["ssrThickness"].get<float>();
-		Common::ssrSpecularBias = jsonData["config"]["ssr"]["ssrSpecularBias"].get<float>();
-		Common::ssrMaxBlurDistance = jsonData["config"]["ssr"]["ssrMaxBlurDistance"].get<float>();
+		// SSAO
+		if (jsonData["config"].contains("ssao"))
+		{
+			Common::ssaoRadius = jsonData["config"]["ssao"]["ssaoRadius"].get<float>();;
+			Common::ssaoPower = jsonData["config"]["ssao"]["ssaoPower"].get<float>();;
+			Common::ssaoKernelSize = jsonData["config"]["ssao"]["ssaoKernelSize"].get<int>();;
+			Common::ssaoOn = jsonData["config"]["ssao"]["ssaoOn"].get<bool>();
+		}
 
 		std::cout << "scene loaded " << "\n";
 	}
