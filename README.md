@@ -1,4 +1,23 @@
 # TorxEngine
 C++ OpenGL Engine
-![sponza](https://github.com/user-attachments/assets/74a759ee-b368-4ebe-9429-67ce4a67d1fa)
-![Screenshot 2024-12-17 182122](https://github.com/user-attachments/assets/5f0852af-08b5-4de5-91d0-6585e5d21ffd)
+
+**Features:** <br/>
+<li>Voxel Cone Tracing Global Illumination</li> 
+<li>Screen Space Reflections</li>
+<li>Screen Space Ambient Occlusion</li> 
+<li>ECS</li> 
+<li>Bullet Physics implementation</li> 
+<li>Shadow mapping</li> 
+<li>Normal mapping</li> 
+<li>Gamma correction</li> 
+<li>Tone mapping</li> 
+<li>Skybox</li> 
+<li>Bloom</li> 
+<li>PBR materials support</li> 
+<li>Point, directional, and spot lights</li> 
+ <br/>
+
+https://github.com/user-attachments/assets/c94439a4-017c-409b-bb2d-52b3e5a0c8bd
+
+https://github.com/user-attachments/assets/bd16ce13-ceeb-48e2-b0ed-964f2b4c2a72
+
