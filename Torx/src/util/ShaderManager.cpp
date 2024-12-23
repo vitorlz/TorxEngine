@@ -7,9 +7,7 @@ std::unordered_map<std::string, std::shared_ptr<Shader>> ShaderManager::shaderPr
 
 void ShaderManager::LoadShaders() 
 {
-	std::shared_ptr<Shader> ourShader =  std::make_shared<Shader>("res/shaders/testShader.vert", "res/shaders/testShader.frag");
 	std::shared_ptr<Shader> cubemapShader = std::make_shared<Shader>("res/shaders/cubemap.vert", "res/shaders/cubemap.frag");
-	std::shared_ptr<Shader> lightingShader = std::make_shared<Shader>("res/shaders/lighting.vert", "res/shaders/lighting.frag");
 	std::shared_ptr<Shader> solidColorShader = std::make_shared<Shader>("res/shaders/solidColor.vert", "res/shaders/solidColor.frag");
 	std::shared_ptr<Shader> postProcessingShader = std::make_shared<Shader>("res/shaders/postProcessing.vert", "res/shaders/postProcessing.frag");
 	std::shared_ptr<Shader> dirShadowMapShader = std::make_shared<Shader>("res/shaders/dirShadowMap.vert", "res/shaders/dirShadowMap.frag");
@@ -24,7 +22,7 @@ void ShaderManager::LoadShaders()
 	std::shared_ptr<Shader>	lineDebugShader = std::make_shared<Shader>("res/shaders/line.vert", "res/shaders/line.frag");
 	std::shared_ptr<Shader>	voxelizationShader = std::make_shared<Shader>("res/shaders/voxelization.vert", "res/shaders/voxelization.frag", "res/shaders/voxelization.geom");
 	std::shared_ptr<Shader>	voxelVisualizationShader = std::make_shared<Shader>("res/shaders/voxelVisualization.vert", "res/shaders/voxelVisualization.frag", "res/shaders/voxelVisualization.geom");
-	std::shared_ptr<Shader>	vxgiTestShader = std::make_shared<Shader>("res/shaders/VXGI.vert", "res/shaders/VXGI.frag");
+	std::shared_ptr<Shader>	lightingShader = std::make_shared<Shader>("res/shaders/lighting.vert", "res/shaders/lighting.frag");
 	std::shared_ptr<Shader>	ssrShader = std::make_shared<Shader>("res/shaders/SSR.vert", "res/shaders/SSR.frag");
 	std::shared_ptr<Shader>	boxBlurShader = std::make_shared<Shader>("res/shaders/boxBlur.vert", "res/shaders/boxBlur.frag");
 	std::shared_ptr<Shader>	ssaoShader = std::make_shared<Shader>("res/shaders/SSAO.vert", "res/shaders/SSAO.frag");
@@ -32,7 +30,6 @@ void ShaderManager::LoadShaders()
 
 	shaderPrograms.clear();
 
-	shaderPrograms.insert({ "ourShader", ourShader });
 	shaderPrograms.insert({ "cubemapShader", cubemapShader });
 	shaderPrograms.insert({ "lightingShader", lightingShader });
 	shaderPrograms.insert({ "solidColorShader", solidColorShader });
@@ -49,7 +46,7 @@ void ShaderManager::LoadShaders()
 	shaderPrograms.insert({ "lineDebugShader", lineDebugShader });
 	shaderPrograms.insert({ "voxelizationShader", voxelizationShader });
 	shaderPrograms.insert({ "voxelVisualizationShader", voxelVisualizationShader });
-	shaderPrograms.insert({ "vxgiTestShader", vxgiTestShader });
+	shaderPrograms.insert({ "lightingShader", lightingShader });
 	shaderPrograms.insert({ "ssrShader", ssrShader });
 	shaderPrograms.insert({ "boxBlurShader", boxBlurShader });
 	shaderPrograms.insert({ "ssaoShader", ssaoShader });

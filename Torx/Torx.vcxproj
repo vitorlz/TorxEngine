@@ -193,8 +193,6 @@
     <None Include="res\shaders\gaussianBlur.frag" />
     <None Include="res\shaders\gaussianBlur.vert" />
     <None Include="res\shaders\irradianceConvolution.frag" />
-    <None Include="res\shaders\lighting.frag" />
-    <None Include="res\shaders\lighting.vert" />
     <None Include="res\shaders\line.frag" />
     <None Include="res\shaders\line.vert" />
     <None Include="res\shaders\pbrLightingTest.frag" />
@@ -221,8 +219,8 @@
     <None Include="res\shaders\voxelVisualization.frag" />
     <None Include="res\shaders\voxelVisualization.geom" />
     <None Include="res\shaders\voxelVisualization.vert" />
-    <None Include="res\shaders\VXGI.frag" />
-    <None Include="res\shaders\VXGI.vert" />
+    <None Include="res\shaders\lighting.frag" />
+    <None Include="res\shaders\lighting.vert" />
     <None Include="vendor\dlls\assimp-vc143-mt.dll" />
     <None Include="vendor\dlls\assimp-vc143-mtd.dll" />
   </ItemGroup>

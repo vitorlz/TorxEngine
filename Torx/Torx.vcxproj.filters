@@ -285,13 +285,11 @@
     <None Include="vendor\dlls\assimp-vc143-mtd.dll" />
     <None Include="res\shaders\cubemap.vert" />
     <None Include="res\shaders\cubemap.frag" />
-    <None Include="res\shaders\lighting.vert" />
     <None Include="res\shaders\postProcessing.vert" />
     <None Include="res\shaders\postProcessing.frag" />
     <None Include="res\shaders\pointShadowMap.vert" />
     <None Include="res\shaders\pointShadowMap.frag" />
     <None Include="res\shaders\pointShadowMap.geom" />
-    <None Include="res\shaders\lighting.frag" />
     <None Include="res\shaders\gaussianBlur.frag" />
     <None Include="res\shaders\gaussianBlur.vert" />
     <None Include="res\shaders\pbrLightingTest.frag" />
@@ -312,8 +310,8 @@
     <None Include="res\shaders\voxelVisualization.vert" />
     <None Include="res\shaders\voxelVisualization.frag" />
     <None Include="res\shaders\voxelVisualization.geom" />
-    <None Include="res\shaders\VXGI.frag" />
-    <None Include="res\shaders\VXGI.vert" />
+    <None Include="res\shaders\lighting.frag" />
+    <None Include="res\shaders\lighting.vert" />
     <None Include="res\shaders\SSR.vert" />
     <None Include="res\shaders\SSR.frag" />
     <None Include="res\shaders\boxBlur.vert" />

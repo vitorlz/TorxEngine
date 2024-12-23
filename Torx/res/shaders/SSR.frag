@@ -124,8 +124,8 @@ void main()
 
     if (depth < 0 && abs(depth) < thickness) 
     {
-            hit0 = 1;
-            break;
+        hit0 = 1;
+        break;
     } 
     else 
     {
@@ -205,31 +205,8 @@ void main()
     float roughness = texture(gRoughness, texCoord).r;
     
     vec2 dCoords = smoothstep(0.2, 0.6, abs(vec2(0.5, 0.5) - uv.xy));
- 
- 
+  
     float screenEdgefactor = clamp(1.0 - (dCoords.x + dCoords.y), 0.0, 1.0);
 
-    
-    if(false)
-    {
-        FragColor = vec4(mix(vec3(0.0), color.rgb , alpha), alpha);
-    }
-    else
-    {   
-        FragColor = vec4(mix(vec3(0.0), color.rgb , alpha) *  0.25 * (1.0 + roughness) * screenEdgefactor, alpha);
-        //vec4(mix(vec3(0.0), color.rgb , alpha) * (1 - pow(roughness   sa, 0.5)), alpha);
-    }
-  
-
-  //vec4(mix(mix(vec3(0.0), color.rgb , alpha), skyboxColor, skyboxFactor) * (1 - pow(roughness, 0.5)), alpha);
-
-  //vec4(mix(mix(vec3(0.0), color.rgb , alpha), skyboxColor, skyboxFactor) * (1 - pow(roughness, 0.5)), alpha);
-  
-
-  // vec4(mix(vec3(0.0), positionTo.xyz , alpha), alpha);
-
-  //vec4(mix(vec3(0.0), color.rgb , alpha) * (1 - pow(roughness, 0.5)), alpha);
-  
-  //vec4(mix(vec3(0.0), color.rgb, alpha), alpha);;
-
+    FragColor = vec4(mix(vec3(0.0), color.rgb , alpha) *  0.25 * (1.0 + roughness) * screenEdgefactor, alpha);
 }

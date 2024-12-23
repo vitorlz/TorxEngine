@@ -285,75 +285,75 @@ void RenderSystem::Update(float deltaTime)
             Raycast::calculateMouseRaycast(projection * player.viewMatrix);
         }
 
-        Shader& vxgiTestShader = ShaderManager::GetShaderProgram("vxgiTestShader");
-        vxgiTestShader.use();
+        Shader& lightingShader = ShaderManager::GetShaderProgram("lightingShader");
+        lightingShader.use();
 
         if (pointLightShadowEntities.size() != 0)
         {
             glActiveTexture(GL_TEXTURE10);
             glBindTexture(GL_TEXTURE_CUBE_MAP_ARRAY, RenderingUtil::mPointLightShadowMap);
-            vxgiTestShader.setInt("pointShadowMap", 10);
+            lightingShader.setInt("pointShadowMap", 10);
         }
 
-        vxgiTestShader.setFloat("voxelSize", (2 * Common::voxelizationAreaSize) / float(Common::voxelGridDimensions));
+        lightingShader.setFloat("voxelSize", (2 * Common::voxelizationAreaSize) / float(Common::voxelGridDimensions));
 
-        vxgiTestShader.setBool("vxgi", Common::vxgi);
-        vxgiTestShader.setBool("showDiffuseAccumulation", Common::showDiffuseAccumulation);
-        vxgiTestShader.setBool("showTotalIndirectDiffuseLight", Common::showTotalIndirectDiffuseLight);
-        vxgiTestShader.setFloat("diffuseConeSpread", Common::diffuseConeSpread);
-        vxgiTestShader.setFloat("voxelizationAreaSize", Common::voxelizationAreaSize);
-        vxgiTestShader.setFloat("vxSpecularBias", Common::vxSpecularBias);
-        vxgiTestShader.setFloat("ssrSpecularBias", Common::ssrSpecularBias);
-        vxgiTestShader.setFloat("ssrMaxBlurDistance", Common::ssrMaxBlurDistance);
-        vxgiTestShader.setFloat("specularStepSizeMultiplier", Common::specularStepSizeMultiplier);
-        vxgiTestShader.setFloat("specularConeOriginOffset", Common::specularConeOriginOffset);
-        vxgiTestShader.setFloat("showTotalIndirectSpecularLight", Common::showTotalIndirectSpecularLight);
-        vxgiTestShader.setFloat("specularConeMaxDistance", Common::specularConeMaxDistance);
-        vxgiTestShader.setMat4("view", player.viewMatrix);
-        vxgiTestShader.setMat4("projection", projection);
-        vxgiTestShader.setVec3("camPos", ecs.GetComponent<CTransform>(playerEntity).position);
-        vxgiTestShader.setBool("showNormals", Common::normalsDebug);
-        vxgiTestShader.setBool("worldPosDebug", Common::worldPosDebug);
-        vxgiTestShader.setBool("albedoDebug", Common::albedoDebug);
-        vxgiTestShader.setBool("roughnessDebug", Common::roughnessDebug);
-        vxgiTestShader.setBool("metallicDebug", Common::metallicDebug);
-        vxgiTestShader.setBool("aoDebug", Common::aoDebug);
-        vxgiTestShader.setBool("emissionDebug", Common::emissionDebug);
-        vxgiTestShader.setBool("bloom", Common::bloomOn);
-        vxgiTestShader.setInt("dirShadowMap", 9);
-        vxgiTestShader.setMat4("dirLightSpaceMatrix", dirLightSpaceMatrix);
-        vxgiTestShader.setBool("ssaoOn", Common::ssaoOn);
-        vxgiTestShader.setBool("showAO", Common::showAO);
+        lightingShader.setBool("vxgi", Common::vxgi);
+        lightingShader.setBool("showDiffuseAccumulation", Common::showDiffuseAccumulation);
+        lightingShader.setBool("showTotalIndirectDiffuseLight", Common::showTotalIndirectDiffuseLight);
+        lightingShader.setFloat("diffuseConeSpread", Common::diffuseConeSpread);
+        lightingShader.setFloat("voxelizationAreaSize", Common::voxelizationAreaSize);
+        lightingShader.setFloat("vxSpecularBias", Common::vxSpecularBias);
+        lightingShader.setFloat("ssrSpecularBias", Common::ssrSpecularBias);
+        lightingShader.setFloat("ssrMaxBlurDistance", Common::ssrMaxBlurDistance);
+        lightingShader.setFloat("specularStepSizeMultiplier", Common::specularStepSizeMultiplier);
+        lightingShader.setFloat("specularConeOriginOffset", Common::specularConeOriginOffset);
+        lightingShader.setFloat("showTotalIndirectSpecularLight", Common::showTotalIndirectSpecularLight);
+        lightingShader.setFloat("specularConeMaxDistance", Common::specularConeMaxDistance);
+        lightingShader.setMat4("view", player.viewMatrix);
+        lightingShader.setMat4("projection", projection);
+        lightingShader.setVec3("camPos", ecs.GetComponent<CTransform>(playerEntity).position);
+        lightingShader.setBool("showNormals", Common::normalsDebug);
+        lightingShader.setBool("worldPosDebug", Common::worldPosDebug);
+        lightingShader.setBool("albedoDebug", Common::albedoDebug);
+        lightingShader.setBool("roughnessDebug", Common::roughnessDebug);
+        lightingShader.setBool("metallicDebug", Common::metallicDebug);
+        lightingShader.setBool("aoDebug", Common::aoDebug);
+        lightingShader.setBool("emissionDebug", Common::emissionDebug);
+        lightingShader.setBool("bloom", Common::bloomOn);
+        lightingShader.setInt("dirShadowMap", 9);
+        lightingShader.setMat4("dirLightSpaceMatrix", dirLightSpaceMatrix);
+        lightingShader.setBool("ssaoOn", Common::ssaoOn);
+        lightingShader.setBool("showAO", Common::showAO);
 
         glm::mat3 viewNormalMatrix = glm::transpose(glm::inverse(player.viewMatrix));
-        vxgiTestShader.setMat3("viewNormalMatrix", viewNormalMatrix);
+        lightingShader.setMat3("viewNormalMatrix", viewNormalMatrix);
 
         glActiveTexture(GL_TEXTURE9);
         glBindTexture(GL_TEXTURE_2D, RenderingUtil::mDirLightShadowMap);
         glActiveTexture(GL_TEXTURE15);
         glBindTexture(GL_TEXTURE_3D, RenderingUtil::mVoxelTexture);
-        vxgiTestShader.setInt("voxelTexture", 15);
+        lightingShader.setInt("voxelTexture", 15);
 
         glActiveTexture(GL_TEXTURE16);
         glBindTexture(GL_TEXTURE_2D, RenderingUtil::mViewPos);
-        vxgiTestShader.setInt("gViewPos", 16);
+        lightingShader.setInt("gViewPos", 16);
 
         glActiveTexture(GL_TEXTURE17);
         glBindTexture(GL_TEXTURE_2D, RenderingUtil::mViewNormalTexture);
-        vxgiTestShader.setInt("gViewNormals", 17);
+        lightingShader.setInt("gViewNormals", 17);
 
         glActiveTexture(GL_TEXTURE18);
         glBindTexture(GL_TEXTURE_2D, RenderingUtil::mSSRTexture);
-        vxgiTestShader.setInt("ssrTexture", 18);
+        lightingShader.setInt("ssrTexture", 18);
 
         glActiveTexture(GL_TEXTURE19);
         glBindTexture(GL_TEXTURE_2D, RenderingUtil::mSSRBlurredTexture);
-        vxgiTestShader.setInt("ssrTextureBlur", 19);
+        lightingShader.setInt("ssrTextureBlur", 19);
 
 
         glActiveTexture(GL_TEXTURE20);
         glBindTexture(GL_TEXTURE_2D, RenderingUtil::mSSAOBlurTexture);
-        vxgiTestShader.setInt("SSAO", 20);
+        lightingShader.setInt("SSAO", 20);
 
         for (const auto& entity : mEntities)
         {
@@ -395,24 +395,24 @@ void RenderSystem::Update(float deltaTime)
 
             glm::mat3 normalMatrix = glm::transpose(glm::inverse(model));
            
-            vxgiTestShader.use();
+            lightingShader.use();
 
-            vxgiTestShader.setMat4("model", model);
-            vxgiTestShader.setMat3("normalMatrix", normalMatrix);
+            lightingShader.setMat4("model", model);
+            lightingShader.setMat3("normalMatrix", normalMatrix);
             
             if (ecs.HasComponent<CModel>(entity))
             {
                 auto& model3d = ecs.GetComponent<CModel>(entity);
-                vxgiTestShader.setVec2("textureScaling", glm::vec2(1.0f));
-                vxgiTestShader.setBool("hasAOTexture", model3d.hasAOTexture);
-                model3d.model.Draw(vxgiTestShader);
+                lightingShader.setVec2("textureScaling", glm::vec2(1.0f));
+                lightingShader.setBool("hasAOTexture", model3d.hasAOTexture);
+                model3d.model.Draw(lightingShader);
             }
             else
             {
                 //glDisable(GL_CULL_FACE);
                 auto& meshComponent = ecs.GetComponent<CMesh>(entity);
-                vxgiTestShader.setVec2("textureScaling", meshComponent.textureScaling);
-                meshComponent.mesh.Draw(vxgiTestShader);
+                lightingShader.setVec2("textureScaling", meshComponent.textureScaling);
+                meshComponent.mesh.Draw(lightingShader);
                 //glEnable(GL_CULL_FACE);
             }
         }
@@ -760,82 +760,80 @@ void RenderSystem::Update(float deltaTime)
 
 void RenderSystem::voxelizeScene(glm::vec3 camPos, glm::mat4 dirLightSpaceMatrix)
 {
-    if (true)
-    {
-        glPushDebugGroup(GL_DEBUG_SOURCE_APPLICATION, 0, -1, "Voxelization");
+   
+    glPushDebugGroup(GL_DEBUG_SOURCE_APPLICATION, 0, -1, "Voxelization");
 
-        float clearColor[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
-        glClearTexImage(RenderingUtil::mVoxelTexture, 0, GL_RGBA, GL_HALF_FLOAT, clearColor);
+    float clearColor[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
+    glClearTexImage(RenderingUtil::mVoxelTexture, 0, GL_RGBA, GL_HALF_FLOAT, clearColor);
 
-        Shader& voxelizationShader = ShaderManager::GetShaderProgram("voxelizationShader");
+    Shader& voxelizationShader = ShaderManager::GetShaderProgram("voxelizationShader");
 
-        voxelizationShader.use();
+    voxelizationShader.use();
 
-        voxelizationShader.setFloat("voxelizationAreaSize", Common::voxelizationAreaSize);
+    voxelizationShader.setFloat("voxelizationAreaSize", Common::voxelizationAreaSize);
 
-        glActiveTexture(GL_TEXTURE5);
-        glBindTexture(GL_TEXTURE_CUBE_MAP_ARRAY, RenderingUtil::mPointLightShadowMap);
-        voxelizationShader.setInt("pointShadowMap", 5);
-        glActiveTexture(GL_TEXTURE6);
-        glBindTexture(GL_TEXTURE_2D, RenderingUtil::mDirLightShadowMap);
-        voxelizationShader.setInt("dirShadowMap", 6);
+    glActiveTexture(GL_TEXTURE5);
+    glBindTexture(GL_TEXTURE_CUBE_MAP_ARRAY, RenderingUtil::mPointLightShadowMap);
+    voxelizationShader.setInt("pointShadowMap", 5);
+    glActiveTexture(GL_TEXTURE6);
+    glBindTexture(GL_TEXTURE_2D, RenderingUtil::mDirLightShadowMap);
+    voxelizationShader.setInt("dirShadowMap", 6);
 
-        voxelizationShader.setMat4("dirLightSpaceMatrix", dirLightSpaceMatrix);
+    voxelizationShader.setMat4("dirLightSpaceMatrix", dirLightSpaceMatrix);
 
-        glViewport(0, 0, Common::voxelGridDimensions, Common::voxelGridDimensions);
-        glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE);
-        glDisable(GL_CULL_FACE);
-        glDisable(GL_DEPTH_TEST);
-        glDisable(GL_BLEND);
+    glViewport(0, 0, Common::voxelGridDimensions, Common::voxelGridDimensions);
+    glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE);
+    glDisable(GL_CULL_FACE);
+    glDisable(GL_DEPTH_TEST);
+    glDisable(GL_BLEND);
 
-        glBindImageTexture(0, RenderingUtil::mVoxelTexture, 0, GL_TRUE, 0, GL_WRITE_ONLY, GL_RGBA16F);
+    glBindImageTexture(0, RenderingUtil::mVoxelTexture, 0, GL_TRUE, 0, GL_WRITE_ONLY, GL_RGBA16F);
         
-        for (const auto& entity : mEntities)
+    for (const auto& entity : mEntities)
+    {
+        auto& transform = ecs.GetComponent<CTransform>(entity);
+
+        if (!ecs.HasComponent<CModel>(entity) && !ecs.HasComponent<CMesh>(entity))
         {
-            auto& transform = ecs.GetComponent<CTransform>(entity);
-
-            if (!ecs.HasComponent<CModel>(entity) && !ecs.HasComponent<CMesh>(entity))
-            {
-                continue;
-            }
-
-            glm::mat4 model = glm::mat4(1.0f);
-            model = glm::translate(model, transform.position);
-
-            glm::mat4 rotMatrix = glm::mat4_cast(transform.rotation);
-
-            model *= rotMatrix;
-
-            model = glm::scale(model, transform.scale);
-
-            glm::mat3 normalMatrix = glm::transpose(glm::inverse(model));
-
-            voxelizationShader.setMat4("model", model);
-            voxelizationShader.setMat3("normalMatrix", normalMatrix);
-            voxelizationShader.setVec3("camPos", camPos);
-
-            if (ecs.HasComponent<CModel>(entity))
-            {
-                auto& model3d = ecs.GetComponent<CModel>(entity);
-                voxelizationShader.setVec2("textureScaling", glm::vec2(1.0f));
-                voxelizationShader.setBool("hasAOTexture", model3d.hasAOTexture);
-                model3d.model.Draw(voxelizationShader);
-            }
-            else
-            {
-                auto& meshComponent = ecs.GetComponent<CMesh>(entity);
-                voxelizationShader.setVec2("textureScaling", meshComponent.textureScaling);
-                meshComponent.mesh.Draw(voxelizationShader);
-            }
+            continue;
         }
 
-        glBindTexture(GL_TEXTURE_3D, RenderingUtil::mVoxelTexture);
-        glGenerateMipmap(GL_TEXTURE_3D);
+        glm::mat4 model = glm::mat4(1.0f);
+        model = glm::translate(model, transform.position);
 
-        Common::voxelize = false;
+        glm::mat4 rotMatrix = glm::mat4_cast(transform.rotation);
 
-        glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
-        
-        glPopDebugGroup();
+        model *= rotMatrix;
+
+        model = glm::scale(model, transform.scale);
+
+        glm::mat3 normalMatrix = glm::transpose(glm::inverse(model));
+
+        voxelizationShader.setMat4("model", model);
+        voxelizationShader.setMat3("normalMatrix", normalMatrix);
+        voxelizationShader.setVec3("camPos", camPos);
+
+        if (ecs.HasComponent<CModel>(entity))
+        {
+            auto& model3d = ecs.GetComponent<CModel>(entity);
+            voxelizationShader.setVec2("textureScaling", glm::vec2(1.0f));
+            voxelizationShader.setBool("hasAOTexture", model3d.hasAOTexture);
+            model3d.model.Draw(voxelizationShader);
+        }
+        else
+        {
+            auto& meshComponent = ecs.GetComponent<CMesh>(entity);
+            voxelizationShader.setVec2("textureScaling", meshComponent.textureScaling);
+            meshComponent.mesh.Draw(voxelizationShader);
+        }
     }
+
+    glBindTexture(GL_TEXTURE_3D, RenderingUtil::mVoxelTexture);
+    glGenerateMipmap(GL_TEXTURE_3D);
+
+    Common::voxelize = false;
+
+    glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
+        
+    glPopDebugGroup();
 }
