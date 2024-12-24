@@ -192,6 +192,8 @@
     <None Include="res\shaders\equirectangularToCubemap.vert" />
     <None Include="res\shaders\gaussianBlur.frag" />
     <None Include="res\shaders\gaussianBlur.vert" />
+    <None Include="res\shaders\gBufferShader.frag" />
+    <None Include="res\shaders\gBufferShader.vert" />
     <None Include="res\shaders\irradianceConvolution.frag" />
     <None Include="res\shaders\line.frag" />
     <None Include="res\shaders\line.vert" />

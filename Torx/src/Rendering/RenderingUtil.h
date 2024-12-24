@@ -15,7 +15,8 @@ public:
 	static unsigned int mPointLightShadowMap;
 	static unsigned int mDirLightShadowMap;
 	static unsigned int mUnitCubeVAO;
-	static unsigned int mMsFBO;
+	static unsigned int mLightingFBO;
+	static unsigned int mFragColorTexture;
 	static unsigned int mBlittingFBO;
 	static unsigned int mPointLightShadowMapFBO;
 	static unsigned int mDirLightShadowMapFBO;
@@ -23,8 +24,8 @@ public:
 	static unsigned int mScreenQuadVAO;
 	static unsigned int mBulletDebugLinesVAO;
 	static unsigned int mBulletDebugLinesVBO;
-	static unsigned int mViewPos;
-	static unsigned int mViewNormalTexture;
+	//static unsigned int mViewPos;
+	//static unsigned int mViewNormalTexture;
 	static unsigned int mRoughnessTexture;
 	static unsigned int mSSRTexture;
 	static unsigned int mDiffuseColorTexture;
@@ -36,6 +37,15 @@ public:
 	static unsigned int mSSAOTexture;
 	static unsigned int mSSAOBlurFBO;
 	static unsigned int mSSAOBlurTexture;
+	static unsigned int gBufferFBO;
+	static unsigned int gPosition;
+	static unsigned int gNormal;
+	static unsigned int gAlbedo;
+	static unsigned int gRMA;
+	static unsigned int gDirLightSpacePosition;
+	static unsigned int gEmission;
+	static unsigned int gViewPosition;
+	static unsigned int gViewNormal;
 
 	// diffuse indirect lighting
 	static unsigned int mEnvironmentCubemap;
@@ -65,7 +75,7 @@ public:
 private:
 	static void CreateCubeVAO();
 	static void CreateScreenQuadVAO();
-	static void CreateMSAAFBO();
+	static void CreateLightingFBO();
 	static void CreateBlittingFBO();
 	static void CreateDirLightShadowMapFBO(unsigned int shadowWidth, unsigned int shadowHeight);
 	static void CreatePointLightShadowMapFBO(unsigned int shadowWidth, unsigned int shadowHeight);
@@ -74,5 +84,6 @@ private:
 	static void CreateSSAONoiseTexture();
 	static void CreateSSAOFBO();
 	static void CreateSSAOBlurFBO();
+	static void CreateGeometryPassFBO();
 	static std::vector<glm::vec3> mSSAONoise;
 };

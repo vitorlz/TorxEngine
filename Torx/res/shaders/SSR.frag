@@ -2,8 +2,8 @@
 
 uniform sampler2D gViewPosition;
 uniform sampler2D gViewNormal;
-uniform sampler2D gRoughness;
-uniform sampler2D gFinalImage;
+uniform sampler2D gRMA;
+uniform sampler2D gAlbedo;
 //uniform samplerCube skybox;
 //uniform mat3 inverseViewNormalMatrix;
 //uniform mat4 inverseViewMatrix;
@@ -30,11 +30,6 @@ void main()
   vec4 uv = vec4(0.0);
 
   vec4 positionFrom = vec4(texture(gViewPosition, texCoord).xyz, 1.0);
-
-  if(positionFrom.a == 0.0)
-  {
-    return;
-  }
 
   vec3 unitPositionFrom = normalize(positionFrom.xyz);
   vec3 normal           = normalize(texture(gViewNormal, texCoord).xyz);
@@ -68,11 +63,6 @@ void main()
   float useX      = abs(deltaX) >= abs(deltaY) ? 1.0 : 0.0;
   float delta     = mix(abs(deltaY), abs(deltaX), useX) * clamp(resolution, 0.0, 1.0);
 
-  if(delta > max(texSize.x - 0.001, texSize.y - 0.001) || delta < 0.001)
-  {
-    return;
-  }
-
   vec2  increment = vec2(deltaX, deltaY) / max(delta, 0.001);
 
   float search0 = 0;
@@ -85,19 +75,6 @@ void main()
   float depth        = -thickness;
 
   float i = 0;
-
-  bool hitSkybox = false;   
-
-  vec4 debug;
-
-  if(endFrag.x > 1)
-  {
-    debug = vec4(1.0);
-  }
-  else
-  {
-    debug = vec4(0.0);
-  }
 
   for (i = 0; i < int(delta); ++i) {
     
@@ -169,7 +146,6 @@ void main()
 
   float visibility =
       hit1
-     
     * ( 1
       - max
          ( dot(-unitPositionFrom, pivot)
@@ -200,9 +176,9 @@ void main()
 
     float alpha = clamp(uv.b, 0, 1);
 
-    vec4 color = texture(gFinalImage, uv.xy);
+    vec4 color = texture(gAlbedo, uv.xy);
 
-    float roughness = texture(gRoughness, texCoord).r;
+    float roughness = texture(gRMA, texCoord).r;
     
     vec2 dCoords = smoothstep(0.2, 0.6, abs(vec2(0.5, 0.5) - uv.xy));
   

@@ -17,7 +17,6 @@
 
 extern Coordinator ecs;
 
-
 namespace Scene
 {
 

@@ -224,10 +224,6 @@ void RenderSystem::Update(float deltaTime)
 
     glPopDebugGroup();
 
-    // ------------------------- LIGHTING PASS -----------------------------------
-
-    glPushDebugGroup(GL_DEBUG_SOURCE_APPLICATION, 0, -1, "Lighting Pass");
-
     glm::mat4 projection = glm::mat4(1.0f);
     projection = glm::perspective(
         glm::radians(45.0f), (float)Window::screenWidth / (float)Window::screenHeight, 0.1f, 100.0f);
@@ -261,341 +257,80 @@ void RenderSystem::Update(float deltaTime)
         glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
     }
 
-    glViewport(0, 0, Window::screenWidth, Window::screenHeight);
+  
+    // ----------------------- GEOMETRY PASS ----------------------------------------
 
-    glBindFramebuffer(GL_FRAMEBUFFER, RenderingUtil::mMsFBO);
+    glPushDebugGroup(GL_DEBUG_SOURCE_APPLICATION, 0, -1, "Geometry Pass");
+    glBindFramebuffer(GL_FRAMEBUFFER, RenderingUtil::gBufferFBO);
 
     // set both color buffer attachments as the draw buffers before clearing them, otherwise only the first color attachment will get cleared.
     // This would mean that the color buffer which we render the bloom brightness texture onto would not get cleared and the bloom would effect would
     // just accumulate over frames.
-    unsigned int attachments[6] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1, GL_COLOR_ATTACHMENT2, GL_COLOR_ATTACHMENT3, GL_COLOR_ATTACHMENT4, GL_COLOR_ATTACHMENT5 };
-    glDrawBuffers(6, attachments);
+    unsigned int attachments[8] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1, GL_COLOR_ATTACHMENT2, GL_COLOR_ATTACHMENT3, GL_COLOR_ATTACHMENT4, GL_COLOR_ATTACHMENT5, GL_COLOR_ATTACHMENT6, GL_COLOR_ATTACHMENT7 };
+    glDrawBuffers(8, attachments);
 
-    glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
+    glViewport(0, 0, Window::screenWidth, Window::screenHeight);
+    glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT);
     glClear(GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
     glEnable(GL_DEPTH_TEST);
     glEnable(GL_CULL_FACE);
     glCullFace(GL_BACK);
 
-    if (!Common::showVoxelDebug)
+
+    Shader& gBufferShader = ShaderManager::GetShaderProgram("gBufferShader");
+    gBufferShader.use();
+
+    gBufferShader.setMat4("view", player.viewMatrix);
+    gBufferShader.setMat4("projection", projection);
+    gBufferShader.setMat4("dirLightSpaceMatrix", dirLightSpaceMatrix);
+    
+    glm::mat3 normalViewMatrix = glm::transpose(glm::inverse(player.viewMatrix));
+    gBufferShader.setMat3("viewNormalMatrix", normalViewMatrix);
+
+    for (const auto& entity : mEntities)
     {
-        if (UI::isOpen)
+        auto& transform = ecs.GetComponent<CTransform>(entity);
+
+        if (!ecs.HasComponent<CModel>(entity) && !ecs.HasComponent<CMesh>(entity))
         {
-            Raycast::calculateMouseRaycast(projection * player.viewMatrix);
+            continue;
         }
 
-        Shader& lightingShader = ShaderManager::GetShaderProgram("lightingShader");
-        lightingShader.use();
+        glm::mat4 model = glm::mat4(1.0f);
+        model = glm::translate(model, transform.position);
 
-        if (pointLightShadowEntities.size() != 0)
+        glm::mat4 rotMatrix = glm::mat4_cast(transform.rotation);
+
+        model *= rotMatrix;
+
+        model = glm::scale(model, transform.scale);
+
+        glm::mat3 normalMatrix = glm::transpose(glm::inverse(model));
+
+        gBufferShader.use();
+
+        gBufferShader.setMat4("model", model);
+        gBufferShader.setMat3("normalMatrix", normalMatrix);
+
+        if (ecs.HasComponent<CModel>(entity))
         {
-            glActiveTexture(GL_TEXTURE10);
-            glBindTexture(GL_TEXTURE_CUBE_MAP_ARRAY, RenderingUtil::mPointLightShadowMap);
-            lightingShader.setInt("pointShadowMap", 10);
+            auto& model3d = ecs.GetComponent<CModel>(entity);
+            gBufferShader.setVec2("textureScaling", glm::vec2(1.0f));
+     
+            model3d.model.Draw(gBufferShader);
         }
-
-        lightingShader.setFloat("voxelSize", (2 * Common::voxelizationAreaSize) / float(Common::voxelGridDimensions));
-
-        lightingShader.setBool("vxgi", Common::vxgi);
-        lightingShader.setBool("showDiffuseAccumulation", Common::showDiffuseAccumulation);
-        lightingShader.setBool("showTotalIndirectDiffuseLight", Common::showTotalIndirectDiffuseLight);
-        lightingShader.setFloat("diffuseConeSpread", Common::diffuseConeSpread);
-        lightingShader.setFloat("voxelizationAreaSize", Common::voxelizationAreaSize);
-        lightingShader.setFloat("vxSpecularBias", Common::vxSpecularBias);
-        lightingShader.setFloat("ssrSpecularBias", Common::ssrSpecularBias);
-        lightingShader.setFloat("ssrMaxBlurDistance", Common::ssrMaxBlurDistance);
-        lightingShader.setFloat("specularStepSizeMultiplier", Common::specularStepSizeMultiplier);
-        lightingShader.setFloat("specularConeOriginOffset", Common::specularConeOriginOffset);
-        lightingShader.setFloat("showTotalIndirectSpecularLight", Common::showTotalIndirectSpecularLight);
-        lightingShader.setFloat("specularConeMaxDistance", Common::specularConeMaxDistance);
-        lightingShader.setMat4("view", player.viewMatrix);
-        lightingShader.setMat4("projection", projection);
-        lightingShader.setVec3("camPos", ecs.GetComponent<CTransform>(playerEntity).position);
-        lightingShader.setBool("showNormals", Common::normalsDebug);
-        lightingShader.setBool("worldPosDebug", Common::worldPosDebug);
-        lightingShader.setBool("albedoDebug", Common::albedoDebug);
-        lightingShader.setBool("roughnessDebug", Common::roughnessDebug);
-        lightingShader.setBool("metallicDebug", Common::metallicDebug);
-        lightingShader.setBool("aoDebug", Common::aoDebug);
-        lightingShader.setBool("emissionDebug", Common::emissionDebug);
-        lightingShader.setBool("bloom", Common::bloomOn);
-        lightingShader.setInt("dirShadowMap", 9);
-        lightingShader.setMat4("dirLightSpaceMatrix", dirLightSpaceMatrix);
-        lightingShader.setBool("ssaoOn", Common::ssaoOn);
-        lightingShader.setBool("showAO", Common::showAO);
-
-        glm::mat3 viewNormalMatrix = glm::transpose(glm::inverse(player.viewMatrix));
-        lightingShader.setMat3("viewNormalMatrix", viewNormalMatrix);
-
-        glActiveTexture(GL_TEXTURE9);
-        glBindTexture(GL_TEXTURE_2D, RenderingUtil::mDirLightShadowMap);
-        glActiveTexture(GL_TEXTURE15);
-        glBindTexture(GL_TEXTURE_3D, RenderingUtil::mVoxelTexture);
-        lightingShader.setInt("voxelTexture", 15);
-
-        glActiveTexture(GL_TEXTURE16);
-        glBindTexture(GL_TEXTURE_2D, RenderingUtil::mViewPos);
-        lightingShader.setInt("gViewPos", 16);
-
-        glActiveTexture(GL_TEXTURE17);
-        glBindTexture(GL_TEXTURE_2D, RenderingUtil::mViewNormalTexture);
-        lightingShader.setInt("gViewNormals", 17);
-
-        glActiveTexture(GL_TEXTURE18);
-        glBindTexture(GL_TEXTURE_2D, RenderingUtil::mSSRTexture);
-        lightingShader.setInt("ssrTexture", 18);
-
-        glActiveTexture(GL_TEXTURE19);
-        glBindTexture(GL_TEXTURE_2D, RenderingUtil::mSSRBlurredTexture);
-        lightingShader.setInt("ssrTextureBlur", 19);
-
-
-        glActiveTexture(GL_TEXTURE20);
-        glBindTexture(GL_TEXTURE_2D, RenderingUtil::mSSAOBlurTexture);
-        lightingShader.setInt("SSAO", 20);
-
-        for (const auto& entity : mEntities)
+        else
         {
-            auto& transform = ecs.GetComponent<CTransform>(entity);
-
-            if (ecs.HasComponent<CLight>(entity) && Common::lightPosDebug)
-            {
-                auto& light = ecs.GetComponent<CLight>(entity);
-
-                Shader& solidColorShader = ShaderManager::GetShaderProgram("solidColorShader");
-
-                solidColorShader.use();
-
-                glm::mat4 model = glm::mat4(1.0f);
-                model = glm::translate(model, transform.position + light.offset);
-                model = glm::scale(model, glm::vec3(0.1f));
-
-                solidColorShader.setMat4("projection", projection);
-                solidColorShader.setMat4("view", player.viewMatrix);
-                solidColorShader.setMat4("model", model);
-                solidColorShader.setVec3("color", light.color * light.strength);
-
-                Util::renderSphere();
-            }
-
-            if (!ecs.HasComponent<CModel>(entity) && !ecs.HasComponent<CMesh>(entity))
-            {
-                continue;
-            }
-
-            glm::mat4 model = glm::mat4(1.0f);
-            model = glm::translate(model, transform.position);
-
-            glm::mat4 rotMatrix = glm::mat4_cast(transform.rotation);
-
-            model *= rotMatrix;
-
-            model = glm::scale(model, transform.scale);
-
-            glm::mat3 normalMatrix = glm::transpose(glm::inverse(model));
-           
-            lightingShader.use();
-
-            lightingShader.setMat4("model", model);
-            lightingShader.setMat3("normalMatrix", normalMatrix);
-            
-            if (ecs.HasComponent<CModel>(entity))
-            {
-                auto& model3d = ecs.GetComponent<CModel>(entity);
-                lightingShader.setVec2("textureScaling", glm::vec2(1.0f));
-                lightingShader.setBool("hasAOTexture", model3d.hasAOTexture);
-                model3d.model.Draw(lightingShader);
-            }
-            else
-            {
-                //glDisable(GL_CULL_FACE);
-                auto& meshComponent = ecs.GetComponent<CMesh>(entity);
-                lightingShader.setVec2("textureScaling", meshComponent.textureScaling);
-                meshComponent.mesh.Draw(lightingShader);
-                //glEnable(GL_CULL_FACE);
-            }
+            //glDisable(GL_CULL_FACE);
+            auto& meshComponent = ecs.GetComponent<CMesh>(entity);
+            gBufferShader.setVec2("textureScaling", meshComponent.textureScaling);
+            meshComponent.mesh.Draw(gBufferShader);
+            //glEnable(GL_CULL_FACE);
         }
     }
-    
+
     glPopDebugGroup();
-    
-    if (Common::showVoxelDebug)
-    {
-        // voxel visualization
-
-        glViewport(0, 0, Window::screenWidth, Window::screenHeight);
-
-        glBindFramebuffer(GL_FRAMEBUFFER, RenderingUtil::mMsFBO);
-
-        // set both color buffer attachments as the draw buffers before clearing them, otherwise only the first color attachment will get cleared.
-        // This would mean that the color buffer which we render the bloom brightness texture onto would not get cleared and the bloom would effect would
-        // just accumulate over frames.
-
-        glDrawBuffers(1, attachments);
-
-        glClearColor(0.0f, 1.0f, 0.0f, 1.0f);
-        glClear(GL_COLOR_BUFFER_BIT);
-        glClear(GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
-        glEnable(GL_DEPTH_TEST);
-
-        Shader& voxelVisualizationShader = ShaderManager::GetShaderProgram("voxelVisualizationShader");
-
-        voxelVisualizationShader.use();
-
-        glUniform3i(glGetUniformLocation(voxelVisualizationShader.ID, "gridDimensions"), Common::voxelGridDimensions, Common::voxelGridDimensions, Common::voxelGridDimensions);
-
-        voxelVisualizationShader.setMat4("view", player.viewMatrix);
-        voxelVisualizationShader.setMat4("projection", projection);
-        voxelVisualizationShader.setVec3("camPos", ecs.GetComponent<CTransform>(playerEntity).position);
-
-        glActiveTexture(GL_TEXTURE0);
-        glBindTexture(GL_TEXTURE_3D, RenderingUtil::mVoxelTexture);
-        voxelVisualizationShader.setInt("voxelTexture", 0);
-
-        unsigned int vao;
-        glGenVertexArrays(1, &vao);
-        glBindVertexArray(vao);
-
-        glDrawArrays(GL_POINTS, 0, Common::voxelGridDimensions * Common::voxelGridDimensions * Common::voxelGridDimensions);
-    }
-
-   if (Common::bulletLinesDebug)
-   {
-        Shader& lineDebugShader = ShaderManager::GetShaderProgram("lineDebugShader");
-
-        lineDebugShader.use();
-
-        lineDebugShader.setMat4("projection", projection);
-        lineDebugShader.setMat4("view", player.viewMatrix);
-       
-        BulletDebugDrawer::drawLines();
-   }
-
-    // ---------------------------- SKYBOX PASS ---------------------------------------
-
-    unsigned int attachmentsSkybox[2] = {GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT5};
-
-    glDrawBuffers(2, attachmentsSkybox);
-    
-    if (Common::wireframeDebug) {
-        glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-    }
-
-    glDisable(GL_CULL_FACE);
-
-    glDepthFunc(GL_LEQUAL);
-
-    Shader& skyBoxShader = ShaderManager::GetShaderProgram("cubemapShader");
-
-    skyBoxShader.use();
-
-    skyBoxShader.setMat4("projection", projection);
-    skyBoxShader.setMat4("view", glm::mat4(glm::mat3(player.viewMatrix)));
-    glBindVertexArray(RenderingUtil::mUnitCubeVAO);
-    skyBoxShader.setInt("skybox", 1);
-    glActiveTexture(GL_TEXTURE1);
-    glBindTexture(GL_TEXTURE_CUBE_MAP, RenderingUtil::mEnvironmentCubemap);
-    glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
-
-    glDepthFunc(GL_LESS);
-
-    // ---------------------------------- BLITTING ---------------------------------------
-
-    // Set up to blit from the first color buffer
-    glBindFramebuffer(GL_READ_FRAMEBUFFER, RenderingUtil::mMsFBO);
-    glReadBuffer(GL_COLOR_ATTACHMENT0);  // Read from the first color attachment
-
-    glBindFramebuffer(GL_DRAW_FRAMEBUFFER, RenderingUtil::mBlittingFBO);
-    glDrawBuffer(GL_COLOR_ATTACHMENT0);  // Draw to the first color attachment
-
-    glBlitFramebuffer(0, 0, Window::screenWidth, Window::screenHeight, 0, 0, Window::screenWidth, Window::screenHeight, GL_COLOR_BUFFER_BIT, GL_NEAREST);
-
-    // Condition to do bloom
-
-    if (Common::bloomOn) {
-        // Now blit from the second color buffer
-        glReadBuffer(GL_COLOR_ATTACHMENT1);  // Read from the second color attachment
-
-        glDrawBuffer(GL_COLOR_ATTACHMENT1);  // Draw to the second color attachment
-
-        glBlitFramebuffer(0, 0, Window::screenWidth, Window::screenHeight, 0, 0, Window::screenWidth, Window::screenHeight, GL_COLOR_BUFFER_BIT, GL_NEAREST);
-    }
-
-    // viewPosTexture
-
-    glReadBuffer(GL_COLOR_ATTACHMENT2);  // Read from the second color attachment
-
-    glDrawBuffer(GL_COLOR_ATTACHMENT2);  // Draw to the second color attachment
-
-    glBlitFramebuffer(0, 0, Window::screenWidth, Window::screenHeight, 0, 0, Window::screenWidth, Window::screenHeight, GL_COLOR_BUFFER_BIT, GL_NEAREST);
-
-    // normalTexture
-
-    glReadBuffer(GL_COLOR_ATTACHMENT3);  // Read from the second color attachment
-
-    glDrawBuffer(GL_COLOR_ATTACHMENT3);  // Draw to the second color attachment
-
-    glBlitFramebuffer(0, 0, Window::screenWidth, Window::screenHeight, 0, 0, Window::screenWidth, Window::screenHeight, GL_COLOR_BUFFER_BIT, GL_NEAREST);
-
-    // roughnessTexture
-
-    glReadBuffer(GL_COLOR_ATTACHMENT4);  // Read from the second color attachment
-
-    glDrawBuffer(GL_COLOR_ATTACHMENT4);  // Draw to the second color attachment
-
-    glBlitFramebuffer(0, 0, Window::screenWidth, Window::screenHeight, 0, 0, Window::screenWidth, Window::screenHeight, GL_COLOR_BUFFER_BIT, GL_NEAREST);
-
-    // diffuseColorTexture
-
-    glReadBuffer(GL_COLOR_ATTACHMENT5);  // Read from the second color attachment
-
-    glDrawBuffer(GL_COLOR_ATTACHMENT5);  // Draw to the second color attachment
-
-    glBlitFramebuffer(0, 0, Window::screenWidth, Window::screenHeight, 0, 0, Window::screenWidth, Window::screenHeight, GL_COLOR_BUFFER_BIT, GL_NEAREST);
-
-    // ---------------------------------- BLOOM PASS -----------------------------------------------------------------
-
-    bool horizontal = true, first_iteration = true;
-
-    if (Common::bloomOn)
-    {
-        Shader& blurShader = ShaderManager::GetShaderProgram("blurShader");
-        blurShader.use();
-
-        int kernelSize = Common::bloomKernelSize;
-        float stdDeviation = Common::bloomStdDeviation;
-        float intervalMultiplier = Common::bloomIntervalMultiplier;
-
-        blurShader.setFloat("kernelSize", Common::bloomKernelSize);
-
-        Common::bloomWeights = Util::gaussian_weights(kernelSize, stdDeviation, intervalMultiplier);
-
-        std::vector<float> weights = Common::bloomWeights;
-
-        glUniform1fv(glGetUniformLocation(blurShader.ID, "weight"), kernelSize, weights.data());
-
-        glActiveTexture(GL_TEXTURE0);
-        blurShader.setInt("image", 0);
-
-        for (unsigned int i = 0; i < kernelSize * 2; i++)
-        {
-            glBindFramebuffer(GL_FRAMEBUFFER, RenderingUtil::mPingPongFBOs[horizontal]);
-            blurShader.setInt("horizontal", horizontal);
-            glBindTexture(
-                GL_TEXTURE_2D, first_iteration ? RenderingUtil::mBloomBrightnessTexture : RenderingUtil::mPingPongBuffers[!horizontal]
-            );
-
-            glBindVertexArray(RenderingUtil::mScreenQuadVAO);
-            glDisable(GL_DEPTH_TEST);
-            glDrawArrays(GL_TRIANGLES, 0, 6);
-
-            horizontal = !horizontal;
-            if (first_iteration)
-                first_iteration = false;
-        }
-    }
-    
     // ------------------------------ SSR PASS -----------------------------------------------------------
 
     glPushDebugGroup(GL_DEBUG_SOURCE_APPLICATION, 0, -1, "SSR Pass");
@@ -608,7 +343,6 @@ void RenderSystem::Update(float deltaTime)
 
     Shader& ssrShader = ShaderManager::GetShaderProgram("ssrShader");
     ssrShader.use();
-    //ssrShader.setMat4("invView", glm::inverse(player.viewMatrix));
 
     ssrShader.setMat4("projection", projection);
     ssrShader.setFloat("maxDistance", Common::ssrMaxDistance);
@@ -616,22 +350,21 @@ void RenderSystem::Update(float deltaTime)
     ssrShader.setInt("steps", Common::ssrSteps);
     ssrShader.setFloat("thickness", Common::ssrThickness);
 
-
     glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_2D, RenderingUtil::mViewPos);
+    glBindTexture(GL_TEXTURE_2D, RenderingUtil::gViewPosition);
     ssrShader.setInt("gViewPosition", 0);
 
     glActiveTexture(GL_TEXTURE1);
-    glBindTexture(GL_TEXTURE_2D, RenderingUtil::mViewNormalTexture);
+    glBindTexture(GL_TEXTURE_2D, RenderingUtil::gViewNormal);
     ssrShader.setInt("gViewNormal", 1);
 
     glActiveTexture(GL_TEXTURE2);
-    glBindTexture(GL_TEXTURE_2D, RenderingUtil::mRoughnessTexture);
-    ssrShader.setInt("gRoughness", 2);
+    glBindTexture(GL_TEXTURE_2D, RenderingUtil::gRMA);
+    ssrShader.setInt("gRMA", 2);
 
     glActiveTexture(GL_TEXTURE3);
-    glBindTexture(GL_TEXTURE_2D, RenderingUtil::mDiffuseColorTexture);
-    ssrShader.setInt("gFinalImage", 3);
+    glBindTexture(GL_TEXTURE_2D, RenderingUtil::gAlbedo);
+    ssrShader.setInt("gAlbedo", 3);
 
     glBindVertexArray(RenderingUtil::mScreenQuadVAO);
     glDisable(GL_DEPTH_TEST);
@@ -676,11 +409,11 @@ void RenderSystem::Update(float deltaTime)
         ssaoShader.setMat4("projection", projection);
 
         glActiveTexture(GL_TEXTURE0);
-        glBindTexture(GL_TEXTURE_2D, RenderingUtil::mViewPos);
+        glBindTexture(GL_TEXTURE_2D, RenderingUtil::gViewPosition);
         ssaoShader.setInt("gViewPosition", 0);
 
         glActiveTexture(GL_TEXTURE1);
-        glBindTexture(GL_TEXTURE_2D, RenderingUtil::mViewNormalTexture);
+        glBindTexture(GL_TEXTURE_2D, RenderingUtil::gViewNormal);
         ssaoShader.setInt("gViewNormal", 1);
 
         glActiveTexture(GL_TEXTURE2);
@@ -723,6 +456,241 @@ void RenderSystem::Update(float deltaTime)
         glPopDebugGroup();
     }
 
+    // ----------------------- LIGHTING PASS ------------------------------------------
+
+    glPushDebugGroup(GL_DEBUG_SOURCE_APPLICATION, 0, -1, "Lighting Pass");
+    glBindFramebuffer(GL_FRAMEBUFFER, RenderingUtil::mLightingFBO);
+
+    // set both color buffer attachments as the draw buffers before clearing them, otherwise only the first color attachment will get cleared.
+    // This would mean that the color buffer which we render the bloom brightness texture onto would not get cleared and the bloom would effect would
+    // just accumulate over frames.
+     
+    glDrawBuffers(2, attachments);
+
+    glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
+    glClear(GL_COLOR_BUFFER_BIT);
+    glClear(GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
+    glEnable(GL_DEPTH_TEST);
+    glEnable(GL_CULL_FACE);
+    glCullFace(GL_BACK);
+
+    if (!Common::showVoxelDebug)
+    {
+        if (UI::isOpen)
+        {
+            Raycast::calculateMouseRaycast(projection * player.viewMatrix);
+        }
+
+        Shader& lightingShader = ShaderManager::GetShaderProgram("lightingShader");
+        lightingShader.use();
+
+        if (pointLightShadowEntities.size() != 0)
+        {
+            glActiveTexture(GL_TEXTURE10);
+            glBindTexture(GL_TEXTURE_CUBE_MAP_ARRAY, RenderingUtil::mPointLightShadowMap);
+            lightingShader.setInt("pointShadowMap", 10);
+        }
+
+        lightingShader.setFloat("voxelSize", (2 * Common::voxelizationAreaSize) / float(Common::voxelGridDimensions));
+
+        lightingShader.setBool("vxgi", Common::vxgi);
+        lightingShader.setBool("showDiffuseAccumulation", Common::showDiffuseAccumulation);
+        lightingShader.setBool("showTotalIndirectDiffuseLight", Common::showTotalIndirectDiffuseLight);
+        lightingShader.setFloat("diffuseConeSpread", Common::diffuseConeSpread);
+        lightingShader.setFloat("voxelizationAreaSize", Common::voxelizationAreaSize);
+        lightingShader.setFloat("vxSpecularBias", Common::vxSpecularBias);
+        lightingShader.setFloat("ssrSpecularBias", Common::ssrSpecularBias);
+        lightingShader.setFloat("ssrMaxBlurDistance", Common::ssrMaxBlurDistance);
+        lightingShader.setFloat("specularStepSizeMultiplier", Common::specularStepSizeMultiplier);
+        lightingShader.setFloat("specularConeOriginOffset", Common::specularConeOriginOffset);
+        lightingShader.setFloat("showTotalIndirectSpecularLight", Common::showTotalIndirectSpecularLight);
+        lightingShader.setFloat("specularConeMaxDistance", Common::specularConeMaxDistance);
+        lightingShader.setMat4("view", player.viewMatrix);
+        lightingShader.setVec3("camPos", ecs.GetComponent<CTransform>(playerEntity).position);
+        lightingShader.setBool("showNormals", Common::normalsDebug);
+        lightingShader.setBool("worldPosDebug", Common::worldPosDebug);
+        lightingShader.setBool("albedoDebug", Common::albedoDebug);
+        lightingShader.setBool("roughnessDebug", Common::roughnessDebug);
+        lightingShader.setBool("metallicDebug", Common::metallicDebug);
+        lightingShader.setBool("aoDebug", Common::aoDebug);
+        lightingShader.setBool("emissionDebug", Common::emissionDebug);
+        lightingShader.setBool("bloom", Common::bloomOn);
+        lightingShader.setInt("dirShadowMap", 9);
+        lightingShader.setBool("ssaoOn", Common::ssaoOn);
+        lightingShader.setBool("showAO", Common::showAO);
+
+        glActiveTexture(GL_TEXTURE9);
+        glBindTexture(GL_TEXTURE_2D, RenderingUtil::mDirLightShadowMap);
+        glActiveTexture(GL_TEXTURE15);
+        glBindTexture(GL_TEXTURE_3D, RenderingUtil::mVoxelTexture);
+        lightingShader.setInt("voxelTexture", 15);
+
+        glActiveTexture(GL_TEXTURE18);
+        glBindTexture(GL_TEXTURE_2D, RenderingUtil::mSSRTexture);
+        lightingShader.setInt("ssrTexture", 18);
+
+        glActiveTexture(GL_TEXTURE19);
+        glBindTexture(GL_TEXTURE_2D, RenderingUtil::mSSRBlurredTexture);
+        lightingShader.setInt("ssrTextureBlur", 19);
+
+        glActiveTexture(GL_TEXTURE20);
+        glBindTexture(GL_TEXTURE_2D, RenderingUtil::mSSAOBlurTexture);
+        lightingShader.setInt("SSAO", 20);
+
+        glActiveTexture(GL_TEXTURE21);
+        glBindTexture(GL_TEXTURE_2D, RenderingUtil::gPosition);
+        lightingShader.setInt("gPosition", 21);
+
+        glActiveTexture(GL_TEXTURE22);
+        glBindTexture(GL_TEXTURE_2D, RenderingUtil::gNormal);
+        lightingShader.setInt("gNormal", 22);
+
+        glActiveTexture(GL_TEXTURE23);
+        glBindTexture(GL_TEXTURE_2D, RenderingUtil::gAlbedo);
+        lightingShader.setInt("gAlbedo", 23);
+
+        glActiveTexture(GL_TEXTURE24);
+        glBindTexture(GL_TEXTURE_2D, RenderingUtil::gRMA);
+        lightingShader.setInt("gRMA", 24);
+
+        glActiveTexture(GL_TEXTURE25);
+        glBindTexture(GL_TEXTURE_2D, RenderingUtil::gEmission);
+        lightingShader.setInt("gEmission", 25);
+
+        glActiveTexture(GL_TEXTURE26);
+        glBindTexture(GL_TEXTURE_2D, RenderingUtil::gDirLightSpacePosition);
+        lightingShader.setInt("gDirLightSpacePosition", 26);
+
+        glBindVertexArray(RenderingUtil::mScreenQuadVAO);
+        glDisable(GL_DEPTH_TEST);
+        glDrawArrays(GL_TRIANGLES, 0, 6);
+    }
+    
+    glPopDebugGroup();
+    
+
+    // ---------------------------- SKYBOX PASS ---------------------------------------
+
+    glBindFramebuffer(GL_READ_FRAMEBUFFER, RenderingUtil::gBufferFBO);
+    glBindFramebuffer(GL_DRAW_FRAMEBUFFER, RenderingUtil::mLightingFBO);
+    glBlitFramebuffer(0, 0, Common::SCR_WIDTH, Common::SCR_HEIGHT, 0, 0, Common::SCR_WIDTH, Common::SCR_HEIGHT, GL_DEPTH_BUFFER_BIT, GL_NEAREST);
+
+    glEnable(GL_DEPTH_TEST);
+    glDrawBuffers(1, attachments);
+
+    if (Common::wireframeDebug) {
+        glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+    }
+
+    glDisable(GL_CULL_FACE);
+    glDepthFunc(GL_LEQUAL);
+
+    Shader& skyBoxShader = ShaderManager::GetShaderProgram("cubemapShader");
+
+    skyBoxShader.use();
+
+    skyBoxShader.setMat4("projection", projection);
+    skyBoxShader.setMat4("view", glm::mat4(glm::mat3(player.viewMatrix)));
+    glBindVertexArray(RenderingUtil::mUnitCubeVAO);
+    skyBoxShader.setInt("skybox", 1);
+    glActiveTexture(GL_TEXTURE1);
+    glBindTexture(GL_TEXTURE_CUBE_MAP, RenderingUtil::mEnvironmentCubemap);
+    glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
+
+    glDepthFunc(GL_LESS);
+
+    // if we want to reflect the skybox in ssr we will have to do the same as above but render the skybox into the albedo texture of the gbuffer.
+
+    if (Common::showVoxelDebug)
+    {
+        // voxel visualization
+
+        glViewport(0, 0, Window::screenWidth, Window::screenHeight);
+
+        glBindFramebuffer(GL_FRAMEBUFFER, RenderingUtil::mLightingFBO);
+
+        glDrawBuffers(1, attachments);
+
+        glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+        glClear(GL_COLOR_BUFFER_BIT);
+        glClear(GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
+        glEnable(GL_DEPTH_TEST);
+
+        Shader& voxelVisualizationShader = ShaderManager::GetShaderProgram("voxelVisualizationShader");
+
+        voxelVisualizationShader.use();
+
+        glUniform3i(glGetUniformLocation(voxelVisualizationShader.ID, "gridDimensions"), Common::voxelGridDimensions, Common::voxelGridDimensions, Common::voxelGridDimensions);
+
+        voxelVisualizationShader.setMat4("view", player.viewMatrix);
+        voxelVisualizationShader.setMat4("projection", projection);
+        voxelVisualizationShader.setVec3("camPos", ecs.GetComponent<CTransform>(playerEntity).position);
+
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_3D, RenderingUtil::mVoxelTexture);
+        voxelVisualizationShader.setInt("voxelTexture", 0);
+
+        unsigned int vao;
+        glGenVertexArrays(1, &vao);
+        glBindVertexArray(vao);
+
+        glDrawArrays(GL_POINTS, 0, Common::voxelGridDimensions * Common::voxelGridDimensions * Common::voxelGridDimensions);
+    }
+
+   if (Common::bulletLinesDebug)
+   {
+        Shader& lineDebugShader = ShaderManager::GetShaderProgram("lineDebugShader");
+
+        lineDebugShader.use();
+
+        lineDebugShader.setMat4("projection", projection);
+        lineDebugShader.setMat4("view", player.viewMatrix);
+       
+        BulletDebugDrawer::drawLines();
+   }
+
+    // ---------------------------------- BLOOM PASS -----------------------------------------------------------------
+
+    bool horizontal = true, first_iteration = true;
+
+    if (Common::bloomOn)
+    {
+        Shader& blurShader = ShaderManager::GetShaderProgram("blurShader");
+        blurShader.use();
+
+        int kernelSize = Common::bloomKernelSize;
+        float stdDeviation = Common::bloomStdDeviation;
+        float intervalMultiplier = Common::bloomIntervalMultiplier;
+
+        blurShader.setFloat("kernelSize", Common::bloomKernelSize);
+
+        Common::bloomWeights = Util::gaussian_weights(kernelSize, stdDeviation, intervalMultiplier);
+
+        std::vector<float> weights = Common::bloomWeights;
+
+        glUniform1fv(glGetUniformLocation(blurShader.ID, "weight"), kernelSize, weights.data());
+
+        glActiveTexture(GL_TEXTURE0);
+        blurShader.setInt("image", 0);
+
+        for (unsigned int i = 0; i < kernelSize * 2; i++)
+        {
+            glBindFramebuffer(GL_FRAMEBUFFER, RenderingUtil::mPingPongFBOs[horizontal]);
+            blurShader.setInt("horizontal", horizontal);
+            glBindTexture(
+                GL_TEXTURE_2D, first_iteration ? RenderingUtil::mBloomBrightnessTexture : RenderingUtil::mPingPongBuffers[!horizontal]
+            );
+
+            glBindVertexArray(RenderingUtil::mScreenQuadVAO);
+            glDisable(GL_DEPTH_TEST);
+            glDrawArrays(GL_TRIANGLES, 0, 6);
+
+            horizontal = !horizontal;
+            if (first_iteration)
+                first_iteration = false;
+        }
+    }
+
     // ------------------------------ POST PROCESSING PASS -----------------------------------------------------------
 
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
@@ -745,7 +713,7 @@ void RenderSystem::Update(float deltaTime)
     glBindVertexArray(RenderingUtil::mScreenQuadVAO);
     glDisable(GL_DEPTH_TEST);
     glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_2D, RenderingUtil::mScreenQuadTexture);
+    glBindTexture(GL_TEXTURE_2D, RenderingUtil::mFragColorTexture);
 
     if (Common::bloomOn) {
         glActiveTexture(GL_TEXTURE1);
@@ -755,6 +723,46 @@ void RenderSystem::Update(float deltaTime)
     postProcessingShader.setInt("screenQuadTexture", 0);
     postProcessingShader.setInt("bloomBlurTexture", 1);
     glDrawArrays(GL_TRIANGLES, 0, 6);
+
+
+    // ------------------------------ FORWARD RENDERING PASS ----------------------------------------------------
+    glBindFramebuffer(GL_READ_FRAMEBUFFER, RenderingUtil::gBufferFBO);
+    glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
+    glBlitFramebuffer(0, 0, Common::SCR_WIDTH, Common::SCR_HEIGHT, 0, 0, Common::SCR_WIDTH, Common::SCR_HEIGHT, GL_DEPTH_BUFFER_BIT, GL_NEAREST);
+
+    glEnable(GL_DEPTH_TEST);
+
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+    if (Common::lightPosDebug)
+    {
+        for (const auto& entity : mEntities)
+        {
+            auto& transform = ecs.GetComponent<CTransform>(entity);
+
+            if (ecs.HasComponent<CLight>(entity))
+            {
+                auto& light = ecs.GetComponent<CLight>(entity);
+
+                Shader& solidColorShader = ShaderManager::GetShaderProgram("solidColorShader");
+
+                solidColorShader.use();
+
+                glm::mat4 model = glm::mat4(1.0f);
+                model = glm::translate(model, transform.position + light.offset);
+                model = glm::scale(model, glm::vec3(0.1f));
+
+                solidColorShader.setMat4("projection", projection);
+                solidColorShader.setMat4("view", player.viewMatrix);
+                solidColorShader.setMat4("model", model);
+                solidColorShader.setVec3("color", light.color * light.strength);
+
+                Util::renderSphere();
+            }
+        }
+    }
+
+
 }
 
 

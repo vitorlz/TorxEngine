@@ -8,28 +8,8 @@
 
 layout (location = 0) out vec4 FragColor;
 layout (location = 1) out vec4 BrightColor;
-layout (location = 2) out vec4 ViewPosition;
-layout (location = 3) out vec4 ViewNormals;
-layout (location = 4) out vec4 Roughness;
-layout (location = 5) out vec4 DiffuseColor;
 
 in vec2 TexCoords;	
-in vec3 FragPos;
-in vec3 Normal;
-
-// material parameters
-struct Material 
-{
-	sampler2D texture_albedo1;
-
-	sampler2D texture_normal1;
-
-	sampler2D texture_rma1;
-
-	sampler2D texture_emission1;
-};
-
-uniform Material material;
 
 // debug
 uniform bool showNormals;
@@ -43,17 +23,16 @@ uniform bool emissionDebug;
 
 // shadows
 uniform sampler2D dirShadowMap;
-in vec4 FragPosLightSpaceDir;
+vec4 FragPosLightSpaceDir;
 uniform samplerCubeArray pointShadowMap;
 int pointShadowCasterIndex = 0;
 
 // misc
 uniform bool hasAOTexture;
 uniform vec2 textureScaling;
-vec2 scaledTexCoords;
+//vec2 scaledTexCoords;
 
 // SSR
-in vec4 ViewFragPos;
 uniform sampler2D ssrTexture;
 uniform sampler2D ssrTextureBlur;
 uniform mat3 viewNormalMatrix;
@@ -135,15 +114,27 @@ uniform float specularConeMaxDistance;
 
 float MAX_DISTANCE;
 
+//gBuffer
+
+vec3 FragPos;
+
+uniform sampler2D gPosition;
+uniform sampler2D gNormal;
+uniform sampler2D gAlbedo;
+uniform sampler2D gRMA;
+uniform sampler2D gEmission;
+uniform sampler2D gDirLightSpacePosition;
+
 void main()
 {	
-	scaledTexCoords = TexCoords * textureScaling;
+	FragPos = texture(gPosition, TexCoords).xyz;
+	FragPosLightSpaceDir =  texture(gDirLightSpacePosition, TexCoords);
 
 	MAX_DISTANCE = distance(vec3(abs(FragPos)), vec3(-specularConeMaxDistance));
 
-	vec4 albedoSample = texture(material.texture_albedo1, scaledTexCoords).rgba;
-	vec3 RMA = texture(material.texture_rma1, scaledTexCoords).gbr;
-	emission = texture(material.texture_emission1, scaledTexCoords).rgb;
+	vec4 albedoSample = texture(gAlbedo, TexCoords).rgba;
+	vec3 RMA = texture(gRMA, TexCoords).rgb;
+	emission = texture(gEmission, TexCoords).rgb;
 
 	roughness = RMA.r;
 	metallic = RMA.g;
@@ -155,7 +146,7 @@ void main()
 
 	albedo = albedoSample.rgb;
 
-	vec3 N = getNormalFromMap();
+	vec3 N = texture(gNormal, TexCoords).rgb;
 	vec3 V = normalize(camPos - FragPos); // viewDir
 	vec3 R = reflect(-V, N);   
 
@@ -276,12 +267,6 @@ void main()
 		}
 	}
 
-	Roughness = vec4(vec3(roughness), 1.0);
-	
-	ViewPosition = ViewFragPos;
-	
-	ViewNormals = vec4(normalize(viewNormalMatrix * N), 1.0);
-	DiffuseColor = vec4(Lo + indirectDiffuseContribution, 1.0);
 }
 
 
@@ -683,19 +668,3 @@ float DirShadowCalculation(vec4 fragPosLightSpace, vec3 normal, vec3 lightDir)
 	return shadow;
 }
 
-vec3 getNormalFromMap()
-{
-    vec3 tangentNormal = texture(material.texture_normal1, scaledTexCoords).xyz * 2.0 - 1.0;
-
-    vec3 Q1  = dFdx(FragPos);
-    vec3 Q2  = dFdy(FragPos);
-    vec2 st1 = dFdx(TexCoords);
-    vec2 st2 = dFdy(TexCoords);
-
-    vec3 N   = normalize(Normal);
-    vec3 T  = normalize(Q1*st2.t - Q2*st1.t);
-    vec3 B  = -normalize(cross(N, T));
-    mat3 TBN = mat3(T, B, N);
-
-    return normalize(TBN * tangentNormal);
-}

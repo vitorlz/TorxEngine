@@ -287,6 +287,7 @@ void UI::Update()
 
         ImGui::TreePop();
     }
+    
     if (ImGui::Button("Save scene"))
     {
         Scene::SaveSceneToJson("sponzascene.json");

@@ -320,6 +320,8 @@
     <None Include="res\shaders\SSAO.vert" />
     <None Include="res\shaders\SSAOBlur.vert" />
     <None Include="res\shaders\SSAOBlur.frag" />
+    <None Include="res\shaders\gBufferShader.vert" />
+    <None Include="res\shaders\gBufferShader.frag" />
   </ItemGroup>
   <ItemGroup>
     <Library Include="vendor\assimp\lib\assimp-vc143-mt.lib" />

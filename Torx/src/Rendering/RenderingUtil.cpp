@@ -16,7 +16,7 @@ unsigned int RenderingUtil::mPointLightShadowMap;
 unsigned int RenderingUtil::mPingPongFBOs[2];
 unsigned int RenderingUtil::mPingPongBuffers[2];
 unsigned int RenderingUtil::mUnitCubeVAO;
-unsigned int RenderingUtil::mMsFBO;
+unsigned int RenderingUtil::mLightingFBO;
 unsigned int RenderingUtil::mBlittingFBO;
 unsigned int RenderingUtil::mPointLightShadowMapFBO;
 unsigned int RenderingUtil::mScreenQuadVAO;
@@ -31,8 +31,6 @@ unsigned int RenderingUtil::mBulletDebugLinesVBO;
 unsigned int RenderingUtil::mVoxelTexture;
 unsigned int RenderingUtil::mVoxelizationFBO;
 unsigned int RenderingUtil::mVoxelVisualizationTexture;
-unsigned int RenderingUtil::mViewPos;
-unsigned int RenderingUtil::mViewNormalTexture;
 unsigned int RenderingUtil::mRoughnessTexture;
 unsigned int RenderingUtil::mSSRTexture;
 unsigned int RenderingUtil::mSSRFBO;
@@ -46,14 +44,24 @@ unsigned int RenderingUtil::mSSAOTexture;
 unsigned int RenderingUtil::mSSAOFBO;
 unsigned int RenderingUtil::mSSAOBlurTexture;
 unsigned int RenderingUtil::mSSAOBlurFBO;
+unsigned int RenderingUtil::gBufferFBO;
+unsigned int RenderingUtil::gPosition;
+unsigned int RenderingUtil::gNormal;
+unsigned int RenderingUtil::gAlbedo;
+unsigned int RenderingUtil::gRMA;
+unsigned int RenderingUtil::gDirLightSpacePosition;
+unsigned int RenderingUtil::gEmission;
+unsigned int RenderingUtil::mFragColorTexture;
+unsigned int RenderingUtil::gViewPosition;
+unsigned int RenderingUtil::gViewNormal;
 
 void RenderingUtil::Init()
 {
     glEnable(GL_TEXTURE_CUBE_MAP_SEAMLESS);
 
     RenderingUtil::CreateCubeVAO();
-    RenderingUtil::CreateMSAAFBO();
-    RenderingUtil::CreateBlittingFBO();
+    RenderingUtil::CreateLightingFBO();
+    //RenderingUtil::CreateBlittingFBO();
     RenderingUtil::CreateDirLightShadowMapFBO(2048, 2048);
     RenderingUtil::CreatePointLightShadowMapFBO(1024, 1024);
     RenderingUtil::CreateScreenQuadVAO();
@@ -67,6 +75,7 @@ void RenderingUtil::Init()
     RenderingUtil::CreateSSAONoiseTexture();
     RenderingUtil::CreateSSAOFBO();
     RenderingUtil::CreateSSAOBlurFBO();
+    RenderingUtil::CreateGeometryPassFBO();
 }
 
 float cubeVertices[] = 
@@ -185,198 +194,62 @@ void RenderingUtil::CreateScreenQuadVAO()
     glBindVertexArray(0);
 }
 
-void RenderingUtil::CreateMSAAFBO()
+void RenderingUtil::CreateLightingFBO()
 {
-    glGenFramebuffers(1, &mMsFBO);
-    glBindFramebuffer(GL_FRAMEBUFFER, mMsFBO);
+    glGenFramebuffers(1, &mLightingFBO);
+    glBindFramebuffer(GL_FRAMEBUFFER, mLightingFBO);
 
-    // create multisampled texture to use as color buffer attachment of multisampled framebuffer
+    // FragColor texture
+    
+    glGenTextures(1, &mFragColorTexture);
+    glBindTexture(GL_TEXTURE_2D, mFragColorTexture);
+  
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, Common::SCR_WIDTH, Common::SCR_HEIGHT, 0, GL_RGBA, GL_FLOAT, NULL);
 
-    unsigned int colorBuffers[6];
-    glGenTextures(6, colorBuffers);
-    for (unsigned int i = 0; i < 6; i++)
-    {
-        glBindTexture(GL_TEXTURE_2D_MULTISAMPLE, colorBuffers[i]);
-        // We are using a floating point texture (RGB16F) so that we can store color values greater than 1 (high dynamic range)
-        // we can then set the color values of the lights as high as we want (conveying the true brightness of the lights).
-        // We then convert these values back to the 0.0 to 1.0 range (low dynamic range) in the final shader (the shader used to render stuff to the screen quad)
-        // using a process called tone mapping (for which we have many different algorithms).
-        glTexImage2DMultisample(GL_TEXTURE_2D_MULTISAMPLE, 1, GL_RGBA16F, Common::SCR_WIDTH, Common::SCR_HEIGHT, GL_TRUE);
-
-        glTexParameteri(GL_TEXTURE_2D_MULTISAMPLE, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-        glTexParameteri(GL_TEXTURE_2D_MULTISAMPLE, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-        glTexParameteri(GL_TEXTURE_2D_MULTISAMPLE, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-        glTexParameteri(GL_TEXTURE_2D_MULTISAMPLE, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-
-        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + i, GL_TEXTURE_2D_MULTISAMPLE, colorBuffers[i], 0);
-    }
-
-    glBindTexture(GL_TEXTURE_2D_MULTISAMPLE, 0);
-
-    // We have to tell opengl that we are drawing to two color buffers when using this framebuffer, otherwise opengl will only render to the first
-    // color attachments and ignore the others.
-
-    // -------- UNCOMMENT THIS WHEN IT IS TIME TO DO BLOOM ---------------
-
-    unsigned int attachments[6] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1, GL_COLOR_ATTACHMENT2,  GL_COLOR_ATTACHMENT3, GL_COLOR_ATTACHMENT4, GL_COLOR_ATTACHMENT5 };
-
-    glDrawBuffers(6, attachments);
-
-    // create multisampled depth and stencil buffers as attachments of multisampled framebuffer
-
-    unsigned int msRbo;
-    glGenRenderbuffers(1, &msRbo);
-    glBindRenderbuffer(GL_RENDERBUFFER, msRbo);
-    glRenderbufferStorageMultisample(GL_RENDERBUFFER, 1, GL_DEPTH24_STENCIL8, Common::SCR_WIDTH, Common::SCR_HEIGHT);
-    glBindRenderbuffer(GL_RENDERBUFFER, 0);
-
-    glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, msRbo);
-
-    if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
-        std::cout << "ERROR::FRAMEBUFFER:: Framebuffer is not complete!" << std::endl;
-    }
-
-    glBindFramebuffer(GL_FRAMEBUFFER, 0);
-}
-
-void RenderingUtil::CreateBlittingFBO()
-{
-    // SCREEN QUAD FRAMEBUFFER (WE BLIT BOTH THE MULTISAMPLED SCENE AND THE MULTISAMPLED BLUR BRIGHTNESS TEXTURE INTO THIS FRAMEBUFFER)
-    glGenFramebuffers(1, &mBlittingFBO);
-
-    glBindFramebuffer(GL_FRAMEBUFFER, mBlittingFBO);
-
-    // SCREEN QUAD TEXTURE
-
-   
-    glGenTextures(1, &mScreenQuadTexture);
-    glBindTexture(GL_TEXTURE_2D, mScreenQuadTexture);
-
-    // This has to be a floating point framebuffer otherwise we would not have sufficient color precision after gamma correcting and we would see artifacts
-    // for lower color values. We need to do this if we want to gamma correct in the final pass (post processing / screen quad pass).
-    // Gamma correction amplifies differences in lower color values, which can reveal artifacts. Gamma correction amplifies differences in lower color values, 
-    // which can reveal artifacts. Floating-point colors in shaders prevent these artifacts because of higher precision.
-
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB16F, Common::SCR_WIDTH, Common::SCR_HEIGHT, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
-
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-   // glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-    //glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, mFragColorTexture, 0);
 
     glBindTexture(GL_TEXTURE_2D, 0);
 
-    // attach the texture object as the color attachment / buffer of the currently bound framebuffer.
-
-    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, mScreenQuadTexture, 0);
-
-    // BLUR TEXTURE 
+    // Bloom brightness texture
 
     glGenTextures(1, &mBloomBrightnessTexture);
     glBindTexture(GL_TEXTURE_2D, mBloomBrightnessTexture);
-
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB16F, Common::SCR_WIDTH, Common::SCR_HEIGHT, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
+    
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, Common::SCR_WIDTH, Common::SCR_HEIGHT, 0, GL_RGBA, GL_FLOAT, NULL);
 
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-
-
-    glBindTexture(GL_TEXTURE_2D, 0);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
     glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT1, GL_TEXTURE_2D, mBloomBrightnessTexture, 0);
 
-    // viewPositionTexture
-
-    glGenTextures(1, &mViewPos);
-    glBindTexture(GL_TEXTURE_2D, mViewPos);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, Common::SCR_WIDTH, Common::SCR_HEIGHT, 0, GL_RGBA, GL_FLOAT, NULL);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-
     glBindTexture(GL_TEXTURE_2D, 0);
 
-    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT2, GL_TEXTURE_2D, mViewPos, 0);
+    unsigned int attachments[2] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1 };
 
-    // NormalTexture
+    glDrawBuffers(2, attachments);
 
-    glGenTextures(1, &mViewNormalTexture);
-    glBindTexture(GL_TEXTURE_2D, mViewNormalTexture);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB16F, Common::SCR_WIDTH, Common::SCR_HEIGHT, 0, GL_RGB, GL_FLOAT, NULL);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-
-    glBindTexture(GL_TEXTURE_2D, 0);
-
-    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT3, GL_TEXTURE_2D, mViewNormalTexture, 0);
-
-    // roughness texture
-
-
-    glGenTextures(1, &mRoughnessTexture);
-    glBindTexture(GL_TEXTURE_2D, mRoughnessTexture);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, Common::SCR_WIDTH, Common::SCR_HEIGHT, 0, GL_RGBA, GL_FLOAT, NULL);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-
-    glBindTexture(GL_TEXTURE_2D, 0);
-
-    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT4, GL_TEXTURE_2D, mRoughnessTexture, 0);
-
-    // diffuse color texture
-
-    glGenTextures(1, &mDiffuseColorTexture);
-    glBindTexture(GL_TEXTURE_2D, mDiffuseColorTexture);
-
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, Common::SCR_WIDTH, Common::SCR_HEIGHT, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
-
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
-
-    float borderColor[]{ 0.0f, 0.0f, 0.0f, 0.0f };
-    glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, borderColor);
-
-    glBindTexture(GL_TEXTURE_2D, 0);
-
-    // attach the texture object as the color attachment / buffer of the currently bound framebuffer.
-
-    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT5, GL_TEXTURE_2D, mDiffuseColorTexture, 0);
-
-
-    unsigned int attachments[6] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1, GL_COLOR_ATTACHMENT2,  GL_COLOR_ATTACHMENT3, GL_COLOR_ATTACHMENT4, GL_COLOR_ATTACHMENT5 };
-
-    //We also want to make sure OpenGL is able to do depth testing (and optionally stencil testing) so we have to make
-    // sure to add a depth (and stencil) attachment to the framebuffer. Since we'll only be sampling the color buffer and 
-    // not the other buffers we can create a renderbuffer object for this purpose. Remember that we can only write
-    // to renderbuffer objects, we cannot read from them. We are going to use one renderbuffer object as both the depth and stencil
-    // buffers.
-
-    unsigned int screenRbo;
-    glGenRenderbuffers(1, &screenRbo);
-    glBindRenderbuffer(GL_RENDERBUFFER, screenRbo);
+    unsigned int lightingRBO;
+    glGenRenderbuffers(1, &lightingRBO);
+    glBindRenderbuffer(GL_RENDERBUFFER, lightingRBO);
     glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, Common::SCR_WIDTH, Common::SCR_HEIGHT);
     glBindRenderbuffer(GL_RENDERBUFFER, 0);
 
-    // now, to complete the framebuffer, we attach the renderbuffer object to both the depth and stencil attachment of the framebuffer:
-
-    glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, screenRbo);
-
-    // check if the currently bound framebuffer is complete and if it's not, print an error message
+    glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, lightingRBO);
 
     if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
         std::cout << "ERROR::FRAMEBUFFER:: Framebuffer is not complete!" << std::endl;
     }
 
-    // make sure to unbind the framebuffer to make sure we are not accidentally rendering to the wrong framebuffer.
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
+
 
 void RenderingUtil::CreatePointLightShadowMapFBO(unsigned int shadowWidth, unsigned int shadowHeight)
 {
@@ -919,6 +792,112 @@ void RenderingUtil::CreateSSAOBlurFBO()
         std::cout << "ERROR::FRAMEBUFFER:: Framebuffer is not complete!\n";
         throw 0;
     }
+}
+
+void RenderingUtil::CreateGeometryPassFBO()
+{
+    glGenFramebuffers(1, &gBufferFBO);
+    glBindFramebuffer(GL_FRAMEBUFFER, gBufferFBO);
+
+    // position
+    glGenTextures(1, &gPosition);
+    glBindTexture(GL_TEXTURE_2D, gPosition);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, Common::SCR_WIDTH, Common::SCR_HEIGHT, 0, GL_RGBA, GL_FLOAT, NULL);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, gPosition, 0);
+
+    // normals
+    glGenTextures(1, &gNormal);
+    glBindTexture(GL_TEXTURE_2D, gNormal);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, Common::SCR_WIDTH, Common::SCR_HEIGHT, 0, GL_RGBA, GL_FLOAT, NULL);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT1, GL_TEXTURE_2D, gNormal, 0);
+
+    // albedo
+    glGenTextures(1, &gAlbedo);
+    glBindTexture(GL_TEXTURE_2D, gAlbedo);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, Common::SCR_WIDTH, Common::SCR_HEIGHT, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT2, GL_TEXTURE_2D, gAlbedo, 0);
+
+    // roughness, metallic, and AO
+    glGenTextures(1, &gRMA);
+    glBindTexture(GL_TEXTURE_2D, gRMA);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, Common::SCR_WIDTH, Common::SCR_HEIGHT, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT3, GL_TEXTURE_2D, gRMA, 0);
+
+    // emission
+    glGenTextures(1, &gEmission);
+    glBindTexture(GL_TEXTURE_2D, gEmission);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, Common::SCR_WIDTH, Common::SCR_HEIGHT, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT4, GL_TEXTURE_2D, gEmission, 0);
+
+    // directional light space position
+    glGenTextures(1, &gDirLightSpacePosition);
+    glBindTexture(GL_TEXTURE_2D, gDirLightSpacePosition);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, Common::SCR_WIDTH, Common::SCR_HEIGHT, 0, GL_RGBA, GL_FLOAT, NULL);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT5, GL_TEXTURE_2D, gDirLightSpacePosition, 0);
+
+
+    // view position
+    glGenTextures(1, &gViewPosition);
+    glBindTexture(GL_TEXTURE_2D, gViewPosition);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, Common::SCR_WIDTH, Common::SCR_HEIGHT, 0, GL_RGBA, GL_FLOAT, NULL);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT6, GL_TEXTURE_2D, gViewPosition, 0);
+
+    // view normals
+    glGenTextures(1, &gViewNormal);
+    glBindTexture(GL_TEXTURE_2D, gViewNormal);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, Common::SCR_WIDTH, Common::SCR_HEIGHT, 0, GL_RGBA, GL_FLOAT, NULL);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT7, GL_TEXTURE_2D, gViewNormal, 0);
+
+    glBindTexture(GL_TEXTURE_2D, 0);
+
+    unsigned int attachments[8] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1, GL_COLOR_ATTACHMENT2, GL_COLOR_ATTACHMENT3, GL_COLOR_ATTACHMENT4, GL_COLOR_ATTACHMENT5,  GL_COLOR_ATTACHMENT6,  GL_COLOR_ATTACHMENT7 };
+    glDrawBuffers(8, attachments);
+
+    unsigned int gBufferRBO;
+    glGenRenderbuffers(1, &gBufferRBO);
+    glBindRenderbuffer(GL_RENDERBUFFER, gBufferRBO);
+    glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, Common::SCR_WIDTH, Common::SCR_HEIGHT);
+    glBindRenderbuffer(GL_RENDERBUFFER, 0);
+
+    glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, gBufferRBO);
+
+    if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
+        std::cout << "ERROR::FRAMEBUFFER:: Framebuffer is not complete!" << std::endl;
+    }
+
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
 void RenderingUtil::DeleteTexture(unsigned int textureId) 
