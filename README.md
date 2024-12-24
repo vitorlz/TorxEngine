@@ -11,7 +11,7 @@ https://github.com/user-attachments/assets/bd16ce13-ceeb-48e2-b0ed-964f2b4c2a72
 <li>Screen Space Reflections</li>
 <li>Screen Space Ambient Occlusion</li> 
 <li>ECS</li> 
-<li>Bullet Physics implementation</li> 
+<li>BulletPhysics integration</li> 
 <li>Shadow mapping</li> 
 <li>Normal mapping</li> 
 <li>Percentage-Closer Filtering</li> 
