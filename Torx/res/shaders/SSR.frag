@@ -53,8 +53,6 @@ void main()
        endFrag.xy   = endFrag.xy * 0.5 + 0.5;
        endFrag.xy  *= texSize;
 
-
-
   vec2 frag  = startFrag.xy;
        uv.xy = frag / texSize;
 

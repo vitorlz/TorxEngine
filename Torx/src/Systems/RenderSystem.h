@@ -15,5 +15,17 @@ public:
 	void Update(float deltaTime);
 
 private:
-	void voxelizeScene(glm::vec3 camPos, glm::mat4 dirLightSpaceMatrix);
+	void VoxelizeScene();
+	void DirectionalShadowMapPass();
+	void OmnidirectionalShadowMapPass();
+	void GeometryPass();
+	void SSRPass();
+	void SSAOPass();
+	void LightingPass();
+	void SkyboxPass();
+	void BloomPass();
+	void PostProcessingPass();
+	void ForwardRenderingPass();
+	void RenderVoxelDebug();
+	void RenderPhysicsDebug();
 };

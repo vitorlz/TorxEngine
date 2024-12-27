@@ -5,7 +5,7 @@
 #include <any>
 #include <memory>
 #include <unordered_map>
-
+#include "../Components/CPlayer.h"
 
 // The component manager is in charge of communicating with the different component arrays when a component needs to be added or removed
 
@@ -49,6 +49,10 @@ public:
 		// Add a component to an entity by inserting the component in a component array of its type and also mapping the entity to that component's
 		// index in the array and mapping the index to the entity (in the component array class).
 		GetComponentArray<T>()->InsertData(entity, component);
+		if (std::is_same<T, CPlayer>::value)
+		{
+			mPlayerList.push_back(entity);
+		}
 	}
 
 	template<typename T> void RemoveComponent(Entity entity) 
@@ -76,6 +80,11 @@ public:
 		}
 	}
 
+	std::vector<Entity> GetPlayerList()
+	{
+		return mPlayerList;
+	}
+
 private:
 	// map unique key (a type string pointer that is different for each type) to a component type. For example CTransform will have a key,
 	// CGravity will have another key and so on. This ComponentType is simply a u_int8_t that we defined in Types.hpp. The value stored with
@@ -88,6 +97,8 @@ private:
 
 	// The component type (unique ID / bit) to be assigned to the next component. Starts at 0.
 	ComponentType mNextComponentType{0};
+
+	std::vector<Entity> mPlayerList{};
 
 	// Get the statically casted pointer to the ComponentArray of type T.
 	template<typename T> std::shared_ptr<ComponentArray<T>> GetComponentArray() 

@@ -37,6 +37,7 @@ vec3 getNormalFromMap();
 
 void main()
 {
+
 	scaledTexCoords = TexCoords * textureScaling;
 	
 	gPosition = FragPos;

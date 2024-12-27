@@ -22,6 +22,8 @@
 #include "../Physics/BulletDebugDrawer.h"
 #include "../UI/UI.h"
 #include "../Editor/Editor.h"
+#include "../Rendering/Shadows.h"
+#include "../Rendering/Bloom.h"
 
 extern Coordinator ecs;
 
@@ -30,13 +32,122 @@ void RenderSystem::Init()
     RenderingUtil::CreateVoxelTexture(Common::voxelGridDimensions);
 }
 
-glm::mat4 dirLightSpaceMatrix;
 void RenderSystem::Update(float deltaTime)
 {
-    // ------------------------- DIRECTIONAL SHADOWS PASS ---------------------------------------
+    DirectionalShadowMapPass();
+    OmnidirectionalShadowMapPass();
+    VoxelizeScene();
+    GeometryPass();
+    SSRPass();
+    SSAOPass();
+    LightingPass();
+    SkyboxPass();
+    BloomPass();
+    if (Common::showVoxelDebug)
+    {
+        RenderVoxelDebug();
+    }
 
-    // this probably should not be here. For something to go through the render system it has to have a model. This means that we have to add a model to 
-    // the directional light and scale it to 0 if we want it to go through the process below.
+    if (Common::bulletLinesDebug)
+    {
+        RenderPhysicsDebug();
+    }
+    PostProcessingPass();
+    ForwardRenderingPass();
+}
+
+
+void RenderSystem::VoxelizeScene()
+{
+    if (!Common::vxgi)
+    {
+        return;
+    }
+    glPushDebugGroup(GL_DEBUG_SOURCE_APPLICATION, 0, -1, "Voxelization");
+
+    float clearColor[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
+    glClearTexImage(RenderingUtil::mVoxelTexture, 0, GL_RGBA, GL_HALF_FLOAT, clearColor);
+
+    Shader& voxelizationShader = ShaderManager::GetShaderProgram("voxelizationShader");
+
+    voxelizationShader.use();
+
+    Entity playerEnt = ecs.GetPlayers()[0];
+    CPlayer& playerComp = ecs.GetComponent<CPlayer>(playerEnt);
+
+    glm::mat4 playerViewMatrix = playerComp.viewMatrix;
+    glm::mat4 playerProjMatrix = playerComp.projectionMatrix;
+
+    voxelizationShader.setFloat("voxelizationAreaSize", Common::voxelizationAreaSize);
+
+    glActiveTexture(GL_TEXTURE5);
+    glBindTexture(GL_TEXTURE_CUBE_MAP_ARRAY, RenderingUtil::mPointLightShadowMap);
+    voxelizationShader.setInt("pointShadowMap", 5);
+    glActiveTexture(GL_TEXTURE6);
+    glBindTexture(GL_TEXTURE_2D, RenderingUtil::mDirLightShadowMap);
+    voxelizationShader.setInt("dirShadowMap", 6);
+
+    voxelizationShader.setMat4("dirLightSpaceMatrix", DirectionalShadows::g_lightSpaceMatrix);
+
+    glViewport(0, 0, Common::voxelGridDimensions, Common::voxelGridDimensions);
+    glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE);
+    glDisable(GL_CULL_FACE);
+    glDisable(GL_DEPTH_TEST);
+    glDisable(GL_BLEND);
+
+    glBindImageTexture(0, RenderingUtil::mVoxelTexture, 0, GL_TRUE, 0, GL_WRITE_ONLY, GL_RGBA16F);
+        
+    for (const auto& entity : mEntities)
+    {
+        auto& transform = ecs.GetComponent<CTransform>(entity);
+
+        if (!ecs.HasComponent<CModel>(entity) && !ecs.HasComponent<CMesh>(entity))
+        {
+            continue;
+        }
+
+        glm::mat4 model = glm::mat4(1.0f);
+        model = glm::translate(model, transform.position);
+
+        glm::mat4 rotMatrix = glm::mat4_cast(transform.rotation);
+
+        model *= rotMatrix;
+
+        model = glm::scale(model, transform.scale);
+
+        glm::mat3 normalMatrix = glm::transpose(glm::inverse(model));
+
+        voxelizationShader.setMat4("model", model);
+        voxelizationShader.setMat3("normalMatrix", normalMatrix);
+        voxelizationShader.setVec3("camPos", ecs.GetComponent<CTransform>(playerEnt).position);
+
+        if (ecs.HasComponent<CModel>(entity))
+        {
+            auto& model3d = ecs.GetComponent<CModel>(entity);
+            voxelizationShader.setVec2("textureScaling", glm::vec2(1.0f));
+            voxelizationShader.setBool("hasAOTexture", model3d.hasAOTexture);
+            model3d.model.Draw(voxelizationShader);
+        }
+        else
+        {
+            auto& meshComponent = ecs.GetComponent<CMesh>(entity);
+            voxelizationShader.setVec2("textureScaling", meshComponent.textureScaling);
+            meshComponent.mesh.Draw(voxelizationShader);
+        }
+    }
+
+    glBindTexture(GL_TEXTURE_3D, RenderingUtil::mVoxelTexture);
+    glGenerateMipmap(GL_TEXTURE_3D);
+
+    Common::voxelize = false;
+
+    glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
+        
+    glPopDebugGroup();
+}
+
+void RenderSystem::DirectionalShadowMapPass()
+{
     glEnable(GL_CULL_FACE);
     glCullFace(GL_FRONT);
     glEnable(GL_DEPTH_TEST);
@@ -48,7 +159,7 @@ void RenderSystem::Update(float deltaTime)
         if (ecs.HasComponent<CLight>(entity))
         {
             auto& light = ecs.GetComponent<CLight>(entity);
-            
+
             if (light.shadowCaster && light.type == DIRECTIONAL)
             {
                 dirLightShadowEntities.push_back(entity);
@@ -65,7 +176,7 @@ void RenderSystem::Update(float deltaTime)
 
         glm::mat4 lightView = glm::lookAt(transform.position, glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
 
-        dirLightSpaceMatrix = lightProjection * lightView;
+        DirectionalShadows::g_lightSpaceMatrix = lightProjection * lightView;
 
         glViewport(0, 0, 2048, 2048);
         glBindFramebuffer(GL_FRAMEBUFFER, RenderingUtil::mDirLightShadowMapFBO);
@@ -78,8 +189,7 @@ void RenderSystem::Update(float deltaTime)
         Shader& dirShadowMapShader = ShaderManager::GetShaderProgram("dirShadowMapShader");
 
         dirShadowMapShader.use();
-
-        dirShadowMapShader.setMat4("lightSpaceMatrix", dirLightSpaceMatrix);
+        dirShadowMapShader.setMat4("lightSpaceMatrix", DirectionalShadows::g_lightSpaceMatrix);
 
         for (const auto& entity : mEntities)
         {
@@ -113,9 +223,11 @@ void RenderSystem::Update(float deltaTime)
             }
         }
     }
+}
 
-    // ------------------------- OMNIDIRECTIONAL SHADOWS PASS -----------------------------------
 
+void RenderSystem::OmnidirectionalShadowMapPass()
+{
     glPushDebugGroup(GL_DEBUG_SOURCE_APPLICATION, 0, -1, "Omni Shadows Pass");
 
     glEnable(GL_CULL_FACE);
@@ -135,13 +247,14 @@ void RenderSystem::Update(float deltaTime)
         {
             auto& light = ecs.GetComponent<CLight>(entity);
 
-            if (light.shadowCaster && light.type == POINT) 
+            if (light.shadowCaster && light.type == POINT)
             {
                 pointLightShadowEntities.push_back(entity);
+                OmniShadows::g_shadowCasterCount++;
             }
         }
     }
-  
+
     glViewport(0, 0, ((float)1024), ((float)1024));
     glBindFramebuffer(GL_FRAMEBUFFER, RenderingUtil::mPointLightShadowMapFBO);
 
@@ -221,44 +334,11 @@ void RenderSystem::Update(float deltaTime)
             }
         }
     }
-
     glPopDebugGroup();
+}
 
-    glm::mat4 projection = glm::mat4(1.0f);
-    projection = glm::perspective(
-        glm::radians(45.0f), (float)Window::screenWidth / (float)Window::screenHeight, 0.1f, 100.0f);
-    
-    // get player
-    Entity playerEntity{};
-    for (const auto& entity : mEntities)
-    {
-        if (ecs.HasComponent<CPlayer>(entity))
-        {
-            playerEntity = entity;
-        }
-    }
-
-    auto& player = ecs.GetComponent<CPlayer>(playerEntity);
-
-    Common::playerViewMatrix = player.viewMatrix;
-
-    // voxelize scene before rendering it
-    if (Common::vxgi)
-    {
-        voxelizeScene(ecs.GetComponent<CTransform>(playerEntity).position, dirLightSpaceMatrix);
-    }
-
-    if (Common::wireframeDebug)
-    {
-        glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-    }
-    else
-    {
-        glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-    }
-
-  
-    // ----------------------- GEOMETRY PASS ----------------------------------------
+void RenderSystem::GeometryPass()
+{
 
     glPushDebugGroup(GL_DEBUG_SOURCE_APPLICATION, 0, -1, "Geometry Pass");
     glBindFramebuffer(GL_FRAMEBUFFER, RenderingUtil::gBufferFBO);
@@ -277,15 +357,20 @@ void RenderSystem::Update(float deltaTime)
     glEnable(GL_CULL_FACE);
     glCullFace(GL_BACK);
 
-
     Shader& gBufferShader = ShaderManager::GetShaderProgram("gBufferShader");
     gBufferShader.use();
 
-    gBufferShader.setMat4("view", player.viewMatrix);
-    gBufferShader.setMat4("projection", projection);
-    gBufferShader.setMat4("dirLightSpaceMatrix", dirLightSpaceMatrix);
-    
-    glm::mat3 normalViewMatrix = glm::transpose(glm::inverse(player.viewMatrix));
+    Entity playerEnt = ecs.GetPlayers()[0];
+    CPlayer& playerComp = ecs.GetComponent<CPlayer>(playerEnt);
+
+    glm::mat4 playerViewMatrix = playerComp.viewMatrix;
+    glm::mat4 playerProjMatrix = playerComp.projectionMatrix;
+
+    gBufferShader.setMat4("view", playerViewMatrix);
+    gBufferShader.setMat4("projection", playerProjMatrix);
+    gBufferShader.setMat4("dirLightSpaceMatrix", DirectionalShadows::g_lightSpaceMatrix);
+
+    glm::mat3 normalViewMatrix = glm::transpose(glm::inverse(playerViewMatrix));
     gBufferShader.setMat3("viewNormalMatrix", normalViewMatrix);
 
     for (const auto& entity : mEntities)
@@ -317,22 +402,21 @@ void RenderSystem::Update(float deltaTime)
         {
             auto& model3d = ecs.GetComponent<CModel>(entity);
             gBufferShader.setVec2("textureScaling", glm::vec2(1.0f));
-     
             model3d.model.Draw(gBufferShader);
         }
         else
         {
-            //glDisable(GL_CULL_FACE);
             auto& meshComponent = ecs.GetComponent<CMesh>(entity);
             gBufferShader.setVec2("textureScaling", meshComponent.textureScaling);
             meshComponent.mesh.Draw(gBufferShader);
-            //glEnable(GL_CULL_FACE);
         }
     }
 
     glPopDebugGroup();
-    // ------------------------------ SSR PASS -----------------------------------------------------------
+}
 
+void RenderSystem::SSRPass()
+{
     glPushDebugGroup(GL_DEBUG_SOURCE_APPLICATION, 0, -1, "SSR Pass");
 
     glDisable(GL_CULL_FACE);
@@ -344,7 +428,12 @@ void RenderSystem::Update(float deltaTime)
     Shader& ssrShader = ShaderManager::GetShaderProgram("ssrShader");
     ssrShader.use();
 
-    ssrShader.setMat4("projection", projection);
+    Entity playerEnt = ecs.GetPlayers()[0];
+    CPlayer& playerComp = ecs.GetComponent<CPlayer>(playerEnt);
+
+    glm::mat4& playerProjMatrix = playerComp.projectionMatrix;
+
+    ssrShader.setMat4("projection", playerProjMatrix);
     ssrShader.setFloat("maxDistance", Common::ssrMaxDistance);
     ssrShader.setFloat("resolution", Common::ssrResolution);
     ssrShader.setInt("steps", Common::ssrSteps);
@@ -392,79 +481,88 @@ void RenderSystem::Update(float deltaTime)
     glDrawArrays(GL_TRIANGLES, 0, 6);
 
     glPopDebugGroup();
+}
 
-    //  ------------------------------ SSAO PASS ---------------------------------------------------------------------
-
-    if (Common::ssaoOn)
+void RenderSystem::SSAOPass()
+{
+    if (!Common::ssaoOn)
     {
-        glPushDebugGroup(GL_DEBUG_SOURCE_APPLICATION, 0, -1, "SSAO Pass");
-
-        glBindFramebuffer(GL_FRAMEBUFFER, RenderingUtil::mSSAOFBO);
-        glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-        glClear(GL_COLOR_BUFFER_BIT);
-
-        Shader& ssaoShader = ShaderManager::GetShaderProgram("ssaoShader");
-        ssaoShader.use();
-
-        ssaoShader.setMat4("projection", projection);
-
-        glActiveTexture(GL_TEXTURE0);
-        glBindTexture(GL_TEXTURE_2D, RenderingUtil::gViewPosition);
-        ssaoShader.setInt("gViewPosition", 0);
-
-        glActiveTexture(GL_TEXTURE1);
-        glBindTexture(GL_TEXTURE_2D, RenderingUtil::gViewNormal);
-        ssaoShader.setInt("gViewNormal", 1);
-
-        glActiveTexture(GL_TEXTURE2);
-        glBindTexture(GL_TEXTURE_2D, RenderingUtil::mSSAONoiseTexture);
-        ssaoShader.setInt("texNoise", 2);
-
-        glUniform3fv(glGetUniformLocation(ssaoShader.ID, "samples"), RenderingUtil::mSSAOKernel.size(), glm::value_ptr(RenderingUtil::mSSAOKernel[0]));
-
-        ssaoShader.setInt("screenWidth", Common::SCR_WIDTH);
-        ssaoShader.setInt("screenHeight", Common::SCR_HEIGHT);
-        ssaoShader.setInt("kernelSize", Common::ssaoKernelSize);
-        ssaoShader.setFloat("radius", Common::ssaoRadius);
-        ssaoShader.setFloat("power", Common::ssaoPower);
-
-        glBindVertexArray(RenderingUtil::mScreenQuadVAO);
-        glDisable(GL_DEPTH_TEST);
-        glDrawArrays(GL_TRIANGLES, 0, 6);
-
-        glPopDebugGroup();
-
-        // blur the ssao texture
-
-        glPushDebugGroup(GL_DEBUG_SOURCE_APPLICATION, 0, -1, "SSAO Blur Pass");
-
-        glBindFramebuffer(GL_FRAMEBUFFER, RenderingUtil::mSSAOBlurFBO);
-        glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-        glClear(GL_COLOR_BUFFER_BIT);
-
-        Shader& ssaoBlurShader = ShaderManager::GetShaderProgram("ssaoBlurShader");
-        ssaoBlurShader.use();
-
-        glActiveTexture(GL_TEXTURE0);
-        glBindTexture(GL_TEXTURE_2D, RenderingUtil::mSSAOTexture);
-        ssaoBlurShader.setInt("ssaoTexture", 0);
-
-        glBindVertexArray(RenderingUtil::mScreenQuadVAO);
-        glDisable(GL_DEPTH_TEST);
-        glDrawArrays(GL_TRIANGLES, 0, 6);
-
-        glPopDebugGroup();
+        return;
     }
 
-    // ----------------------- LIGHTING PASS ------------------------------------------
+    glPushDebugGroup(GL_DEBUG_SOURCE_APPLICATION, 0, -1, "SSAO Pass");
 
+    glBindFramebuffer(GL_FRAMEBUFFER, RenderingUtil::mSSAOFBO);
+    glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+    glClear(GL_COLOR_BUFFER_BIT);
+
+    Shader& ssaoShader = ShaderManager::GetShaderProgram("ssaoShader");
+    ssaoShader.use();
+
+    Entity playerEnt = ecs.GetPlayers()[0];
+    CPlayer& playerComp = ecs.GetComponent<CPlayer>(playerEnt);
+
+    glm::mat4& playerProjMatrix = playerComp.projectionMatrix;
+
+    ssaoShader.setMat4("projection", playerProjMatrix);
+
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, RenderingUtil::gViewPosition);
+    ssaoShader.setInt("gViewPosition", 0);
+
+    glActiveTexture(GL_TEXTURE1);
+    glBindTexture(GL_TEXTURE_2D, RenderingUtil::gViewNormal);
+    ssaoShader.setInt("gViewNormal", 1);
+
+    glActiveTexture(GL_TEXTURE2);
+    glBindTexture(GL_TEXTURE_2D, RenderingUtil::mSSAONoiseTexture);
+    ssaoShader.setInt("texNoise", 2);
+
+    glUniform3fv(glGetUniformLocation(ssaoShader.ID, "samples"), RenderingUtil::mSSAOKernel.size(), glm::value_ptr(RenderingUtil::mSSAOKernel[0]));
+
+    ssaoShader.setInt("screenWidth", Common::SCR_WIDTH);
+    ssaoShader.setInt("screenHeight", Common::SCR_HEIGHT);
+    ssaoShader.setInt("kernelSize", Common::ssaoKernelSize);
+    ssaoShader.setFloat("radius", Common::ssaoRadius);
+    ssaoShader.setFloat("power", Common::ssaoPower);
+
+    glBindVertexArray(RenderingUtil::mScreenQuadVAO);
+    glDisable(GL_DEPTH_TEST);
+    glDrawArrays(GL_TRIANGLES, 0, 6);
+
+    glPopDebugGroup();
+
+    // blur the ssao texture
+
+    glPushDebugGroup(GL_DEBUG_SOURCE_APPLICATION, 0, -1, "SSAO Blur Pass");
+
+    glBindFramebuffer(GL_FRAMEBUFFER, RenderingUtil::mSSAOBlurFBO);
+    glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+    glClear(GL_COLOR_BUFFER_BIT);
+
+    Shader& ssaoBlurShader = ShaderManager::GetShaderProgram("ssaoBlurShader");
+    ssaoBlurShader.use();
+
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, RenderingUtil::mSSAOTexture);
+    ssaoBlurShader.setInt("ssaoTexture", 0);
+
+    glBindVertexArray(RenderingUtil::mScreenQuadVAO);
+    glDisable(GL_DEPTH_TEST);
+    glDrawArrays(GL_TRIANGLES, 0, 6);
+
+    glPopDebugGroup();
+}
+
+void RenderSystem::LightingPass()
+{
     glPushDebugGroup(GL_DEBUG_SOURCE_APPLICATION, 0, -1, "Lighting Pass");
     glBindFramebuffer(GL_FRAMEBUFFER, RenderingUtil::mLightingFBO);
 
     // set both color buffer attachments as the draw buffers before clearing them, otherwise only the first color attachment will get cleared.
     // This would mean that the color buffer which we render the bloom brightness texture onto would not get cleared and the bloom would effect would
     // just accumulate over frames.
-     
+    unsigned int attachments[8] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1, GL_COLOR_ATTACHMENT2, GL_COLOR_ATTACHMENT3, GL_COLOR_ATTACHMENT4, GL_COLOR_ATTACHMENT5, GL_COLOR_ATTACHMENT6, GL_COLOR_ATTACHMENT7 };
     glDrawBuffers(2, attachments);
 
     glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
@@ -474,17 +572,23 @@ void RenderSystem::Update(float deltaTime)
     glEnable(GL_CULL_FACE);
     glCullFace(GL_BACK);
 
+    Entity playerEnt = ecs.GetPlayers()[0];
+    CPlayer& playerComp = ecs.GetComponent<CPlayer>(playerEnt);
+
+    glm::mat4 playerViewMatrix = playerComp.viewMatrix;
+    glm::mat4 playerProjMatrix = playerComp.projectionMatrix;
+
     if (!Common::showVoxelDebug)
     {
         if (UI::isOpen)
         {
-            Raycast::calculateMouseRaycast(projection * player.viewMatrix);
+            Raycast::calculateMouseRaycast(playerProjMatrix * playerViewMatrix);
         }
 
         Shader& lightingShader = ShaderManager::GetShaderProgram("lightingShader");
         lightingShader.use();
 
-        if (pointLightShadowEntities.size() != 0)
+        if (OmniShadows::g_shadowCasterCount != 0)
         {
             glActiveTexture(GL_TEXTURE10);
             glBindTexture(GL_TEXTURE_CUBE_MAP_ARRAY, RenderingUtil::mPointLightShadowMap);
@@ -505,8 +609,8 @@ void RenderSystem::Update(float deltaTime)
         lightingShader.setFloat("specularConeOriginOffset", Common::specularConeOriginOffset);
         lightingShader.setFloat("showTotalIndirectSpecularLight", Common::showTotalIndirectSpecularLight);
         lightingShader.setFloat("specularConeMaxDistance", Common::specularConeMaxDistance);
-        lightingShader.setMat4("view", player.viewMatrix);
-        lightingShader.setVec3("camPos", ecs.GetComponent<CTransform>(playerEntity).position);
+        lightingShader.setMat4("view", playerViewMatrix);
+        lightingShader.setVec3("camPos", ecs.GetComponent<CTransform>(playerEnt).position);
         lightingShader.setBool("showNormals", Common::normalsDebug);
         lightingShader.setBool("worldPosDebug", Common::worldPosDebug);
         lightingShader.setBool("albedoDebug", Common::albedoDebug);
@@ -565,17 +669,18 @@ void RenderSystem::Update(float deltaTime)
         glDisable(GL_DEPTH_TEST);
         glDrawArrays(GL_TRIANGLES, 0, 6);
     }
-    
+
     glPopDebugGroup();
-    
+}
 
-    // ---------------------------- SKYBOX PASS ---------------------------------------
-
+void RenderSystem::SkyboxPass()
+{
     glBindFramebuffer(GL_READ_FRAMEBUFFER, RenderingUtil::gBufferFBO);
     glBindFramebuffer(GL_DRAW_FRAMEBUFFER, RenderingUtil::mLightingFBO);
     glBlitFramebuffer(0, 0, Common::SCR_WIDTH, Common::SCR_HEIGHT, 0, 0, Common::SCR_WIDTH, Common::SCR_HEIGHT, GL_DEPTH_BUFFER_BIT, GL_NEAREST);
 
     glEnable(GL_DEPTH_TEST);
+    unsigned int attachments[8] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1, GL_COLOR_ATTACHMENT2, GL_COLOR_ATTACHMENT3, GL_COLOR_ATTACHMENT4, GL_COLOR_ATTACHMENT5, GL_COLOR_ATTACHMENT6, GL_COLOR_ATTACHMENT7 };
     glDrawBuffers(1, attachments);
 
     if (Common::wireframeDebug) {
@@ -589,8 +694,14 @@ void RenderSystem::Update(float deltaTime)
 
     skyBoxShader.use();
 
-    skyBoxShader.setMat4("projection", projection);
-    skyBoxShader.setMat4("view", glm::mat4(glm::mat3(player.viewMatrix)));
+    Entity playerEnt = ecs.GetPlayers()[0];
+    CPlayer& playerComp = ecs.GetComponent<CPlayer>(playerEnt);
+
+    glm::mat4 playerViewMatrix = playerComp.viewMatrix;
+    glm::mat4 playerProjMatrix = playerComp.projectionMatrix;
+
+    skyBoxShader.setMat4("projection", playerProjMatrix);
+    skyBoxShader.setMat4("view", glm::mat4(glm::mat3(playerViewMatrix)));
     glBindVertexArray(RenderingUtil::mUnitCubeVAO);
     skyBoxShader.setInt("skybox", 1);
     glActiveTexture(GL_TEXTURE1);
@@ -598,101 +709,55 @@ void RenderSystem::Update(float deltaTime)
     glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
 
     glDepthFunc(GL_LESS);
+}
 
-    // if we want to reflect the skybox in ssr we will have to do the same as above but render the skybox into the albedo texture of the gbuffer.
-
-    if (Common::showVoxelDebug)
+void RenderSystem::BloomPass()
+{
+    if (!Common::bloomOn)
     {
-        // voxel visualization
-
-        glViewport(0, 0, Window::screenWidth, Window::screenHeight);
-
-        glBindFramebuffer(GL_FRAMEBUFFER, RenderingUtil::mLightingFBO);
-
-        glDrawBuffers(1, attachments);
-
-        glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-        glClear(GL_COLOR_BUFFER_BIT);
-        glClear(GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
-        glEnable(GL_DEPTH_TEST);
-
-        Shader& voxelVisualizationShader = ShaderManager::GetShaderProgram("voxelVisualizationShader");
-
-        voxelVisualizationShader.use();
-
-        glUniform3i(glGetUniformLocation(voxelVisualizationShader.ID, "gridDimensions"), Common::voxelGridDimensions, Common::voxelGridDimensions, Common::voxelGridDimensions);
-
-        voxelVisualizationShader.setMat4("view", player.viewMatrix);
-        voxelVisualizationShader.setMat4("projection", projection);
-        voxelVisualizationShader.setVec3("camPos", ecs.GetComponent<CTransform>(playerEntity).position);
-
-        glActiveTexture(GL_TEXTURE0);
-        glBindTexture(GL_TEXTURE_3D, RenderingUtil::mVoxelTexture);
-        voxelVisualizationShader.setInt("voxelTexture", 0);
-
-        unsigned int vao;
-        glGenVertexArrays(1, &vao);
-        glBindVertexArray(vao);
-
-        glDrawArrays(GL_POINTS, 0, Common::voxelGridDimensions * Common::voxelGridDimensions * Common::voxelGridDimensions);
+        return;
     }
 
-   if (Common::bulletLinesDebug)
-   {
-        Shader& lineDebugShader = ShaderManager::GetShaderProgram("lineDebugShader");
+    Bloom::g_horizontal = true, Bloom::g_firstIteration = true;
 
-        lineDebugShader.use();
+    Shader& blurShader = ShaderManager::GetShaderProgram("blurShader");
+    blurShader.use();
 
-        lineDebugShader.setMat4("projection", projection);
-        lineDebugShader.setMat4("view", player.viewMatrix);
-       
-        BulletDebugDrawer::drawLines();
-   }
+    int kernelSize = Common::bloomKernelSize;
+    float stdDeviation = Common::bloomStdDeviation;
+    float intervalMultiplier = Common::bloomIntervalMultiplier;
 
-    // ---------------------------------- BLOOM PASS -----------------------------------------------------------------
+    blurShader.setFloat("kernelSize", Common::bloomKernelSize);
 
-    bool horizontal = true, first_iteration = true;
+    Common::bloomWeights = Util::gaussian_weights(kernelSize, stdDeviation, intervalMultiplier);
 
-    if (Common::bloomOn)
+    std::vector<float> weights = Common::bloomWeights;
+
+    glUniform1fv(glGetUniformLocation(blurShader.ID, "weight"), kernelSize, weights.data());
+
+    glActiveTexture(GL_TEXTURE0);
+    blurShader.setInt("image", 0);
+
+    for (unsigned int i = 0; i < kernelSize * 2; i++)
     {
-        Shader& blurShader = ShaderManager::GetShaderProgram("blurShader");
-        blurShader.use();
+        glBindFramebuffer(GL_FRAMEBUFFER, RenderingUtil::mPingPongFBOs[Bloom::g_horizontal]);
+        blurShader.setInt("horizontal", Bloom::g_horizontal);
+        glBindTexture(
+            GL_TEXTURE_2D, Bloom::g_firstIteration ? RenderingUtil::mBloomBrightnessTexture : RenderingUtil::mPingPongBuffers[!Bloom::g_horizontal]
+        );
 
-        int kernelSize = Common::bloomKernelSize;
-        float stdDeviation = Common::bloomStdDeviation;
-        float intervalMultiplier = Common::bloomIntervalMultiplier;
+        glBindVertexArray(RenderingUtil::mScreenQuadVAO);
+        glDisable(GL_DEPTH_TEST);
+        glDrawArrays(GL_TRIANGLES, 0, 6);
 
-        blurShader.setFloat("kernelSize", Common::bloomKernelSize);
-
-        Common::bloomWeights = Util::gaussian_weights(kernelSize, stdDeviation, intervalMultiplier);
-
-        std::vector<float> weights = Common::bloomWeights;
-
-        glUniform1fv(glGetUniformLocation(blurShader.ID, "weight"), kernelSize, weights.data());
-
-        glActiveTexture(GL_TEXTURE0);
-        blurShader.setInt("image", 0);
-
-        for (unsigned int i = 0; i < kernelSize * 2; i++)
-        {
-            glBindFramebuffer(GL_FRAMEBUFFER, RenderingUtil::mPingPongFBOs[horizontal]);
-            blurShader.setInt("horizontal", horizontal);
-            glBindTexture(
-                GL_TEXTURE_2D, first_iteration ? RenderingUtil::mBloomBrightnessTexture : RenderingUtil::mPingPongBuffers[!horizontal]
-            );
-
-            glBindVertexArray(RenderingUtil::mScreenQuadVAO);
-            glDisable(GL_DEPTH_TEST);
-            glDrawArrays(GL_TRIANGLES, 0, 6);
-
-            horizontal = !horizontal;
-            if (first_iteration)
-                first_iteration = false;
-        }
+        Bloom::g_horizontal = !Bloom::g_horizontal;
+        if (Bloom::g_firstIteration)
+            Bloom::g_firstIteration = false;
     }
+}
 
-    // ------------------------------ POST PROCESSING PASS -----------------------------------------------------------
-
+void RenderSystem::PostProcessingPass()
+{
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
     glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT);
@@ -709,7 +774,7 @@ void RenderSystem::Update(float deltaTime)
     postProcessingShader.setBool("uncharted2", Common::uncharted);
     postProcessingShader.setBool("ACES", Common::aces);
     postProcessingShader.setBool("bloom", Common::bloomOn);
-   
+
     glBindVertexArray(RenderingUtil::mScreenQuadVAO);
     glDisable(GL_DEPTH_TEST);
     glActiveTexture(GL_TEXTURE0);
@@ -717,15 +782,16 @@ void RenderSystem::Update(float deltaTime)
 
     if (Common::bloomOn) {
         glActiveTexture(GL_TEXTURE1);
-        glBindTexture(GL_TEXTURE_2D, RenderingUtil::mPingPongBuffers[(Common::bloomKernelSize * 2) % 2 ? !horizontal : horizontal]);
+        glBindTexture(GL_TEXTURE_2D, RenderingUtil::mPingPongBuffers[(Common::bloomKernelSize * 2) % 2 ? !Bloom::g_horizontal : Bloom::g_horizontal]);
     }
 
     postProcessingShader.setInt("screenQuadTexture", 0);
     postProcessingShader.setInt("bloomBlurTexture", 1);
     glDrawArrays(GL_TRIANGLES, 0, 6);
+}
 
-
-    // ------------------------------ FORWARD RENDERING PASS ----------------------------------------------------
+void RenderSystem::ForwardRenderingPass()
+{
     glBindFramebuffer(GL_READ_FRAMEBUFFER, RenderingUtil::gBufferFBO);
     glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
     glBlitFramebuffer(0, 0, Common::SCR_WIDTH, Common::SCR_HEIGHT, 0, 0, Common::SCR_WIDTH, Common::SCR_HEIGHT, GL_DEPTH_BUFFER_BIT, GL_NEAREST);
@@ -733,6 +799,12 @@ void RenderSystem::Update(float deltaTime)
     glEnable(GL_DEPTH_TEST);
 
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+    Entity playerEnt = ecs.GetPlayers()[0];
+    CPlayer& playerComp = ecs.GetComponent<CPlayer>(playerEnt);
+
+    glm::mat4 playerViewMatrix = playerComp.viewMatrix;
+    glm::mat4 playerProjMatrix = playerComp.projectionMatrix;
 
     if (Common::lightPosDebug)
     {
@@ -752,8 +824,8 @@ void RenderSystem::Update(float deltaTime)
                 model = glm::translate(model, transform.position + light.offset);
                 model = glm::scale(model, glm::vec3(0.1f));
 
-                solidColorShader.setMat4("projection", projection);
-                solidColorShader.setMat4("view", player.viewMatrix);
+                solidColorShader.setMat4("projection", playerProjMatrix);
+                solidColorShader.setMat4("view", playerViewMatrix);
                 solidColorShader.setMat4("model", model);
                 solidColorShader.setVec3("color", light.color * light.strength);
 
@@ -761,87 +833,65 @@ void RenderSystem::Update(float deltaTime)
             }
         }
     }
-
-
 }
 
-
-void RenderSystem::voxelizeScene(glm::vec3 camPos, glm::mat4 dirLightSpaceMatrix)
+void RenderSystem::RenderVoxelDebug()
 {
-   
-    glPushDebugGroup(GL_DEBUG_SOURCE_APPLICATION, 0, -1, "Voxelization");
+    // voxel visualization
 
-    float clearColor[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
-    glClearTexImage(RenderingUtil::mVoxelTexture, 0, GL_RGBA, GL_HALF_FLOAT, clearColor);
+    glViewport(0, 0, Window::screenWidth, Window::screenHeight);
 
-    Shader& voxelizationShader = ShaderManager::GetShaderProgram("voxelizationShader");
+    glBindFramebuffer(GL_FRAMEBUFFER, RenderingUtil::mLightingFBO);
 
-    voxelizationShader.use();
+    unsigned int attachments[8] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1, GL_COLOR_ATTACHMENT2, GL_COLOR_ATTACHMENT3, GL_COLOR_ATTACHMENT4, GL_COLOR_ATTACHMENT5, GL_COLOR_ATTACHMENT6, GL_COLOR_ATTACHMENT7 };
+    glDrawBuffers(1, attachments);
 
-    voxelizationShader.setFloat("voxelizationAreaSize", Common::voxelizationAreaSize);
+    glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+    glClear(GL_COLOR_BUFFER_BIT);
+    glClear(GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
+    glEnable(GL_DEPTH_TEST);
 
-    glActiveTexture(GL_TEXTURE5);
-    glBindTexture(GL_TEXTURE_CUBE_MAP_ARRAY, RenderingUtil::mPointLightShadowMap);
-    voxelizationShader.setInt("pointShadowMap", 5);
-    glActiveTexture(GL_TEXTURE6);
-    glBindTexture(GL_TEXTURE_2D, RenderingUtil::mDirLightShadowMap);
-    voxelizationShader.setInt("dirShadowMap", 6);
+    Shader& voxelVisualizationShader = ShaderManager::GetShaderProgram("voxelVisualizationShader");
 
-    voxelizationShader.setMat4("dirLightSpaceMatrix", dirLightSpaceMatrix);
+    voxelVisualizationShader.use();
 
-    glViewport(0, 0, Common::voxelGridDimensions, Common::voxelGridDimensions);
-    glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE);
-    glDisable(GL_CULL_FACE);
-    glDisable(GL_DEPTH_TEST);
-    glDisable(GL_BLEND);
+    Entity playerEnt = ecs.GetPlayers()[0];
+    CPlayer& playerComp = ecs.GetComponent<CPlayer>(playerEnt);
 
-    glBindImageTexture(0, RenderingUtil::mVoxelTexture, 0, GL_TRUE, 0, GL_WRITE_ONLY, GL_RGBA16F);
-        
-    for (const auto& entity : mEntities)
-    {
-        auto& transform = ecs.GetComponent<CTransform>(entity);
+    glm::mat4 playerViewMatrix = playerComp.viewMatrix;
+    glm::mat4 playerProjMatrix = playerComp.projectionMatrix;
 
-        if (!ecs.HasComponent<CModel>(entity) && !ecs.HasComponent<CMesh>(entity))
-        {
-            continue;
-        }
+    glUniform3i(glGetUniformLocation(voxelVisualizationShader.ID, "gridDimensions"), Common::voxelGridDimensions, Common::voxelGridDimensions, Common::voxelGridDimensions);
 
-        glm::mat4 model = glm::mat4(1.0f);
-        model = glm::translate(model, transform.position);
+    voxelVisualizationShader.setMat4("view", playerViewMatrix);
+    voxelVisualizationShader.setMat4("projection", playerProjMatrix);
+    voxelVisualizationShader.setVec3("camPos", ecs.GetComponent<CTransform>(playerEnt).position);
 
-        glm::mat4 rotMatrix = glm::mat4_cast(transform.rotation);
-
-        model *= rotMatrix;
-
-        model = glm::scale(model, transform.scale);
-
-        glm::mat3 normalMatrix = glm::transpose(glm::inverse(model));
-
-        voxelizationShader.setMat4("model", model);
-        voxelizationShader.setMat3("normalMatrix", normalMatrix);
-        voxelizationShader.setVec3("camPos", camPos);
-
-        if (ecs.HasComponent<CModel>(entity))
-        {
-            auto& model3d = ecs.GetComponent<CModel>(entity);
-            voxelizationShader.setVec2("textureScaling", glm::vec2(1.0f));
-            voxelizationShader.setBool("hasAOTexture", model3d.hasAOTexture);
-            model3d.model.Draw(voxelizationShader);
-        }
-        else
-        {
-            auto& meshComponent = ecs.GetComponent<CMesh>(entity);
-            voxelizationShader.setVec2("textureScaling", meshComponent.textureScaling);
-            meshComponent.mesh.Draw(voxelizationShader);
-        }
-    }
-
+    glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_3D, RenderingUtil::mVoxelTexture);
-    glGenerateMipmap(GL_TEXTURE_3D);
+    voxelVisualizationShader.setInt("voxelTexture", 0);
 
-    Common::voxelize = false;
+    unsigned int vao;
+    glGenVertexArrays(1, &vao);
+    glBindVertexArray(vao);
 
-    glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
-        
-    glPopDebugGroup();
+    glDrawArrays(GL_POINTS, 0, Common::voxelGridDimensions * Common::voxelGridDimensions * Common::voxelGridDimensions);
+}
+
+void RenderSystem::RenderPhysicsDebug()
+{
+    Shader& lineDebugShader = ShaderManager::GetShaderProgram("lineDebugShader");
+
+    lineDebugShader.use();
+
+    Entity playerEnt = ecs.GetPlayers()[0];
+    CPlayer& playerComp = ecs.GetComponent<CPlayer>(playerEnt);
+
+    glm::mat4 playerViewMatrix = playerComp.viewMatrix;
+    glm::mat4 playerProjMatrix = playerComp.projectionMatrix;
+
+    lineDebugShader.setMat4("projection", playerProjMatrix);
+    lineDebugShader.setMat4("view", playerViewMatrix);
+
+    BulletDebugDrawer::drawLines();
 }

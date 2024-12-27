@@ -91,16 +91,18 @@ namespace Editor
 
         // you need to create a camera component and give it to the player and store the projection and view matrix inside it.
        // the way we are getting the view and projection matrix right now is just ugly.
-        glm::mat4 view = Common::playerViewMatrix;
+
+        Entity playerEnt = ecs.GetPlayers()[0];
+        CPlayer& playerComp = ecs.GetComponent<CPlayer>(playerEnt);
+
+        glm::mat4 view = playerComp.viewMatrix;
+        glm::mat4 projection = playerComp.projectionMatrix;
 
         glm::mat4 model = glm::mat4(1.0f);
         model = glm::translate(model, transform.position);
         glm::mat4 rotMatrix = glm::mat4_cast(transform.rotation);
         model *= rotMatrix;
         model = glm::scale(model, transform.scale);
-
-        glm::mat4 projection = glm::perspective(
-            glm::radians(45.0f), (float)Common::SCR_WIDTH / (float)Common::SCR_HEIGHT, 0.1f, 200.0f);
 
         if (inputSing.pressedKeys[NUMBER_1])
             currentGizmoOperation = ImGuizmo::TRANSLATE;

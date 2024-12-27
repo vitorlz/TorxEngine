@@ -104,6 +104,11 @@ public:
 		return mEntityManager->GetLivingEntities();
 	}
 
+	std::vector<Entity> GetPlayers()
+	{
+		return mComponentManager->GetPlayerList();
+	}
+
 	bool isAlive(Entity entity)
 	{
 		return mEntityManager->isAlive(entity);

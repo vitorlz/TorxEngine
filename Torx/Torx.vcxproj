@@ -98,7 +98,9 @@
     <ClCompile Include="src\Editor\Editor.cpp" />
     <ClCompile Include="src\Physics\BulletDebugDrawer.cpp" />
     <ClCompile Include="src\Physics\Raycast.cpp" />
+    <ClCompile Include="src\Rendering\Bloom.cpp" />
     <ClCompile Include="src\Rendering\RenderingUtil.cpp" />
+    <ClCompile Include="src\Rendering\Shadows.cpp" />
     <ClCompile Include="src\Scene\Scene.cpp" />
     <ClCompile Include="src\Systems\GeneralInputSystem.cpp" />
     <ClCompile Include="src\Systems\LightSystem.cpp" />
@@ -141,7 +143,9 @@
     <ClInclude Include="src\Editor\Editor.h" />
     <ClInclude Include="src\Physics\BulletDebugDrawer.h" />
     <ClInclude Include="src\Physics\Raycast.h" />
+    <ClInclude Include="src\Rendering\Bloom.h" />
     <ClInclude Include="src\Rendering\RenderingUtil.h" />
+    <ClInclude Include="src\Rendering\Shadows.h" />
     <ClInclude Include="src\Scene\Scene.h" />
     <ClInclude Include="src\Systems\GeneralInputSystem.h" />
     <ClInclude Include="src\Systems\LightSystem.h" />

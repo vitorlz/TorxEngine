@@ -321,7 +321,6 @@ void RenderingUtil::EquirectangularToCubemap(const char* path)
     glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT24, 1024, 1024);
     glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, captureRBO);
 
-
     glGenTextures(1, &mEnvironmentCubemap);
     glBindTexture(GL_TEXTURE_CUBE_MAP, mEnvironmentCubemap);
     for (unsigned int i = 0; i < 6; ++i)

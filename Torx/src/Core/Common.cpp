@@ -2,8 +2,8 @@
 
 
 // -------- SCREEN SETTINGS -----------------------------------
-const unsigned int Common::SCR_WIDTH = 1280;
-const unsigned int Common::SCR_HEIGHT = 720;
+const unsigned int Common::SCR_WIDTH = 1920;
+const unsigned int Common::SCR_HEIGHT = 1080;
 
 // ------------- DEBUG ----------------------------------------
 bool  Common::normalsDebug{ false };
