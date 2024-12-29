@@ -15,17 +15,17 @@ public:
 	void Update(float deltaTime);
 
 private:
-	void VoxelizeScene();
-	void DirectionalShadowMapPass();
-	void OmnidirectionalShadowMapPass();
-	void GeometryPass();
-	void SSRPass();
-	void SSAOPass();
-	void LightingPass();
-	void SkyboxPass();
-	void BloomPass();
-	void PostProcessingPass();
-	void ForwardRenderingPass();
-	void RenderVoxelDebug();
-	void RenderPhysicsDebug();
+	void voxelizationPass();
+	void directionalShadowMapPass();
+	void omnidirectionalShadowMapPass();
+	void geometryPass();
+	void ssrPass();
+	void ssaoPass();
+	void lightingPass();
+	void skyboxPass();
+	void bloomPass();
+	void postProcessingPass();
+	void forwardRenderingPass();
+	void renderVoxelDebug();
+	void renderPhysicsDebug();
 };

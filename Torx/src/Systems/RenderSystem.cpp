@@ -34,30 +34,24 @@ void RenderSystem::Init()
 
 void RenderSystem::Update(float deltaTime)
 {
-    DirectionalShadowMapPass();
-    OmnidirectionalShadowMapPass();
-    VoxelizeScene();
-    GeometryPass();
-    SSRPass();
-    SSAOPass();
-    LightingPass();
-    SkyboxPass();
-    BloomPass();
+    directionalShadowMapPass();
+    omnidirectionalShadowMapPass();
+    voxelizationPass();
+    geometryPass();
+    ssrPass();
+    ssaoPass();
+    lightingPass();
+    skyboxPass();
+    bloomPass();
     if (Common::showVoxelDebug)
     {
-        RenderVoxelDebug();
+        renderVoxelDebug();
     }
-
-    if (Common::bulletLinesDebug)
-    {
-        RenderPhysicsDebug();
-    }
-    PostProcessingPass();
-    ForwardRenderingPass();
+    postProcessingPass();
+    forwardRenderingPass();
 }
 
-
-void RenderSystem::VoxelizeScene()
+void RenderSystem::voxelizationPass()
 {
     if (!Common::vxgi)
     {
@@ -146,7 +140,7 @@ void RenderSystem::VoxelizeScene()
     glPopDebugGroup();
 }
 
-void RenderSystem::DirectionalShadowMapPass()
+void RenderSystem::directionalShadowMapPass()
 {
     glEnable(GL_CULL_FACE);
     glCullFace(GL_FRONT);
@@ -178,7 +172,7 @@ void RenderSystem::DirectionalShadowMapPass()
 
         DirectionalShadows::g_lightSpaceMatrix = lightProjection * lightView;
 
-        glViewport(0, 0, 2048, 2048);
+        glViewport(0, 0, DirectionalShadows::g_resolution, DirectionalShadows::g_resolution);
         glBindFramebuffer(GL_FRAMEBUFFER, RenderingUtil::mDirLightShadowMapFBO);
 
         glClear(GL_DEPTH_BUFFER_BIT);
@@ -226,7 +220,7 @@ void RenderSystem::DirectionalShadowMapPass()
 }
 
 
-void RenderSystem::OmnidirectionalShadowMapPass()
+void RenderSystem::omnidirectionalShadowMapPass()
 {
     glPushDebugGroup(GL_DEBUG_SOURCE_APPLICATION, 0, -1, "Omni Shadows Pass");
 
@@ -255,7 +249,7 @@ void RenderSystem::OmnidirectionalShadowMapPass()
         }
     }
 
-    glViewport(0, 0, ((float)1024), ((float)1024));
+    glViewport(0, 0, OmniShadows::g_resolution, OmniShadows::g_resolution);
     glBindFramebuffer(GL_FRAMEBUFFER, RenderingUtil::mPointLightShadowMapFBO);
 
     glClear(GL_DEPTH_BUFFER_BIT);
@@ -278,7 +272,7 @@ void RenderSystem::OmnidirectionalShadowMapPass()
 
         glm::vec3 lightPos = transform.position + light.offset;
 
-        shadowProj = glm::perspective(glm::radians(90.0f), ((float)1024) / ((float)1024), pointNear, light.radius);
+        shadowProj = glm::perspective(glm::radians(90.0f), ((float)OmniShadows::g_resolution) / ((float)OmniShadows::g_resolution), pointNear, light.radius);
 
         shadowTransforms.push_back(shadowProj *
             glm::lookAt(lightPos, lightPos + glm::vec3(1.0, 0.0, 0.0), glm::vec3(0.0, -1.0, 0.0)));
@@ -337,9 +331,8 @@ void RenderSystem::OmnidirectionalShadowMapPass()
     glPopDebugGroup();
 }
 
-void RenderSystem::GeometryPass()
+void RenderSystem::geometryPass()
 {
-
     glPushDebugGroup(GL_DEBUG_SOURCE_APPLICATION, 0, -1, "Geometry Pass");
     glBindFramebuffer(GL_FRAMEBUFFER, RenderingUtil::gBufferFBO);
 
@@ -415,7 +408,7 @@ void RenderSystem::GeometryPass()
     glPopDebugGroup();
 }
 
-void RenderSystem::SSRPass()
+void RenderSystem::ssrPass()
 {
     glPushDebugGroup(GL_DEBUG_SOURCE_APPLICATION, 0, -1, "SSR Pass");
 
@@ -483,7 +476,7 @@ void RenderSystem::SSRPass()
     glPopDebugGroup();
 }
 
-void RenderSystem::SSAOPass()
+void RenderSystem::ssaoPass()
 {
     if (!Common::ssaoOn)
     {
@@ -554,7 +547,7 @@ void RenderSystem::SSAOPass()
     glPopDebugGroup();
 }
 
-void RenderSystem::LightingPass()
+void RenderSystem::lightingPass()
 {
     glPushDebugGroup(GL_DEBUG_SOURCE_APPLICATION, 0, -1, "Lighting Pass");
     glBindFramebuffer(GL_FRAMEBUFFER, RenderingUtil::mLightingFBO);
@@ -562,7 +555,7 @@ void RenderSystem::LightingPass()
     // set both color buffer attachments as the draw buffers before clearing them, otherwise only the first color attachment will get cleared.
     // This would mean that the color buffer which we render the bloom brightness texture onto would not get cleared and the bloom would effect would
     // just accumulate over frames.
-    unsigned int attachments[8] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1, GL_COLOR_ATTACHMENT2, GL_COLOR_ATTACHMENT3, GL_COLOR_ATTACHMENT4, GL_COLOR_ATTACHMENT5, GL_COLOR_ATTACHMENT6, GL_COLOR_ATTACHMENT7 };
+    unsigned int attachments[2] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1 };
     glDrawBuffers(2, attachments);
 
     glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
@@ -673,14 +666,14 @@ void RenderSystem::LightingPass()
     glPopDebugGroup();
 }
 
-void RenderSystem::SkyboxPass()
+void RenderSystem::skyboxPass()
 {
     glBindFramebuffer(GL_READ_FRAMEBUFFER, RenderingUtil::gBufferFBO);
     glBindFramebuffer(GL_DRAW_FRAMEBUFFER, RenderingUtil::mLightingFBO);
     glBlitFramebuffer(0, 0, Common::SCR_WIDTH, Common::SCR_HEIGHT, 0, 0, Common::SCR_WIDTH, Common::SCR_HEIGHT, GL_DEPTH_BUFFER_BIT, GL_NEAREST);
 
     glEnable(GL_DEPTH_TEST);
-    unsigned int attachments[8] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1, GL_COLOR_ATTACHMENT2, GL_COLOR_ATTACHMENT3, GL_COLOR_ATTACHMENT4, GL_COLOR_ATTACHMENT5, GL_COLOR_ATTACHMENT6, GL_COLOR_ATTACHMENT7 };
+    unsigned int attachments[1] = { GL_COLOR_ATTACHMENT0 };
     glDrawBuffers(1, attachments);
 
     if (Common::wireframeDebug) {
@@ -711,7 +704,7 @@ void RenderSystem::SkyboxPass()
     glDepthFunc(GL_LESS);
 }
 
-void RenderSystem::BloomPass()
+void RenderSystem::bloomPass()
 {
     if (!Common::bloomOn)
     {
@@ -756,7 +749,7 @@ void RenderSystem::BloomPass()
     }
 }
 
-void RenderSystem::PostProcessingPass()
+void RenderSystem::postProcessingPass()
 {
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
     glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
@@ -790,7 +783,7 @@ void RenderSystem::PostProcessingPass()
     glDrawArrays(GL_TRIANGLES, 0, 6);
 }
 
-void RenderSystem::ForwardRenderingPass()
+void RenderSystem::forwardRenderingPass()
 {
     glBindFramebuffer(GL_READ_FRAMEBUFFER, RenderingUtil::gBufferFBO);
     glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
@@ -827,23 +820,25 @@ void RenderSystem::ForwardRenderingPass()
                 solidColorShader.setMat4("projection", playerProjMatrix);
                 solidColorShader.setMat4("view", playerViewMatrix);
                 solidColorShader.setMat4("model", model);
-                solidColorShader.setVec3("color", light.color * light.strength);
+                solidColorShader.setVec3("color", light.color);
 
                 Util::renderSphere();
             }
         }
     }
+
+    if (Common::bulletLinesDebug)
+    {
+        renderPhysicsDebug();
+    }
 }
 
-void RenderSystem::RenderVoxelDebug()
+void RenderSystem::renderVoxelDebug()
 {
     // voxel visualization
-
-    glViewport(0, 0, Window::screenWidth, Window::screenHeight);
-
     glBindFramebuffer(GL_FRAMEBUFFER, RenderingUtil::mLightingFBO);
 
-    unsigned int attachments[8] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1, GL_COLOR_ATTACHMENT2, GL_COLOR_ATTACHMENT3, GL_COLOR_ATTACHMENT4, GL_COLOR_ATTACHMENT5, GL_COLOR_ATTACHMENT6, GL_COLOR_ATTACHMENT7 };
+    unsigned int attachments[1] = { GL_COLOR_ATTACHMENT0 };
     glDrawBuffers(1, attachments);
 
     glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
@@ -878,7 +873,7 @@ void RenderSystem::RenderVoxelDebug()
     glDrawArrays(GL_POINTS, 0, Common::voxelGridDimensions * Common::voxelGridDimensions * Common::voxelGridDimensions);
 }
 
-void RenderSystem::RenderPhysicsDebug()
+void RenderSystem::renderPhysicsDebug()
 {
     Shader& lineDebugShader = ShaderManager::GetShaderProgram("lineDebugShader");
 

@@ -9,6 +9,7 @@
 #include "../Util/TextureLoader.h"
 #include <LinearMath/btScalar.h>
 #include <random>;
+#include "Shadows.h"
 
 unsigned int RenderingUtil::mScreenQuadTexture;
 unsigned int RenderingUtil::mBloomBrightnessTexture;
@@ -62,8 +63,8 @@ void RenderingUtil::Init()
     RenderingUtil::CreateCubeVAO();
     RenderingUtil::CreateLightingFBO();
     //RenderingUtil::CreateBlittingFBO();
-    RenderingUtil::CreateDirLightShadowMapFBO(2048, 2048);
-    RenderingUtil::CreatePointLightShadowMapFBO(1024, 1024);
+    RenderingUtil::CreateDirLightShadowMapFBO(DirectionalShadows::g_resolution, DirectionalShadows::g_resolution);
+    RenderingUtil::CreatePointLightShadowMapFBO(OmniShadows::g_resolution, OmniShadows::g_resolution);
     RenderingUtil::CreateScreenQuadVAO();
     RenderingUtil::CreatePingPongFBOs();
 
@@ -260,7 +261,7 @@ void RenderingUtil::CreatePointLightShadowMapFBO(unsigned int shadowWidth, unsig
 
     // CUBE MAPS REQUIRE THE SAME WIDTH AND HEIGHT FOR THE TEXTURE IMAGE SIZE OF EACH FACE OF THE CUBE. SO SHADOW_WIDTH AND SHADOW_HEIGHT HAVE TO BE THE SAME
 
-    glTexImage3D(GL_TEXTURE_CUBE_MAP_ARRAY, 0, GL_DEPTH_COMPONENT, shadowWidth, shadowHeight, 2 * 24, 0, GL_DEPTH_COMPONENT, GL_FLOAT, nullptr);
+    glTexImage3D(GL_TEXTURE_CUBE_MAP_ARRAY, 0, GL_DEPTH_COMPONENT, shadowWidth, shadowHeight, 30 , 0, GL_DEPTH_COMPONENT, GL_FLOAT, nullptr);
     
     glTexParameteri(GL_TEXTURE_CUBE_MAP_ARRAY, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_CUBE_MAP_ARRAY, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
