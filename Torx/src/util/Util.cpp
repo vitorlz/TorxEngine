@@ -200,3 +200,9 @@ void Util::decomposeMtx(const glm::mat4& m, glm::vec3& pos, glm::quat& rot, glm:
         glm::vec3(m[2]) / scale[2]);
     rot = glm::quat_cast(rotMtx);
 }
+
+// interpolate between a and b based on f
+float Util::lerp(float a, float b, float f)
+{
+    return a + f * (b - a);
+}

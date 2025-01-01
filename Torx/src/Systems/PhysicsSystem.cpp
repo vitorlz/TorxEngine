@@ -429,7 +429,6 @@ void PhysicsSystem::Update(float deltaTime)
 	for (const auto& entity : mEntities)
 	{
 		auto& rigidBody = ecs.GetComponent<CRigidBody>(entity);
-
 		auto& transform = ecs.GetComponent<CTransform>(entity);
 
 		if (Common::usingGuizmo && rigidBody.body)

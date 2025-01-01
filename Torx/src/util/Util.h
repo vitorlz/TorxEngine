@@ -12,4 +12,5 @@ namespace Util
 	std::string vec3ToString(glm::vec3 vec);
 	Entity duplicateEntity(Entity entity);
 	void decomposeMtx(const glm::mat4& m, glm::vec3& pos, glm::quat& rot, glm::vec3& scale);
+	float lerp(float a, float b, float f);
 };

@@ -10,6 +10,7 @@
 #include <LinearMath/btScalar.h>
 #include <random>;
 #include "Shadows.h"
+#include "../Util/Util.h"
 
 unsigned int RenderingUtil::mScreenQuadTexture;
 unsigned int RenderingUtil::mBloomBrightnessTexture;
@@ -731,6 +732,11 @@ void RenderingUtil::CreateSSAOKernel(int kernelSize)
         );
         sample = glm::normalize(sample);
         sample *= randomFloats(generator);
+        
+        // distribute more samples closer to the fragment's origin so that we can place a larger weight on occlusions closer to the actual fragment.
+        float scale = float(i) / 64.0f;
+        scale = Util::lerp(0.1f, 1.0f, scale * scale);
+        sample *= scale;
         mSSAOKernel.push_back(sample);
     }
 }
@@ -857,6 +863,7 @@ void RenderingUtil::CreateGeometryPassFBO()
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT5, GL_TEXTURE_2D, gDirLightSpacePosition, 0);
     glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT5, GL_TEXTURE_2D, gDirLightSpacePosition, 0);
 
 
