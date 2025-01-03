@@ -90,6 +90,9 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="src\AssetLoading\Animation.cpp" />
+    <ClCompile Include="src\AssetLoading\Animator.cpp" />
+    <ClCompile Include="src\AssetLoading\Bone.cpp" />
     <ClCompile Include="src\AssetLoading\mesh.cpp" />
     <ClCompile Include="src\AssetLoading\model.cpp" />
     <ClCompile Include="src\AssetLoading\AssetManager.cpp" />
@@ -131,7 +134,11 @@
     <ClCompile Include="vendor\stb_image\stb_img_implementation.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="src\AssetLoading\Animation.h" />
+    <ClInclude Include="src\AssetLoading\Animator.h" />
     <ClInclude Include="src\AssetLoading\AssetManager.h" />
+    <ClInclude Include="src\AssetLoading\AssimpGLMHelpers.hpp" />
+    <ClInclude Include="src\AssetLoading\Bone.h" />
     <ClInclude Include="src\Components\CLight.h" />
     <ClInclude Include="src\AssetLoading\mesh.h" />
     <ClInclude Include="src\AssetLoading\model.h" />
@@ -184,6 +191,8 @@
     <ClInclude Include="vendor\imgui\imstb_truetype.h" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="res\shaders\anim.frag" />
+    <None Include="res\shaders\anim.vert" />
     <None Include="res\shaders\boxBlur.frag" />
     <None Include="res\shaders\boxBlur.vert" />
     <None Include="res\shaders\brdfConvolution.frag" />

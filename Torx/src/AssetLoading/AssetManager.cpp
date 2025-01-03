@@ -5,6 +5,8 @@
 std::unordered_map<std::string, Model> AssetManager::m_Models{};
 std::unordered_map<std::string, Mesh> AssetManager::m_Meshes{};
 std::vector<Texture> AssetManager::m_LoadedMeshTextures{};
+Animation AssetManager::danceAnimation;
+Animator AssetManager::animator;
 
 void AssetManager::LoadModels()
 {
@@ -13,25 +15,30 @@ void AssetManager::LoadModels()
 	stbi_set_flip_vertically_on_load(false);
 	//Model debugCube("res/models/debugCube/scene.gltf");
 	Model sponza("res/models/sponza-atrium/Sponza.gltf");
-	Model victorianLamp("res/models/victorianLamp/scene.gltf");
+	//Model victorianLamp("res/models/victorianLamp/scene.gltf");
 	//Model dirtBlock("res/models/dirtBlock/scene.gltf");
 	Model ceilingLamp1("res/models/ceilingLamp1/scene.gltf");
-	Model deagle("res/models/deagle/scene.gltf");
+	//Model deagle("res/models/deagle/scene.gltf");
 	Model camera("res/models/camera/scene.gltf");
+	Model zombie("res/models/zombie/zombie.gltf");
 	//Model camera("res/models/camera/scene.gltf");
 	//Model adamhead("res/models/adamhead/adamHead.gltf");
 	//Model ar15("res/models/AR-15/scene.gltf");
 
 	//mModels.insert({ "backpack", backpack });
     //mModels.insert({ "debugCube", debugCube });
+	m_Models.insert({ "zombie", zombie });
 	m_Models.insert({ "sponza", sponza });
-	m_Models.insert({ "victorianLamp", victorianLamp });
+	//m_Models.insert({ "victorianLamp", victorianLamp });
 	//m_Models.insert({ "dirtBlock", dirtBlock });
 	m_Models.insert({ "ceilingLamp1", ceilingLamp1 });
-	m_Models.insert({ "deagle", deagle });
+	//m_Models.insert({ "deagle", deagle });
 	m_Models.insert({ "camera", camera });
 	//mModels.insert({ "adamhead", adamhead });
 	//mModels.insert({ "ar15", ar15 });
+
+	danceAnimation = Animation("res/models/zombie/zombie.gltf", &zombie);
+	animator = Animator(&danceAnimation);
 
 }
 

@@ -2,6 +2,7 @@
 
 #include <unordered_map>
 #include "model.h"
+#include "Animator.h"
 
 class AssetManager 
 {
@@ -13,8 +14,12 @@ public:
 	static void LoadMeshes();
 	static std::unordered_map<std::string, Model>& GetModelMap();
 	static std::vector<std::string> GetModelNames();
+	static Animation danceAnimation;
+	static Animator animator;
+	
 private:
 	static std::unordered_map<std::string, Model> m_Models;
 	static std::unordered_map<std::string, Mesh> m_Meshes;
 	static std::vector<Texture> m_LoadedMeshTextures;
+
 };

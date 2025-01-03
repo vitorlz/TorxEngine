@@ -2,6 +2,7 @@
 #include "stb_image.h"
 #include <filesystem>
 #include "../Util/TextureLoader.h"
+#include "AssimpGLMHelpers.hpp"
 
 std::vector<Texture> textures_loaded;
 
@@ -78,6 +79,8 @@ Mesh Model::processMesh(aiMesh* mesh, const aiScene* scene, glm::mat4 globalTran
 		Vertex vertex;
 		// process vertex positions, normals and texture coordinates that are stored in the mesh 
 		
+		SetVertexBoneDataToDefault(vertex);
+
 		// in assimp the vertex position array is called mVertices.
 		glm::vec3 vector;
 		vector.x = mesh->mVertices[i].x;
@@ -158,6 +161,8 @@ Mesh Model::processMesh(aiMesh* mesh, const aiScene* scene, glm::mat4 globalTran
 		textures.insert(textures.end(), rmaMaps.begin(), rmaMaps.end());
 	}
 
+	ExtractBoneWeightForVertices(vertices, mesh, scene);
+
 	return Mesh(vertices, indices, textures);
 }
 
@@ -201,6 +206,76 @@ std::vector<Texture> Model::loadMaterialTextures(aiMaterial* mat, aiTextureType 
 	}
 
 	return textures;
+}
+
+std::map<std::string, BoneInfo>& Model::GetBoneInfoMap()
+{
+	return m_BoneInfoMap;
+}
+
+int& Model::GetBoneCount()
+{
+	return m_BoneCounter;
+}
+
+void Model::SetVertexBoneDataToDefault(Vertex& vertex)
+{
+	for (int i = 0; i < MAX_BONE_INFLUENCE; i++)
+	{
+		vertex.m_BoneIDs[i] = -1;
+		vertex.m_Weights[i] = 0.0f;
+	}
+}
+
+void Model::SetVertexBoneData(Vertex& vertex, int boneID, float weight)
+{
+	for (int i = 0; i < MAX_BONE_INFLUENCE; ++i)
+	{
+		if (vertex.m_BoneIDs[i] < 0)
+		{
+			vertex.m_Weights[i] = weight;
+			vertex.m_BoneIDs[i] = boneID;
+
+			break;
+		}
+	}
+}
+
+void Model::ExtractBoneWeightForVertices(std::vector<Vertex>& vertices, aiMesh* mesh, const aiScene* scene)
+{
+	auto& boneInfoMap = m_BoneInfoMap;
+	int& boneCount = m_BoneCounter;
+
+	for (int boneIndex = 0; boneIndex < mesh->mNumBones; ++boneIndex)
+	{
+		int boneID = -1;
+		std::string boneName = mesh->mBones[boneIndex]->mName.C_Str();
+
+		if (boneInfoMap.find(boneName) == boneInfoMap.end())
+		{
+			BoneInfo newBoneInfo;
+			newBoneInfo.id = boneCount;
+			newBoneInfo.offset = convertToGLMMatrix(mesh->mBones[boneIndex]->mOffsetMatrix);
+			boneInfoMap[boneName] = newBoneInfo;
+			boneID = boneCount;
+			boneCount++;
+		}
+		else
+		{
+			boneID = boneInfoMap[boneName].id;
+		}
+		assert(boneID != -1);
+		auto weights = mesh->mBones[boneIndex]->mWeights;
+		int numWeights = mesh->mBones[boneIndex]->mNumWeights;
+
+		for (int weightIndex = 0; weightIndex < numWeights; ++weightIndex)
+		{
+			int vertexId = weights[weightIndex].mVertexId;
+			float weight = weights[weightIndex].mWeight;
+			assert(vertexId <= vertices.size());
+			SetVertexBoneData(vertices[vertexId], boneID, weight);
+		}
+	}
 }
 
 // THIS FUNCTION ONLY WORKS IF THE TEXTURES ARE STORED IN THE SAME DIRECTORY AS THE MODEL ITSELF

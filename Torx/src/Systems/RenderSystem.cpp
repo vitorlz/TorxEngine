@@ -24,16 +24,21 @@
 #include "../Editor/Editor.h"
 #include "../Rendering/Shadows.h"
 #include "../Rendering/Bloom.h"
+#include "../AssetLoading/Animator.h"
+
 
 extern Coordinator ecs;
+
+
 
 void RenderSystem::Init() 
 {
     RenderingUtil::CreateVoxelTexture(Common::voxelGridDimensions);
 }
-
 void RenderSystem::Update(float deltaTime)
 {
+
+    AssetManager::animator.UpdateAnimation(deltaTime);
     directionalShadowMapPass();
     omnidirectionalShadowMapPass();
     voxelizationPass();
@@ -50,6 +55,7 @@ void RenderSystem::Update(float deltaTime)
     postProcessingPass();
     forwardRenderingPass();
 }
+
 
 void RenderSystem::voxelizationPass()
 {
@@ -161,6 +167,8 @@ void RenderSystem::directionalShadowMapPass()
         }
     }
 
+    Shader& dirShadowMapShader = ShaderManager::GetShaderProgram("dirShadowMapShader");
+
     for (Entity lightEntity : dirLightShadowEntities)
     {
         auto& transform = ecs.GetComponent<CTransform>(lightEntity);
@@ -179,8 +187,6 @@ void RenderSystem::directionalShadowMapPass()
 
         // we need to send the directional light space matrix to the lighting shader so that we can calculate the texcoords of the current fragment
         // to sample from the shadow map.
-
-        Shader& dirShadowMapShader = ShaderManager::GetShaderProgram("dirShadowMapShader");
 
         dirShadowMapShader.use();
         dirShadowMapShader.setMat4("lightSpaceMatrix", DirectionalShadows::g_lightSpaceMatrix);
@@ -216,6 +222,13 @@ void RenderSystem::directionalShadowMapPass()
 
             }
         }
+    }
+
+    std::vector<glm::mat4> transforms = AssetManager::animator.GetFinalBoneMatrices();
+
+    for (int i = 0; i < transforms.size(); ++i)
+    {
+        dirShadowMapShader.setMat4("finalBonesMatrices[" + std::to_string(i) + "]", transforms[i]);
     }
 }
 
@@ -403,6 +416,16 @@ void RenderSystem::geometryPass()
             gBufferShader.setVec2("textureScaling", meshComponent.textureScaling);
             meshComponent.mesh.Draw(gBufferShader);
         }
+
+       
+    }
+
+
+    std::vector<glm::mat4> transforms = AssetManager::animator.GetFinalBoneMatrices();
+
+    for (int i = 0; i < transforms.size(); ++i)
+    {
+        gBufferShader.setMat4("finalBonesMatrices[" + std::to_string(i) + "]", transforms[i]);
     }
 
     glPopDebugGroup();
@@ -827,10 +850,19 @@ void RenderSystem::forwardRenderingPass()
         }
     }
 
+    Shader& animShader = ShaderManager::GetShaderProgram("animShader");
+    animShader.use();
+
+    animShader.setMat4("projection", playerProjMatrix);
+    animShader.setMat4("view", playerViewMatrix);
+
+
     if (Common::bulletLinesDebug)
     {
         renderPhysicsDebug();
     }
+
+ 
 }
 
 void RenderSystem::renderVoxelDebug()

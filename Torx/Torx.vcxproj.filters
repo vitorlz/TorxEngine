@@ -132,6 +132,15 @@
     <ClCompile Include="src\Rendering\Bloom.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="src\AssetLoading\Bone.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\AssetLoading\Animation.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\AssetLoading\Animator.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\Util\Shader.h">
@@ -287,6 +296,18 @@
     <ClInclude Include="src\Rendering\Bloom.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="src\AssetLoading\Bone.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\AssetLoading\AssimpGLMHelpers.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\AssetLoading\Animation.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\AssetLoading\Animator.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="res\shaders\solidColor.frag" />
@@ -334,6 +355,8 @@
     <None Include="res\shaders\SSAOBlur.frag" />
     <None Include="res\shaders\gBufferShader.vert" />
     <None Include="res\shaders\gBufferShader.frag" />
+    <None Include="res\shaders\anim.frag" />
+    <None Include="res\shaders\anim.vert" />
   </ItemGroup>
   <ItemGroup>
     <Library Include="vendor\assimp\lib\assimp-vc143-mt.lib" />

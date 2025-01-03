@@ -7,6 +7,17 @@
 #include <assimp/Importer.hpp>
 #include <assimp/scene.h>
 #include <assimp/postprocess.h>
+#include <map>
+#include <vector>
+
+struct BoneInfo
+{
+	// id id used as index in finalBoneMatrices
+	int id;
+
+	// offset matrix transforms vertex from model space to bone space
+	glm::mat4 offset;
+};
 
 class Model {
 public:
@@ -15,7 +26,19 @@ public:
 	void Draw(Shader& shader);
 
 	std::vector<Mesh> meshes;
+
+	std::map<std::string, BoneInfo>& GetBoneInfoMap();
+	int& GetBoneCount();
 private:
+
+	// skeletal animation stuff
+	std::map<std::string, BoneInfo> m_BoneInfoMap;
+	int m_BoneCounter = 0;
+	
+	void SetVertexBoneDataToDefault(Vertex& vertex);
+	void SetVertexBoneData(Vertex& vertex, int boneID, float weight);
+	void ExtractBoneWeightForVertices(std::vector<Vertex>& vertices, aiMesh* mesh, const aiScene* scene);
+	
 	// model data
 	std::string directory;
 
