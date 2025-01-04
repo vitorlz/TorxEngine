@@ -24,7 +24,7 @@
 #include "../Editor/Editor.h"
 #include "../Rendering/Shadows.h"
 #include "../Rendering/Bloom.h"
-#include "../AssetLoading/Animator.h"
+#include "../Components/CAnimator.h"
 
 
 extern Coordinator ecs;
@@ -38,7 +38,26 @@ void RenderSystem::Init()
 void RenderSystem::Update(float deltaTime)
 {
 
-    AssetManager::animator.UpdateAnimation(deltaTime);
+    // just testing some animation stuff
+    static bool addedAnimator = false;
+    for (const auto& entity : mEntities)
+    {
+        if (ecs.HasComponent<CModel>(entity) && !addedAnimator)
+        {
+            if (ecs.GetComponent<CModel>(entity).modelName == "zombie")
+            {
+                ecs.AddComponent(entity,
+                    CAnimator{
+                        .animator = Animator(&AssetManager::GetAnimation("zombieDance"))
+                    }
+                );
+
+                std::cout << "added animator? " << ecs.HasComponent<CAnimator>(entity) << "\n";
+
+                addedAnimator = true;
+            }
+        }
+    }
     directionalShadowMapPass();
     omnidirectionalShadowMapPass();
     voxelizationPass();
@@ -212,6 +231,19 @@ void RenderSystem::directionalShadowMapPass()
             dirShadowMapShader.setMat4("model", model);
             if (ecs.HasComponent<CModel>(entity))
             {
+
+                if (ecs.HasComponent<CAnimator>(entity))
+                {
+
+                    std::cout << "found an animated model: entity " << entity << "\n";
+                    std::vector<glm::mat4> transforms = ecs.GetComponent<CAnimator>(entity).animator.GetFinalBoneMatrices();
+
+                    for (int i = 0; i < transforms.size(); ++i)
+                    {
+                        dirShadowMapShader.setMat4("finalBonesMatrices[" + std::to_string(i) + "]", transforms[i]);
+                    }
+                }
+
                 auto& modelComponent = ecs.GetComponent<CModel>(entity);
                 modelComponent.model.Draw(dirShadowMapShader);
             }
@@ -222,14 +254,7 @@ void RenderSystem::directionalShadowMapPass()
 
             }
         }
-    }
-
-    std::vector<glm::mat4> transforms = AssetManager::animator.GetFinalBoneMatrices();
-
-    for (int i = 0; i < transforms.size(); ++i)
-    {
-        dirShadowMapShader.setMat4("finalBonesMatrices[" + std::to_string(i) + "]", transforms[i]);
-    }
+    }  
 }
 
 
@@ -406,6 +431,17 @@ void RenderSystem::geometryPass()
 
         if (ecs.HasComponent<CModel>(entity))
         {
+
+            if (ecs.HasComponent<CAnimator>(entity))
+            {
+                std::vector<glm::mat4> transforms = ecs.GetComponent<CAnimator>(entity).animator.GetFinalBoneMatrices();
+
+                for (int i = 0; i < transforms.size(); ++i)
+                {
+                    gBufferShader.setMat4("finalBonesMatrices[" + std::to_string(i) + "]", transforms[i]);
+                }
+            }
+
             auto& model3d = ecs.GetComponent<CModel>(entity);
             gBufferShader.setVec2("textureScaling", glm::vec2(1.0f));
             model3d.model.Draw(gBufferShader);
@@ -416,16 +452,6 @@ void RenderSystem::geometryPass()
             gBufferShader.setVec2("textureScaling", meshComponent.textureScaling);
             meshComponent.mesh.Draw(gBufferShader);
         }
-
-       
-    }
-
-
-    std::vector<glm::mat4> transforms = AssetManager::animator.GetFinalBoneMatrices();
-
-    for (int i = 0; i < transforms.size(); ++i)
-    {
-        gBufferShader.setMat4("finalBonesMatrices[" + std::to_string(i) + "]", transforms[i]);
     }
 
     glPopDebugGroup();

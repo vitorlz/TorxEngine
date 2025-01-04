@@ -14,6 +14,7 @@
 #include "../Components/CPlayer.h"
 #include "../Components/CRigidBody.h"
 #include "../Components/CMesh.h"
+#include "../Components/CAnimator.h"
 #include "../Physics/Raycast.h"
 #include "../Editor/Editor.h"
 #include "../Scene/Scene.h"
@@ -601,6 +602,31 @@ void showComponents(Entity entity)
             ImGui::SameLine();
             if (ImGui::Button("Cancel", ImVec2(120, 0))) { ImGui::CloseCurrentPopup(); }
             ImGui::EndPopup();
+        }
+    }
+
+    if (ecs.HasComponent<CAnimator>(entity))
+    {
+        if (ImGui::CollapsingHeader("Animator Component", ImGuiTreeNodeFlags_AllowItemOverlap))
+        {
+            Animator& animator = ecs.GetComponent<CAnimator>(entity).animator;
+            Animation* animation = animator.GetCurrentAnimation();
+
+            float duration = animation->GetDuration();
+            float currentTime = fmod(animator.GetCurrentTime(), duration);
+            float ticksPerSecond = animation->GetTicksPerSecond();
+            
+            ImGui::TextColored(ImVec4(1.0f, 1.0f, 0.0f, 1.0f), animation->GetAnimationPath().c_str());
+            ImGui::InputFloat("Duration", &duration);
+            ImGui::InputFloat("Ticks per second", &ticksPerSecond);
+            ImGui::InputFloat("Current Time", &currentTime);
+            ImGui::ProgressBar(currentTime / duration, ImVec2(0.0f, 0.0f));
+            ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
+        }
+        ImGui::SameLine();
+        if (ImGui::Button("Delete##xx3"))
+        {
+            ecs.RemoveComponent<CAnimator>(entity);
         }
     }
 

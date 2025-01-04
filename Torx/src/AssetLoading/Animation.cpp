@@ -11,6 +11,8 @@ Animation::Animation(const std::string& animationPath, Model* model)
     m_TicksPerSecond = animation->mTicksPerSecond;
     ReadHierarchyData(m_RootNode, scene->mRootNode);
     ReadMissingBones(animation, *model);
+
+    m_Path = animationPath;
 }
 
 Bone* Animation::FindBone(const std::string& name)
@@ -26,6 +28,11 @@ Bone* Animation::FindBone(const std::string& name)
     );
     if (iter == m_Bones.end()) return nullptr;
     else return &(*iter);
+}
+
+std::string Animation::GetAnimationPath()
+{
+    return m_Path;
 }
 
 float Animation::GetTicksPerSecond() 

@@ -59,3 +59,13 @@ std::vector<glm::mat4> Animator::GetFinalBoneMatrices()
 {
     return m_FinalBoneMatrices;
 }
+
+float Animator::GetCurrentTime()
+{
+    return m_CurrentTime;
+}
+
+Animation* Animator::GetCurrentAnimation()
+{
+    return m_CurrentAnimation;
+}

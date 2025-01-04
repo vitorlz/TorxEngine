@@ -96,6 +96,7 @@
     <ClCompile Include="src\AssetLoading\mesh.cpp" />
     <ClCompile Include="src\AssetLoading\model.cpp" />
     <ClCompile Include="src\AssetLoading\AssetManager.cpp" />
+    <ClCompile Include="src\Components\CAnimator.h" />
     <ClCompile Include="src\Components\CSingleton_Input.h" />
     <ClCompile Include="src\Core\Common.cpp" />
     <ClCompile Include="src\Editor\Editor.cpp" />
@@ -105,6 +106,7 @@
     <ClCompile Include="src\Rendering\RenderingUtil.cpp" />
     <ClCompile Include="src\Rendering\Shadows.cpp" />
     <ClCompile Include="src\Scene\Scene.cpp" />
+    <ClCompile Include="src\Systems\AnimationSystem.cpp" />
     <ClCompile Include="src\Systems\GeneralInputSystem.cpp" />
     <ClCompile Include="src\Systems\LightSystem.cpp" />
     <ClCompile Include="src\Systems\PhysicsSystem.cpp" />
@@ -154,6 +156,7 @@
     <ClInclude Include="src\Rendering\RenderingUtil.h" />
     <ClInclude Include="src\Rendering\Shadows.h" />
     <ClInclude Include="src\Scene\Scene.h" />
+    <ClInclude Include="src\Systems\AnimationSystem.h" />
     <ClInclude Include="src\Systems\GeneralInputSystem.h" />
     <ClInclude Include="src\Systems\LightSystem.h" />
     <ClInclude Include="src\Systems\PhysicsSystem.h" />

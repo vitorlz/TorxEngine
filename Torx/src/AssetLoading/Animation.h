@@ -24,6 +24,7 @@ public:
     Bone* FindBone(const std::string& name);
     float GetTicksPerSecond();
     float GetDuration();
+    std::string GetAnimationPath();
     const AssimpNodeData& GetRootNode();
     const std::map<std::string, BoneInfo>& GetBoneIDMap();
 private:
@@ -32,6 +33,7 @@ private:
 
     float m_Duration;
     int m_TicksPerSecond;
+    std::string m_Path;
     std::vector<Bone> m_Bones;
     AssimpNodeData m_RootNode;
     std::map<std::string, BoneInfo> m_BoneInfoMap;

@@ -4,6 +4,7 @@
 
 std::unordered_map<std::string, Model> AssetManager::m_Models{};
 std::unordered_map<std::string, Mesh> AssetManager::m_Meshes{};
+std::unordered_map<std::string, Animation> AssetManager::m_Animations;
 std::vector<Texture> AssetManager::m_LoadedMeshTextures{};
 Animation AssetManager::danceAnimation;
 Animator AssetManager::animator;
@@ -37,10 +38,28 @@ void AssetManager::LoadModels()
 	//mModels.insert({ "adamhead", adamhead });
 	//mModels.insert({ "ar15", ar15 });
 
-	danceAnimation = Animation("res/models/zombie/zombie.gltf", &zombie);
-	animator = Animator(&danceAnimation);
-
+	
+	//animator = Animator(&danceAnimation);
 }
+
+void AssetManager::LoadAnimations()
+{
+	// Each animated model has to have one animator and can possibly have many animations. When we want to play another animation we can simply call Animator::PlayAnimation.
+	// All animators have to be updated every frame.
+	// Notice that when we create an animation we have to pass in a model. That model has to be the skinned model.
+	// That model will have the bone weights, vertex Id's, bone offset matrices, bone name, etc... 
+	// So for example if we are loading animations for the player, the skinned model will always be the same and the animations can change.
+	// The animator is used to update the animations (calculate the position of the bones for the current frame) and get the final bone matrices, which we send to the vertex shader.
+	// we can have many systems triggering animations. Like a player behavior system that handles player state and also triggers animations such as shooting, walking, etc... The animator
+	// should be a component. The animation system should just update all animator components. These behavior systems that trigger animations will also add the animator component to the entity and 
+	// initialize it with some default animation in their init() function. In the update() function these systems will change the animation based on the game state. For example, an EnemyBehavior
+	// system will add an animator component to the enemy initialized with some idle animation in its init() function. Then in its update() function it will change the animation based
+	// on enemy state (attack, run, etc...)
+
+	m_Animations.insert({ "zombieDance", Animation("res/models/zombie/zombie.gltf", &GetModel("zombie"))});
+}
+
+
 
 std::vector<Vertex> quadVertices = {
 	// Position           // Normal          // TexCoords    // Tangent           // Bitangent
@@ -153,14 +172,19 @@ void AssetManager::LoadMeshes()
 	m_Meshes.insert({ "quad", quad });
 }
 
-Model& AssetManager::GetModel(std::string name)
+Model& AssetManager::GetModel(const std::string name)
 {
 	return m_Models[name];
 }
 
-Mesh& AssetManager::GetMesh(std::string name)
+Mesh& AssetManager::GetMesh(const std::string name)
 {
 	return m_Meshes[name];
+}
+
+Animation& AssetManager::GetAnimation(const std::string name)
+{
+	return m_Animations[name];
 }
 
 std::unordered_map<std::string, Model>& AssetManager::GetModelMap()

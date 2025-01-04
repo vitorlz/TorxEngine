@@ -24,6 +24,7 @@
 #include "Components/CPlayer.h"
 #include "Components/CRigidBody.h"
 #include "Components/CMesh.h"
+#include "Components/CAnimator.h"
 
 #include "Systems/RenderSystem.h"
 #include "Rendering/RenderingUtil.h"
@@ -31,6 +32,7 @@
 #include "Systems/GeneralInputSystem.h"
 #include "Systems/playerInputSystem.h"
 #include "Systems/PhysicsSystem.h"
+#include "Systems/AnimationSystem.h"
 #include <filesystem>
 
 #include <iostream>
@@ -50,6 +52,7 @@ int main()
 
     AssetManager::LoadModels();
     AssetManager::LoadMeshes();
+    AssetManager::LoadAnimations();
     ShaderManager::LoadShaders();
 
     ecs.RegisterComponent<CTransform>();
@@ -58,6 +61,7 @@ int main()
     ecs.RegisterComponent<CPlayer>();
     ecs.RegisterComponent<CRigidBody>();
     ecs.RegisterComponent<CMesh>();
+    ecs.RegisterComponent<CAnimator>();
 
     auto renderSystem = ecs.RegisterSystem<RenderSystem>();
     {
@@ -95,6 +99,13 @@ int main()
         ecs.SetSystemSignature<PlayerInputSystem>(signature);
     }
 
+    auto  animationSystem = ecs.RegisterSystem<AnimationSystem>();
+    {
+        Signature signature;
+        signature.set(ecs.GetComponentType<CAnimator>());
+        ecs.SetSystemSignature<AnimationSystem>(signature);
+    }
+
     UI gui;
 
     gui.Init(window.GetWindow());
@@ -129,6 +140,8 @@ int main()
         gui.NewFrame();
 
         generalInputSystem->Update(deltaTime, window.GetWindow());
+
+        animationSystem->Update(deltaTime);
 
         renderSystem->Update(deltaTime);
 
