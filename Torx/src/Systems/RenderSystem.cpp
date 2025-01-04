@@ -62,9 +62,9 @@ void RenderSystem::Update(float deltaTime)
     omnidirectionalShadowMapPass();
     voxelizationPass();
     geometryPass();
-    ssrPass();
     ssaoPass();
     lightingPass();
+    ssrPass();
     skyboxPass();
     bloomPass();
     if (Common::showVoxelDebug)
@@ -380,7 +380,7 @@ void RenderSystem::geometryPass()
     unsigned int attachments[8] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1, GL_COLOR_ATTACHMENT2, GL_COLOR_ATTACHMENT3, GL_COLOR_ATTACHMENT4, GL_COLOR_ATTACHMENT5, GL_COLOR_ATTACHMENT6, GL_COLOR_ATTACHMENT7 };
     glDrawBuffers(8, attachments);
 
-    glViewport(0, 0, Window::screenWidth, Window::screenHeight);
+    glViewport(0, 0, Common::SCR_WIDTH, Common::SCR_HEIGHT);
     glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT);
     glClear(GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
@@ -453,74 +453,6 @@ void RenderSystem::geometryPass()
             meshComponent.mesh.Draw(gBufferShader);
         }
     }
-
-    glPopDebugGroup();
-}
-
-void RenderSystem::ssrPass()
-{
-    glPushDebugGroup(GL_DEBUG_SOURCE_APPLICATION, 0, -1, "SSR Pass");
-
-    glDisable(GL_CULL_FACE);
-
-    glBindFramebuffer(GL_FRAMEBUFFER, RenderingUtil::mSSRFBO);
-    glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-    glClear(GL_COLOR_BUFFER_BIT);
-
-    Shader& ssrShader = ShaderManager::GetShaderProgram("ssrShader");
-    ssrShader.use();
-
-    Entity playerEnt = ecs.GetPlayers()[0];
-    CPlayer& playerComp = ecs.GetComponent<CPlayer>(playerEnt);
-
-    glm::mat4& playerProjMatrix = playerComp.projectionMatrix;
-
-    ssrShader.setMat4("projection", playerProjMatrix);
-    ssrShader.setFloat("maxDistance", Common::ssrMaxDistance);
-    ssrShader.setFloat("resolution", Common::ssrResolution);
-    ssrShader.setInt("steps", Common::ssrSteps);
-    ssrShader.setFloat("thickness", Common::ssrThickness);
-
-    glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_2D, RenderingUtil::gViewPosition);
-    ssrShader.setInt("gViewPosition", 0);
-
-    glActiveTexture(GL_TEXTURE1);
-    glBindTexture(GL_TEXTURE_2D, RenderingUtil::gViewNormal);
-    ssrShader.setInt("gViewNormal", 1);
-
-    glActiveTexture(GL_TEXTURE2);
-    glBindTexture(GL_TEXTURE_2D, RenderingUtil::gRMA);
-    ssrShader.setInt("gRMA", 2);
-
-    glActiveTexture(GL_TEXTURE3);
-    glBindTexture(GL_TEXTURE_2D, RenderingUtil::gAlbedo);
-    ssrShader.setInt("gAlbedo", 3);
-
-    glBindVertexArray(RenderingUtil::mScreenQuadVAO);
-    glDisable(GL_DEPTH_TEST);
-    glDrawArrays(GL_TRIANGLES, 0, 6);
-
-    glPopDebugGroup();
-
-    // blur the ssr texture
-
-    glPushDebugGroup(GL_DEBUG_SOURCE_APPLICATION, 0, -1, "SSR Blur Pass");
-
-    glBindFramebuffer(GL_FRAMEBUFFER, RenderingUtil::mBoxBlurFBO);
-    glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-    glClear(GL_COLOR_BUFFER_BIT);
-
-    Shader& boxBlurShader = ShaderManager::GetShaderProgram("boxBlurShader");
-    boxBlurShader.use();
-
-    glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_2D, RenderingUtil::mSSRTexture);
-    boxBlurShader.setInt("colorTexture", 0);
-
-    glBindVertexArray(RenderingUtil::mScreenQuadVAO);
-    glDisable(GL_DEPTH_TEST);
-    glDrawArrays(GL_TRIANGLES, 0, 6);
 
     glPopDebugGroup();
 }
@@ -645,8 +577,6 @@ void RenderSystem::lightingPass()
         lightingShader.setFloat("diffuseConeSpread", Common::diffuseConeSpread);
         lightingShader.setFloat("voxelizationAreaSize", Common::voxelizationAreaSize);
         lightingShader.setFloat("vxSpecularBias", Common::vxSpecularBias);
-        lightingShader.setFloat("ssrSpecularBias", Common::ssrSpecularBias);
-        lightingShader.setFloat("ssrMaxBlurDistance", Common::ssrMaxBlurDistance);
         lightingShader.setFloat("specularStepSizeMultiplier", Common::specularStepSizeMultiplier);
         lightingShader.setFloat("specularConeOriginOffset", Common::specularConeOriginOffset);
         lightingShader.setFloat("showTotalIndirectSpecularLight", Common::showTotalIndirectSpecularLight);
@@ -670,14 +600,6 @@ void RenderSystem::lightingPass()
         glActiveTexture(GL_TEXTURE15);
         glBindTexture(GL_TEXTURE_3D, RenderingUtil::mVoxelTexture);
         lightingShader.setInt("voxelTexture", 15);
-
-        glActiveTexture(GL_TEXTURE18);
-        glBindTexture(GL_TEXTURE_2D, RenderingUtil::mSSRTexture);
-        lightingShader.setInt("ssrTexture", 18);
-
-        glActiveTexture(GL_TEXTURE19);
-        glBindTexture(GL_TEXTURE_2D, RenderingUtil::mSSRBlurredTexture);
-        lightingShader.setInt("ssrTextureBlur", 19);
 
         glActiveTexture(GL_TEXTURE20);
         glBindTexture(GL_TEXTURE_2D, RenderingUtil::mSSAOBlurTexture);
@@ -711,6 +633,74 @@ void RenderSystem::lightingPass()
         glDisable(GL_DEPTH_TEST);
         glDrawArrays(GL_TRIANGLES, 0, 6);
     }
+
+    glPopDebugGroup();
+}
+
+void RenderSystem::ssrPass()
+{
+    glPushDebugGroup(GL_DEBUG_SOURCE_APPLICATION, 0, -1, "SSR Pass");
+
+    glDisable(GL_CULL_FACE);
+
+    glBindFramebuffer(GL_FRAMEBUFFER, RenderingUtil::mSSRFBO);
+    glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+    glClear(GL_COLOR_BUFFER_BIT);
+
+    Shader& ssrShader = ShaderManager::GetShaderProgram("ssrShader");
+    ssrShader.use();
+
+    Entity playerEnt = ecs.GetPlayers()[0];
+    CPlayer& playerComp = ecs.GetComponent<CPlayer>(playerEnt);
+
+    glm::mat4& playerProjMatrix = playerComp.projectionMatrix;
+
+    ssrShader.setMat4("projection", playerProjMatrix);
+    ssrShader.setFloat("maxDistance", Common::ssrMaxDistance);
+    ssrShader.setFloat("resolution", Common::ssrResolution);
+    ssrShader.setInt("steps", Common::ssrSteps);
+    ssrShader.setFloat("thickness", Common::ssrThickness);
+
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, RenderingUtil::gViewPosition);
+    ssrShader.setInt("gViewPosition", 0);
+
+    glActiveTexture(GL_TEXTURE1);
+    glBindTexture(GL_TEXTURE_2D, RenderingUtil::gViewNormal);
+    ssrShader.setInt("gViewNormal", 1);
+
+    glActiveTexture(GL_TEXTURE2);
+    glBindTexture(GL_TEXTURE_2D, RenderingUtil::gRMA);
+    ssrShader.setInt("gRMA", 2);
+
+    glActiveTexture(GL_TEXTURE3);
+    glBindTexture(GL_TEXTURE_2D, RenderingUtil::mLightingTexture);
+    ssrShader.setInt("lightingTexture", 3);
+
+    glBindVertexArray(RenderingUtil::mScreenQuadVAO);
+    glDisable(GL_DEPTH_TEST);
+    glDrawArrays(GL_TRIANGLES, 0, 6);
+
+    glPopDebugGroup();
+
+    // blur the ssr texture
+
+    glPushDebugGroup(GL_DEBUG_SOURCE_APPLICATION, 0, -1, "SSR Blur Pass");
+
+    glBindFramebuffer(GL_FRAMEBUFFER, RenderingUtil::mBoxBlurFBO);
+    glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+    glClear(GL_COLOR_BUFFER_BIT);
+
+    Shader& boxBlurShader = ShaderManager::GetShaderProgram("boxBlurShader");
+    boxBlurShader.use();
+
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, RenderingUtil::mSSRTexture);
+    boxBlurShader.setInt("colorTexture", 0);
+
+    glBindVertexArray(RenderingUtil::mScreenQuadVAO);
+    glDisable(GL_DEPTH_TEST);
+    glDrawArrays(GL_TRIANGLES, 0, 6);
 
     glPopDebugGroup();
 }
@@ -804,6 +794,9 @@ void RenderSystem::postProcessingPass()
     glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT);
 
+
+    Entity playerEnt = ecs.GetPlayers()[0];
+    
     Shader& postProcessingShader = ShaderManager::GetShaderProgram("postProcessingShader");
     postProcessingShader.use();
     postProcessingShader.setBool("showNormals", Common::normalsDebug);
@@ -816,19 +809,47 @@ void RenderSystem::postProcessingPass()
     postProcessingShader.setBool("uncharted2", Common::uncharted);
     postProcessingShader.setBool("ACES", Common::aces);
     postProcessingShader.setBool("bloom", Common::bloomOn);
+    postProcessingShader.setVec3("camPos", ecs.GetComponent<CTransform>(playerEnt).position);
+    postProcessingShader.setFloat("ssrMaxBlurDistance", Common::ssrMaxBlurDistance);
+    postProcessingShader.setFloat("ssrSpecularBias", Common::ssrSpecularBias);
 
     glBindVertexArray(RenderingUtil::mScreenQuadVAO);
     glDisable(GL_DEPTH_TEST);
     glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_2D, RenderingUtil::mFragColorTexture);
+    glBindTexture(GL_TEXTURE_2D, RenderingUtil::mLightingTexture);
+
+    glActiveTexture(GL_TEXTURE1);
+    glBindTexture(GL_TEXTURE_2D, RenderingUtil::mSSRTexture);
+
+    glActiveTexture(GL_TEXTURE2);
+    glBindTexture(GL_TEXTURE_2D, RenderingUtil::mSSRBlurredTexture);
+
+    glActiveTexture(GL_TEXTURE3);
+    glBindTexture(GL_TEXTURE_2D, RenderingUtil::gPosition);
+
+    glActiveTexture(GL_TEXTURE4);
+    glBindTexture(GL_TEXTURE_2D, RenderingUtil::gRMA);
+
+    glActiveTexture(GL_TEXTURE5);
+    glBindTexture(GL_TEXTURE_2D, RenderingUtil::gNormal);
+
+    glActiveTexture(GL_TEXTURE6);
+    glBindTexture(GL_TEXTURE_2D, RenderingUtil::gAlbedo);
+
 
     if (Common::bloomOn) {
-        glActiveTexture(GL_TEXTURE1);
+        glActiveTexture(GL_TEXTURE6);
         glBindTexture(GL_TEXTURE_2D, RenderingUtil::mPingPongBuffers[(Common::bloomKernelSize * 2) % 2 ? !Bloom::g_horizontal : Bloom::g_horizontal]);
     }
 
     postProcessingShader.setInt("screenQuadTexture", 0);
-    postProcessingShader.setInt("bloomBlurTexture", 1);
+    postProcessingShader.setInt("ssrTexture", 1);
+    postProcessingShader.setInt("ssrTextureBlur", 2);
+    postProcessingShader.setInt("gPosition", 3);
+    postProcessingShader.setInt("gRMA", 4);
+    postProcessingShader.setInt("gNormal", 5);
+    postProcessingShader.setInt("gAlbedo", 6);
+    postProcessingShader.setInt("bloomBlurTexture", 7);
     glDrawArrays(GL_TRIANGLES, 0, 6);
 }
 
@@ -876,19 +897,10 @@ void RenderSystem::forwardRenderingPass()
         }
     }
 
-    Shader& animShader = ShaderManager::GetShaderProgram("animShader");
-    animShader.use();
-
-    animShader.setMat4("projection", playerProjMatrix);
-    animShader.setMat4("view", playerViewMatrix);
-
-
     if (Common::bulletLinesDebug)
     {
         renderPhysicsDebug();
     }
-
- 
 }
 
 void RenderSystem::renderVoxelDebug()

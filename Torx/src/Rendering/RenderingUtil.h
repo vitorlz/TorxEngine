@@ -16,7 +16,7 @@ public:
 	static unsigned int mDirLightShadowMap;
 	static unsigned int mUnitCubeVAO;
 	static unsigned int mLightingFBO;
-	static unsigned int mFragColorTexture;
+	static unsigned int mLightingTexture;
 	static unsigned int mBlittingFBO;
 	static unsigned int mPointLightShadowMapFBO;
 	static unsigned int mDirLightShadowMapFBO;

@@ -32,13 +32,6 @@ uniform bool hasAOTexture;
 uniform vec2 textureScaling;
 //vec2 scaledTexCoords;
 
-// SSR
-uniform sampler2D ssrTexture;
-uniform sampler2D ssrTextureBlur;
-uniform mat3 viewNormalMatrix;
-uniform float ssrSpecularBias;
-uniform float ssrMaxBlurDistance;
-
 // SSAO
 uniform sampler2D SSAO;
 uniform bool ssaoOn;
@@ -89,7 +82,6 @@ vec3 orthogonal(vec3 u);
 vec3 traceDiffuseVoxelCone(const vec3 from, vec3 direction);
 vec3 traceSpecularVoxelCone(vec3 from, vec3 direction, vec3 normal);
 vec3 indirectSpecularLight(vec3 viewDirection, vec3 normal);
-vec4 ssrRayCast(vec3 dir, vec3 hirCoord, float dDepth);
 
 vec3 albedo;
 vec3 emission;
@@ -181,7 +173,7 @@ void main()
 	// We now use the value sampled from our irradiance map as the indirect diffuse lighting, which we put in the ambient component of the light.
 	// indirect lighting has both a diffuse and specular part, so we need to weigh both parts according to the indirect reflectance (specular) ratio 
 	// and indirect refractive (diffuse) ratio. We use the fresnelSchlick formula to find the reflectance ratio and use that to find the refractive ratio.
-	vec3 F = fresnelSchlickRoughness(max(dot(N, V), 0.0), F0, roughness);
+	vec3 F = fresnelSchlick(max(dot(N, V), 0.0), F0);
 
 	vec3 kS = F;
 	vec3 kD = 1.0 - kS;
@@ -192,13 +184,7 @@ void main()
 	vec3 indirectDiffuseContribution;
 	vec3 indirectSpecularContribution;
 
-	vec2 texSize = textureSize(ssrTexture, 0);
-
-	vec3 ssrOriginal = texture(ssrTexture, gl_FragCoord.xy / texSize).rgb;
-
-	vec3 ssrBlurred = texture(ssrTextureBlur, gl_FragCoord.xy / texSize).rgb;
-
-	vec3 ssr = mix(ssrOriginal, ssrBlurred,   clamp(roughness + clamp(length(camPos - FragPos) / ssrMaxBlurDistance, 0, 1), 0,1)) * (1 - roughness) * ssrSpecularBias;
+	vec2 texSize = textureSize(SSAO, 0);
 	
 	float AO = texture(SSAO, gl_FragCoord.xy / texSize).r;
 
@@ -206,7 +192,7 @@ void main()
 	{
 		indirectDiffuseContribution = (kD * indirectDiffuseLight(N));
 		// mix vxgi specular with ssr based on the angle between the vector from the camera to the fragment and the fragment's normal 
-		indirectSpecularContribution =  (kS * mix(ssr, indirectSpecularLight(V, N),  smoothstep(0.0, 1.0, dot(V,reflect(-V, N))))); 
+		indirectSpecularContribution =  (kS * mix(vec3(0.0), indirectSpecularLight(V, N),  smoothstep(0.0, 1.0, dot(V,reflect(-V, N))))); 
 	}
 	if(vxgi && !(showTotalIndirectDiffuseLight || showDiffuseAccumulation || showTotalIndirectSpecularLight || showAO))
 	{
@@ -411,7 +397,7 @@ vec3 indirectSpecularLight(vec3 viewDirection, vec3 normal) {
     float grazingAngleFactor = max(dot(normal, reflection), 0.05); // Avoid near-zero artifacts
 
     // Add grazing angle falloff to reduce artifacts
-    return (1.0 - roughness) * vxSpecularBias * traceSpecularVoxelCone(FragPos, reflection, normal) * grazingAngleFactor;
+    return (1.0 - roughness) * vxSpecularBias *		traceSpecularVoxelCone(FragPos, reflection, normal) * grazingAngleFactor;
 }
 
 vec3 fresnelSchlick(float cosTheta, vec3 F0)

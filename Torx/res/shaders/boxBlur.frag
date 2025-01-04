@@ -7,19 +7,13 @@ in vec2 TexCoords;
 uniform sampler2D colorTexture;
 
 // control how blurry the result is
-int size = 8;
-float separation = 1;
+int size = 4;
+float separation = 5;
 
 void main()
 {
 	vec2 texSize = textureSize(colorTexture, 0).xy;
 	vec2 texCoord = gl_FragCoord.xy / texSize;
-
-	if(size <= 0) 
-	{
-		FragColor = texture(colorTexture, texCoord);
-		return;
-	}
 
 	separation = max(separation, 1);
 

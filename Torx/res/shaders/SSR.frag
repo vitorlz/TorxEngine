@@ -3,7 +3,7 @@
 uniform sampler2D gViewPosition;
 uniform sampler2D gViewNormal;
 uniform sampler2D gRMA;
-uniform sampler2D gAlbedo;
+uniform sampler2D lightingTexture;
 //uniform samplerCube skybox;
 //uniform mat3 inverseViewNormalMatrix;
 //uniform mat4 inverseViewMatrix;
@@ -174,7 +174,7 @@ void main()
 
     float alpha = clamp(uv.b, 0, 1);
 
-    vec4 color = texture(gAlbedo, uv.xy);
+    vec4 color = texture(lightingTexture, uv.xy);
 
     float roughness = texture(gRMA, texCoord).r;
     
@@ -182,5 +182,5 @@ void main()
   
     float screenEdgefactor = clamp(1.0 - (dCoords.x + dCoords.y), 0.0, 1.0);
 
-    FragColor = vec4(mix(vec3(0.0), color.rgb , alpha) *  0.25 * (1.0 + roughness) * screenEdgefactor, alpha);
+    FragColor = vec4(mix(vec3(0.0), color.rgb , alpha) * screenEdgefactor, alpha);
 }

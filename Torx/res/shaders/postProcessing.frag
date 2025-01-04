@@ -7,6 +7,18 @@ in vec2  TexCoords;
 uniform sampler2D screenQuadTexture;
 uniform sampler2D bloomBlurTexture;
 
+// SSR
+uniform sampler2D ssrTexture;
+uniform sampler2D ssrTextureBlur;
+uniform sampler2D gPosition;
+uniform sampler2D gRMA;
+uniform sampler2D gNormal;
+uniform sampler2D gAlbedo;
+uniform float ssrMaxBlurDistance;
+uniform float ssrSpecularBias;
+
+uniform vec3 camPos;
+
 uniform bool showNormals;
 uniform bool reinhard;
 uniform bool uncharted2;
@@ -17,6 +29,7 @@ uniform bool worldPosDebug;
 uniform bool albedoDebug;
 uniform bool roughnessDebug;
 uniform bool metallicDebug;
+
 
 // testing some tone mapping algorithms
 
@@ -57,8 +70,23 @@ vec3 reinhardSimple(vec3 v) {
 	return mapped;
 }
 
+vec3 fresnelSchlick(float cosTheta, vec3 F0)
+{
+	return F0 + (1.0 - F0) * pow(clamp(1.0 - cosTheta, 0.0, 1.0), 5.0);
+}
+
 void main()
 {
+
+	
+	vec3 FragPos = texture(gPosition, TexCoords).xyz;
+	vec3 RMA = texture(gRMA, TexCoords).rgb;
+	vec3 V = normalize(camPos - FragPos);
+	vec3 N = texture(gNormal, TexCoords).rgb;
+	vec3 albedo = texture(gAlbedo, TexCoords).rgb;
+
+	float roughness = RMA.r;
+	float metallic = RMA.g;
 
 	const float gamma = 2.2;
 	vec3 color = vec3(texture(screenQuadTexture, TexCoords));
@@ -69,6 +97,21 @@ void main()
 		vec3 bloomColor = vec3(texture(bloomBlurTexture, TexCoords));
 		color += bloomColor;
 	}
+	
+	vec3 F0 = vec3(0.04);
+	F0 = mix(F0, albedo, metallic);
+
+	vec3 F = fresnelSchlick(max(dot(N, V), 0.0), F0);
+
+	vec3 kS = F;
+
+	vec3 ssrOriginal = texture(ssrTexture, TexCoords).rgb;
+
+	vec3 ssrBlurred = texture(ssrTextureBlur, TexCoords).rgb;
+	
+	vec3 ssr = mix(ssrOriginal, ssrBlurred, clamp(roughness + clamp(length(camPos - FragPos) / ssrMaxBlurDistance, 0, 1), 0,1)) * max(0, (1 - roughness * 1.7)) * ssrSpecularBias;
+	
+	color += kS * mix(ssr, vec3(0.0),  smoothstep(0.0, 1.0, dot(V,reflect(-V, N))));
 
 	if (!showNormals && !worldPosDebug && !albedoDebug && !roughnessDebug && !metallicDebug) {
 		

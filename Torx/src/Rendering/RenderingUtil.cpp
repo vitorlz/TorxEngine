@@ -53,7 +53,7 @@ unsigned int RenderingUtil::gAlbedo;
 unsigned int RenderingUtil::gRMA;
 unsigned int RenderingUtil::gDirLightSpacePosition;
 unsigned int RenderingUtil::gEmission;
-unsigned int RenderingUtil::mFragColorTexture;
+unsigned int RenderingUtil::mLightingTexture;
 unsigned int RenderingUtil::gViewPosition;
 unsigned int RenderingUtil::gViewNormal;
 
@@ -203,8 +203,8 @@ void RenderingUtil::CreateLightingFBO()
 
     // FragColor texture
     
-    glGenTextures(1, &mFragColorTexture);
-    glBindTexture(GL_TEXTURE_2D, mFragColorTexture);
+    glGenTextures(1, &mLightingTexture);
+    glBindTexture(GL_TEXTURE_2D, mLightingTexture);
   
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, Common::SCR_WIDTH, Common::SCR_HEIGHT, 0, GL_RGBA, GL_FLOAT, NULL);
 
@@ -213,7 +213,7 @@ void RenderingUtil::CreateLightingFBO()
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
-    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, mFragColorTexture, 0);
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, mLightingTexture, 0);
 
     glBindTexture(GL_TEXTURE_2D, 0);
 

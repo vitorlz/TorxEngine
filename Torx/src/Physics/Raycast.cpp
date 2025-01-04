@@ -3,8 +3,9 @@
 #include "../UI/UI.h"
 #include <iostream>
 
-glm::vec3 Raycast::m_MouseRayStartWorld{};
+glm::vec4 Raycast::m_MouseRayStartWorld{};
 glm::vec3 Raycast::m_MouseRayDirWorld{};
+glm::vec4 Raycast::m_MouseRayEndWorld{};
 btVector3 Raycast::m_MouseHitPointWorld{};
 CSingleton_Input& Raycast::m_inputSing{ CSingleton_Input::getInstance() };
 btDiscreteDynamicsWorld* Raycast::m_dynamicsWorld{};
@@ -13,15 +14,16 @@ int Raycast::m_SelectedEntity;
 void Raycast::calculateMouseRaycast(glm::mat4 projView)
 {
 	glm::vec4 rayStartNDC(
-		((float)m_inputSing.mouseX / (float)Common::SCR_WIDTH - 0.5f) * 2.0f,
-		(((float)Common::SCR_HEIGHT - (float)m_inputSing.mouseY) / (float)Common::SCR_HEIGHT - 0.5f) * 2.0f,
+		(m_inputSing.mouseX / (double)Common::SCR_WIDTH - 0.5f) * 2.0f,
+		(((double)Common::SCR_HEIGHT - m_inputSing.mouseY) / (double)Common::SCR_HEIGHT - 0.5f) * 2.0f,
 		-1.0f,
 		1.0f
 		);
 
+
 	glm::vec4 rayEndNDC(
-		((float)m_inputSing.mouseX / (float)Common::SCR_WIDTH - 0.5f) * 2.0f,
-		(((float)Common::SCR_HEIGHT - (float)m_inputSing.mouseY) / (float)Common::SCR_HEIGHT - 0.5f) * 2.0f,
+		(m_inputSing.mouseX / (double)Common::SCR_WIDTH - 0.5f) * 2.0f,
+		(((double)Common::SCR_HEIGHT - m_inputSing.mouseY) / (double)Common::SCR_HEIGHT - 0.5f) * 2.0f,
 		0.0f,
 		1.0f
 	);
@@ -31,15 +33,16 @@ void Raycast::calculateMouseRaycast(glm::mat4 projView)
 	glm::vec4 rayStartWorld = inverseProjView * rayStartNDC;
 	glm::vec4 rayEndWorld = inverseProjView * rayEndNDC;
 
-	m_MouseRayStartWorld = glm::vec3(rayStartWorld) / rayStartWorld.w;
+	m_MouseRayStartWorld = rayStartWorld / rayStartWorld.w;
+	m_MouseRayEndWorld = rayEndWorld / rayEndWorld.w;
 
-	m_MouseRayDirWorld = normalize(glm::vec3((rayEndWorld / rayEndWorld.w)) - m_MouseRayStartWorld);
+	m_MouseRayDirWorld = normalize(m_MouseRayEndWorld - m_MouseRayStartWorld);
 }
 
 unsigned int Raycast::mouseRaycast()
 {
 	glm::vec3 rayOrigin = m_MouseRayStartWorld;
-	glm::vec3 rayEnd = m_MouseRayStartWorld + m_MouseRayDirWorld * 1000.0f;
+	glm::vec3 rayEnd = rayOrigin + m_MouseRayDirWorld * 1000.0f;
 
 	btCollisionWorld::ClosestRayResultCallback RayCallback(
 		btVector3(rayOrigin.x, rayOrigin.y, rayOrigin.z),

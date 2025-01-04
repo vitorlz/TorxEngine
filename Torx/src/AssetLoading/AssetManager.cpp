@@ -56,10 +56,9 @@ void AssetManager::LoadAnimations()
 	// system will add an animator component to the enemy initialized with some idle animation in its init() function. Then in its update() function it will change the animation based
 	// on enemy state (attack, run, etc...)
 
-	m_Animations.insert({ "zombieDance", Animation("res/models/zombie/zombie.gltf", &GetModel("zombie"))});
+	m_Animations.insert({ "zombieDance", Animation("res/animations/zombie/breakdance.gltf", &GetModel("zombie"))});
+
 }
-
-
 
 std::vector<Vertex> quadVertices = {
 	// Position           // Normal          // TexCoords    // Tangent           // Bitangent
