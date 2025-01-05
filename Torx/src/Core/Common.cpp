@@ -66,6 +66,11 @@ int Common::ssaoKernelSize{ 64 };
 bool Common::ssaoOn{ true };
 bool Common::showAO{ false };
 
-
+// -------------- TEMPORARY TEXT STUFF ---------------------------
+float Common::textThickness{ 0.5f };
+float Common::textSoftness{ 0.0f };
+float Common::outlineThickness{ 0.0f };
+float Common::outlineSoftness{ 0.1f };
+glm::vec3 Common::outlineColor{ 0.0f, 0.0f, 0.0f };
 
 

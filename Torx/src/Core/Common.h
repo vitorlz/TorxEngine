@@ -83,4 +83,10 @@ public:
 	static float ssaoPower;
 	static bool ssaoOn;
 	static bool showAO;
+	static float textThickness;
+	static float textSoftness;
+	static float outlineThickness;
+	static float outlineSoftness;
+	static glm::vec3 outlineColor;
+
 };

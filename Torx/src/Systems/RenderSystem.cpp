@@ -25,14 +25,18 @@
 #include "../Rendering/Shadows.h"
 #include "../Rendering/Bloom.h"
 #include "../Components/CAnimator.h"
+#include "../Rendering/TextRendering.h"
 
 
 extern Coordinator ecs;
 
 
+TextRendering textRendering;
 
 void RenderSystem::Init() 
 {
+
+    textRendering.LoadFont("res/fonts/arial.ttf", 1000.0f);
     RenderingUtil::CreateVoxelTexture(Common::voxelGridDimensions);
 }
 void RenderSystem::Update(float deltaTime)
@@ -74,6 +78,7 @@ void RenderSystem::Update(float deltaTime)
     postProcessingPass();
     forwardRenderingPass();
 }
+
 
 
 void RenderSystem::voxelizationPass()
@@ -853,6 +858,9 @@ void RenderSystem::postProcessingPass()
     glDrawArrays(GL_TRIANGLES, 0, 6);
 }
 
+
+
+
 void RenderSystem::forwardRenderingPass()
 {
     glBindFramebuffer(GL_READ_FRAMEBUFFER, RenderingUtil::gBufferFBO);
@@ -896,6 +904,41 @@ void RenderSystem::forwardRenderingPass()
             }
         }
     }
+
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+    glm::mat4 projection = glm::ortho(0.0f, 1600.0f, 0.0f, 900.0f, 0.0f, 100.0f);
+
+    Shader& textShader = ShaderManager::GetShaderProgram("textShader");
+
+    textShader.use();
+
+    glm::mat4 model = glm::mat4(1.0f);
+    model = glm::translate(model, glm::vec3(0.0, 2.0, 0.0));
+   
+    
+    textShader.setMat4("projection", playerProjMatrix);
+    textShader.setMat4("view", playerViewMatrix);
+    textShader.setMat4("model", model);
+
+    textShader.setFloat("thickness", Common::textThickness);
+    textShader.setFloat("softness", Common::textSoftness);
+    textShader.setFloat("outlineThickness", Common::outlineThickness);
+    textShader.setFloat("outlineSoftness", Common::outlineSoftness);
+    textShader.setVec3("outlineColor", Common::outlineColor);
+
+    glDisable(GL_CULL_FACE);
+    glDepthMask(GL_FALSE);
+    
+    
+    textRendering.RenderText(textShader, "Crazy shit", 0.0f, 0.0f, 0.00025f, glm::vec3(0.5f, 0.2f, 0.2f));
+    
+
+    glDepthMask(GL_TRUE);
+    glEnable(GL_CULL_FACE);
+
+    glDisable(GL_BLEND);
 
     if (Common::bulletLinesDebug)
     {

@@ -1,5 +1,7 @@
 #pragma once 
 
+#include "glm/glm.hpp"
+
 // Store shadow state and data
 
 namespace OmniShadows

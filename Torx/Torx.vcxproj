@@ -76,7 +76,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>vendor/GLFW/include;vendor/glad/include;vendor/glm/include;vendor/stb_image;vendor/assimp/include;vendor/bulletphysics/include;imgui;vendor/imguizmo;vendor/imgui;vendor/nlohmann/include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>vendor/GLFW/include;vendor/glad/include;vendor/glm/include;vendor/stb_image;vendor/assimp/include;vendor/bulletphysics/include;imgui;vendor/imguizmo;vendor/imgui;vendor/nlohmann/include;vendor/freetype/include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp20</LanguageStandard>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
     </ClCompile>
@@ -85,8 +85,8 @@
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>vendor/GLFW/lib;vendor/assimp/lib;vendor/bulletphysics/lib/Release;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>glfw3.lib;opengl32.lib;assimp-vc143-mt.lib;BulletCollision.lib;BulletDynamics.lib;LinearMath.lib;$(CoreLibraryDependencies);%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>vendor/GLFW/lib;vendor/assimp/lib;vendor/bulletphysics/lib/Release;vendor/freetype/lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>glfw3.lib;opengl32.lib;assimp-vc143-mt.lib;BulletCollision.lib;BulletDynamics.lib;LinearMath.lib;freetype.lib;$(CoreLibraryDependencies);%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
@@ -104,7 +104,7 @@
     <ClCompile Include="src\Physics\Raycast.cpp" />
     <ClCompile Include="src\Rendering\Bloom.cpp" />
     <ClCompile Include="src\Rendering\RenderingUtil.cpp" />
-    <ClCompile Include="src\Rendering\Shadows.cpp" />
+    <ClCompile Include="src\Rendering\TextRendering.cpp" />
     <ClCompile Include="src\Scene\Scene.cpp" />
     <ClCompile Include="src\Systems\AnimationSystem.cpp" />
     <ClCompile Include="src\Systems\GeneralInputSystem.cpp" />
@@ -155,6 +155,7 @@
     <ClInclude Include="src\Rendering\Bloom.h" />
     <ClInclude Include="src\Rendering\RenderingUtil.h" />
     <ClInclude Include="src\Rendering\Shadows.h" />
+    <ClInclude Include="src\Rendering\TextRendering.h" />
     <ClInclude Include="src\Scene\Scene.h" />
     <ClInclude Include="src\Systems\AnimationSystem.h" />
     <ClInclude Include="src\Systems\GeneralInputSystem.h" />
@@ -231,6 +232,8 @@
     <None Include="res\shaders\SSR.vert" />
     <None Include="res\shaders\testShader.frag" />
     <None Include="res\shaders\testShader.vert" />
+    <None Include="res\shaders\text.frag" />
+    <None Include="res\shaders\text.vert" />
     <None Include="res\shaders\voxelization.frag" />
     <None Include="res\shaders\voxelization.geom" />
     <None Include="res\shaders\voxelization.vert" />

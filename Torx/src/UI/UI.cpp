@@ -288,6 +288,18 @@ void UI::Update()
 
         ImGui::TreePop();
     }
+
+    if (ImGui::TreeNode("Text Rendering"))
+    {
+        ImGui::SliderFloat("Text Thickness", &Common::textThickness, 0.0f, 1.0f);
+        ImGui::SliderFloat("Text Softness", &Common::textSoftness, 0.0f, 1.0f);
+        ImGui::SliderFloat("Outline Thickness", &Common::outlineThickness, 0.0f, 1.0f);
+        ImGui::SliderFloat("Outline Softness", &Common::outlineSoftness, 0.0f, 1.0f);
+        ImGui::ColorEdit3("Outline Color", &Common::outlineColor.x);
+
+        ImGui::TreePop();
+    }
+
     
     if (ImGui::Button("Save scene"))
     {

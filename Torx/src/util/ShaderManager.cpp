@@ -26,6 +26,7 @@ void ShaderManager::LoadShaders()
 	std::shared_ptr<Shader>	ssaoBlurShader = std::make_shared<Shader>("res/shaders/SSAOBlur.vert", "res/shaders/SSAOBlur.frag");
 	std::shared_ptr<Shader>	gBufferShader = std::make_shared<Shader>("res/shaders/gBufferShader.vert", "res/shaders/gBufferShader.frag");
 	std::shared_ptr<Shader>	animShader = std::make_shared<Shader>("res/shaders/anim.vert", "res/shaders/anim.frag");
+	std::shared_ptr<Shader>	textShader = std::make_shared<Shader>("res/shaders/text.vert", "res/shaders/text.frag");
 
 	shaderPrograms.clear();
 
@@ -50,6 +51,7 @@ void ShaderManager::LoadShaders()
 	shaderPrograms.insert({ "ssaoBlurShader", ssaoBlurShader });
 	shaderPrograms.insert({ "gBufferShader", gBufferShader });
 	shaderPrograms.insert({ "animShader", animShader });
+	shaderPrograms.insert({ "textShader", textShader });
 }
 
 // maybe make this more efficient in the future.
