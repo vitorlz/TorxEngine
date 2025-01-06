@@ -1,24 +1,20 @@
 #version 460 core
-in vec2 TexCoords;
 out vec4 color;
 
-uniform sampler2D text;
-uniform vec3 textColor;
-uniform vec3 outlineColor;
 
-uniform float thickness;
-uniform float softness;
-uniform float outlineThickness;
-uniform float outlineSoftness; 
+in vec2 TexCoords;
+in flat int index;
+
+
+
+uniform sampler2DArray text;
+uniform int letterMap[200];
+uniform vec3 textColor;
 
 void main()
 {    
 
-    float a = texture(text, TexCoords).r;
-
-   
-    float outline = smoothstep(outlineThickness - outlineSoftness, outlineThickness + outlineSoftness, a);
-    a = smoothstep(1.0 - thickness - softness, 1.0 - thickness + softness , a);
-    
-    color = vec4(mix(outlineColor, textColor, outline), a);
-}   
+    float alpha = texture(text, vec3(TexCoords.xy, letterMap[index])).r;
+  //  vec4 sampled = vec4(1.0, 1.0, 1.0, );
+    color = vec4(textColor, alpha);
+}  

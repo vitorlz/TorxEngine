@@ -31,12 +31,10 @@
 extern Coordinator ecs;
 
 
-TextRendering textRendering;
+
 
 void RenderSystem::Init() 
 {
-
-    textRendering.LoadFont("res/fonts/arial.ttf", 1000.0f);
     RenderingUtil::CreateVoxelTexture(Common::voxelGridDimensions);
 }
 void RenderSystem::Update(float deltaTime)
@@ -858,9 +856,6 @@ void RenderSystem::postProcessingPass()
     glDrawArrays(GL_TRIANGLES, 0, 6);
 }
 
-
-
-
 void RenderSystem::forwardRenderingPass()
 {
     glBindFramebuffer(GL_READ_FRAMEBUFFER, RenderingUtil::gBufferFBO);
@@ -908,35 +903,27 @@ void RenderSystem::forwardRenderingPass()
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-    glm::mat4 projection = glm::ortho(0.0f, 1600.0f, 0.0f, 900.0f, 0.0f, 100.0f);
+    glm::mat4 projection = glm::ortho(0.0f, float(Common::SCR_WIDTH), 0.0f, float(Common::SCR_HEIGHT), 0.0f, 100.0f);
 
     Shader& textShader = ShaderManager::GetShaderProgram("textShader");
 
     textShader.use();
-
-    glm::mat4 model = glm::mat4(1.0f);
-    model = glm::translate(model, glm::vec3(0.0, 2.0, 0.0));
-   
     
-    textShader.setMat4("projection", playerProjMatrix);
-    textShader.setMat4("view", playerViewMatrix);
-    textShader.setMat4("model", model);
-
-    textShader.setFloat("thickness", Common::textThickness);
-    textShader.setFloat("softness", Common::textSoftness);
-    textShader.setFloat("outlineThickness", Common::outlineThickness);
-    textShader.setFloat("outlineSoftness", Common::outlineSoftness);
-    textShader.setVec3("outlineColor", Common::outlineColor);
-
-    glDisable(GL_CULL_FACE);
+    textShader.setMat4("projection", projection);
+    textShader.setMat4("view", glm::mat4(1.0f));
+    
     glDepthMask(GL_FALSE);
-    
-    
-    textRendering.RenderText(textShader, "Crazy shit", 0.0f, 0.0f, 0.00025f, glm::vec3(0.5f, 0.2f, 0.2f));
-    
 
+    TextRendering texGyreCursor = AssetManager::GetTextFont("texGyreCursor");
+    TextRendering arial = AssetManager::GetTextFont("arial");
+
+    texGyreCursor.RenderText(textShader, "Crazy shit",
+        20.0f, 830.0f, 32.0f, 1.5f, Common::textColor);
+
+    arial.RenderText(textShader, "ao;skdj;aosdj",
+        20.0f, 750.0f, 32.0f, 1.5f, Common::textColor);
+    
     glDepthMask(GL_TRUE);
-    glEnable(GL_CULL_FACE);
 
     glDisable(GL_BLEND);
 

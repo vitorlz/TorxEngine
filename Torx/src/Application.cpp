@@ -115,9 +115,10 @@ int main()
 
     RenderingUtil::Init();
 
-    Scene::LoadSceneFromJson("sponzascene.json");
-    
     TextRendering::Init();
+    AssetManager::LoadFonts();
+
+    Scene::LoadSceneFromJson("sponzascene.json");
 
     renderSystem->Init();
     generalInputSystem->Init();
@@ -152,7 +153,7 @@ int main()
     }
 
     gui.Terminate();
-    
+    FT_Done_FreeType(TextRendering::m_ft);
     window.Terminate();
     return 0;
 }

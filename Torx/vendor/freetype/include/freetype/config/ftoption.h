@@ -25,6 +25,9 @@
 
 FT_BEGIN_HEADER
 
+// enable sdf
+#define FT_CONFIG_OPTION_SDF
+
   /**************************************************************************
    *
    *                USER-SELECTABLE CONFIGURATION MACROS

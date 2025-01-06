@@ -6,40 +6,22 @@ std::unordered_map<std::string, Model> AssetManager::m_Models{};
 std::unordered_map<std::string, Mesh> AssetManager::m_Meshes{};
 std::unordered_map<std::string, Animation> AssetManager::m_Animations;
 std::vector<Texture> AssetManager::m_LoadedMeshTextures{};
-Animation AssetManager::danceAnimation;
-Animator AssetManager::animator;
+std::unordered_map<std::string, TextRendering>  AssetManager::m_textFonts;
 
 void AssetManager::LoadModels()
 {
-	stbi_set_flip_vertically_on_load(true);
-	//Model backpack("res/models/backpack/backpack.obj");
+	
 	stbi_set_flip_vertically_on_load(false);
-	//Model debugCube("res/models/debugCube/scene.gltf");
+	
 	Model sponza("res/models/sponza-atrium/Sponza.gltf");
-	//Model victorianLamp("res/models/victorianLamp/scene.gltf");
-	//Model dirtBlock("res/models/dirtBlock/scene.gltf");
 	Model ceilingLamp1("res/models/ceilingLamp1/scene.gltf");
-	//Model deagle("res/models/deagle/scene.gltf");
 	Model camera("res/models/camera/scene.gltf");
 	Model zombie("res/models/zombie/zombie.gltf");
-	//Model camera("res/models/camera/scene.gltf");
-	//Model adamhead("res/models/adamhead/adamHead.gltf");
-	//Model ar15("res/models/AR-15/scene.gltf");
-
-	//mModels.insert({ "backpack", backpack });
-    //mModels.insert({ "debugCube", debugCube });
+	
 	m_Models.insert({ "zombie", zombie });
 	m_Models.insert({ "sponza", sponza });
-	//m_Models.insert({ "victorianLamp", victorianLamp });
-	//m_Models.insert({ "dirtBlock", dirtBlock });
 	m_Models.insert({ "ceilingLamp1", ceilingLamp1 });
-	//m_Models.insert({ "deagle", deagle });
 	m_Models.insert({ "camera", camera });
-	//mModels.insert({ "adamhead", adamhead });
-	//mModels.insert({ "ar15", ar15 });
-
-	
-	//animator = Animator(&danceAnimation);
 }
 
 void AssetManager::LoadAnimations()
@@ -58,6 +40,23 @@ void AssetManager::LoadAnimations()
 
 	m_Animations.insert({ "zombieDance", Animation("res/models/zombie/zombie.gltf", &GetModel("zombie"))});
 
+}
+
+void AssetManager::LoadFonts()
+{
+	TextRendering texGyreCursor;
+	TextRendering arial;
+
+	texGyreCursor.LoadFont("res/fonts/texgyrecursor/texgyrecursor-bold.otf");
+	arial.LoadFont("res/fonts/arial/arial.ttf");
+
+	m_textFonts.insert({ "texGyreCursor", texGyreCursor });
+	m_textFonts.insert({ "arial", arial });
+}
+
+TextRendering& AssetManager::GetTextFont(const std::string name)
+{
+	return m_textFonts[name];
 }
 
 std::vector<Vertex> quadVertices = {
@@ -141,7 +140,6 @@ std::vector<Texture> AssetManager::LoadMeshTextures(const char* tag)
 		}
 	}
 
-	
 	if (texturesAlreadyLoaded)
 	{
 		return textures;
@@ -159,7 +157,6 @@ std::vector<Texture> AssetManager::LoadMeshTextures(const char* tag)
 	m_LoadedMeshTextures.insert(m_LoadedMeshTextures.end(), textures.begin(), textures.end());
 
 	return textures;
-	
 }
 
 void AssetManager::LoadMeshes()
