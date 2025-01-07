@@ -296,13 +296,10 @@ void UI::Update()
         ImGui::TreePop();
     }
 
-    
     if (ImGui::Button("Save scene"))
     {
-        Scene::SaveSceneToJson("sponzascene.json");
+        Scene::SaveSceneToJson("testscene3.json");
     }
-
-    //ImGui::Checkbox("Show voxel debug", &Common::showVoxelDebug);
 
     ImGui::End();
 

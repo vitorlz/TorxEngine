@@ -118,15 +118,14 @@ int main()
     TextRendering::Init();
     AssetManager::LoadFonts();
 
-    Scene::LoadSceneFromJson("sponzascene.json");
+    Scene::LoadSceneFromJson("testscene3.json");
 
     renderSystem->Init();
     generalInputSystem->Init();
     lightSystem->Init();
     physicsSystem->Init();
 
-    
-
+     
     while (!glfwWindowShouldClose(window.GetWindow()))
     {
         float currentFrame = glfwGetTime();

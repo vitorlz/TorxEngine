@@ -18,15 +18,17 @@ struct Character
 class TextRendering
 {
 public:
-	static int Init();
-	~TextRendering();
+	TextRendering();
 
-	int LoadFont(const std::string& path);
+	TextRendering(const std::string& path);
+
+	static int Init();
+	
 	void RenderText(Shader& s, std::string text, float x, float y, float scale, float lineSpace, glm::vec3 color);
 	
 	static FT_Library m_ft;
+
 private:
-	
 	static unsigned int m_vao;
 	static unsigned int m_vbo;
 
@@ -38,5 +40,4 @@ private:
 	std::vector<int> m_letterMap;
 	std::map<char, Character> m_characters;
 	unsigned int m_textureArray;
-
 };

@@ -8,11 +8,6 @@ unsigned int TextRendering::m_vbo;
 const unsigned int ARRAY_LIMIT = 200;
 const unsigned int QUAD_SIZE = 128;
 
-TextRendering::~TextRendering()
-{
-    //FT_Done_FreeType(m_ft);
-}
-
 float vertex_data[] =
 {
     0.0f, 1.0f,
@@ -20,6 +15,8 @@ float vertex_data[] =
     1.0f, 1.0f,
     1.0f, 0.0f,
 };
+
+TextRendering::TextRendering() {};
 
 int TextRendering::Init()
 {
@@ -41,16 +38,14 @@ int TextRendering::Init()
 }
 
 
-int TextRendering::LoadFont(const std::string& path)
+TextRendering::TextRendering(const std::string& path)
 {
-
     if (FT_New_Face(m_ft, path.c_str(), 0, &m_face))
     {
         std::cout << "ERROR::FREETYPE: Failed to load font" << std::endl;
-        return -1;
+        return;
     }
 
-    
     FT_Set_Pixel_Sizes(m_face, QUAD_SIZE, QUAD_SIZE);
 
     glPixelStorei(GL_UNPACK_ALIGNMENT, 1); // disable byte-alignment restriction

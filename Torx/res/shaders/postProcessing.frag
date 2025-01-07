@@ -109,7 +109,7 @@ void main()
 
 	vec3 ssrBlurred = texture(ssrTextureBlur, TexCoords).rgb;
 	
-	vec3 ssr = mix(ssrOriginal, ssrBlurred, clamp(roughness + clamp(length(camPos - FragPos) / ssrMaxBlurDistance, 0, 1), 0,1)) * max(0, (1 - roughness * 1.7)) * ssrSpecularBias;
+	vec3 ssr = mix(ssrOriginal, ssrBlurred, clamp(sqrt(roughness * 1.1) , 0,1)) * max(0, (1 - roughness * 2)) * ssrSpecularBias;
 	
 	color += kS * mix(ssr, vec3(0.0),  smoothstep(0.0, 1.0, dot(V,reflect(-V, N))));
 

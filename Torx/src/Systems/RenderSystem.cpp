@@ -237,8 +237,6 @@ void RenderSystem::directionalShadowMapPass()
 
                 if (ecs.HasComponent<CAnimator>(entity))
                 {
-
-                    std::cout << "found an animated model: entity " << entity << "\n";
                     std::vector<glm::mat4> transforms = ecs.GetComponent<CAnimator>(entity).animator.GetFinalBoneMatrices();
 
                     for (int i = 0; i < transforms.size(); ++i)
@@ -917,10 +915,10 @@ void RenderSystem::forwardRenderingPass()
     TextRendering texGyreCursor = AssetManager::GetTextFont("texGyreCursor");
     TextRendering arial = AssetManager::GetTextFont("arial");
 
-    texGyreCursor.RenderText(textShader, "Crazy shit",
+    texGyreCursor.RenderText(textShader, "Test text",
         20.0f, 830.0f, 32.0f, 1.5f, Common::textColor);
 
-    arial.RenderText(textShader, "ao;skdj;aosdj",
+    arial.RenderText(textShader, "More test text",
         20.0f, 750.0f, 32.0f, 1.5f, Common::textColor);
     
     glDepthMask(GL_TRUE);

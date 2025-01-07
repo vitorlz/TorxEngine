@@ -44,11 +44,8 @@ void AssetManager::LoadAnimations()
 
 void AssetManager::LoadFonts()
 {
-	TextRendering texGyreCursor;
-	TextRendering arial;
-
-	texGyreCursor.LoadFont("res/fonts/texgyrecursor/texgyrecursor-bold.otf");
-	arial.LoadFont("res/fonts/arial/arial.ttf");
+	TextRendering texGyreCursor("res/fonts/texgyrecursor/texgyrecursor-bold.otf");
+	TextRendering arial("res/fonts/arial/arial.ttf");
 
 	m_textFonts.insert({ "texGyreCursor", texGyreCursor });
 	m_textFonts.insert({ "arial", arial });

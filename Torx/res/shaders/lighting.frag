@@ -179,14 +179,13 @@ void main()
 	vec3 kD = 1.0 - kS;
 	kD *= 1.0 - metallic;
 
-	vec3 color = Lo;
+	vec2 texSize = textureSize(SSAO, 0);
+	float AO = texture(SSAO, gl_FragCoord.xy / texSize).r;
+
+	vec3 color = Lo * (ssaoOn ? AO : 1.0);
 
 	vec3 indirectDiffuseContribution;
 	vec3 indirectSpecularContribution;
-
-	vec2 texSize = textureSize(SSAO, 0);
-	
-	float AO = texture(SSAO, gl_FragCoord.xy / texSize).r;
 
 	if(vxgi)	
 	{
