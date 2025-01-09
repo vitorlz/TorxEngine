@@ -19,19 +19,16 @@ layout(rgba16f, binding = 0) uniform image3D texture3D;
 
 struct Light
 {
-	vec4 type;
 	vec4 position;
 	vec4 color;
-	vec4 radius;
-
-	// for spotlight
 	vec4 direction;
-	vec4 innerCutoff;
-	vec4 outerCutoff;
-
-	vec4 shadowCaster;
-	vec4 isDirty;
 	vec4 offset;
+	float type;
+	float radius;
+	float innerCutoff;
+	float outerCutoff;
+	bool shadowCaster;
+	bool isDirty;
 };
 
 layout(binding = 0, std430) buffer LightsSSBO 
@@ -116,7 +113,7 @@ void main(){
 
 	// ------ Directional Light ---------
 	for(int i = 0; i < lights.length(); i++) {
-		if (lights[i].type == vec4(0.0))
+		if (lights[i].type == 0.0)
 		{
 			Lo += CalcDirLight(lights[i], N, V, F0);
 		}
@@ -125,7 +122,7 @@ void main(){
 	// ------ Point lights ---------
 	for(int i = 0; i < lights.length(); i++) {
 		
-		if (lights[i].type == vec4(1.0))
+		if (lights[i].type == 1.0)
 		{
 			Lo += CalcPointLight(lights[i], N, V, F0);
 		}
@@ -184,7 +181,7 @@ vec3 CalcPointLight(Light light, vec3 N, vec3 V, vec3 F0)
 {
 	float shadow = 0;
 
-	if (light.shadowCaster.x == 1) 
+	if (light.shadowCaster.x == true) 
 	{
 		shadow = PointShadowCalculation(fragPosUnscaled, light, pointShadowCasterIndex);
 		pointShadowCasterIndex++;
@@ -194,7 +191,7 @@ vec3 CalcPointLight(Light light, vec3 N, vec3 V, vec3 F0)
 	vec3 H = normalize(V + L); // halfway vector
 
 	//float distance = length(light.position.xyz - fragPosUnscaled);
-	float attenuation = smoothstep(light.radius.x, 0.0, length(light.position.xyz - fragPosUnscaled));
+	float attenuation = smoothstep(light.radius, 0.0, length(light.position.xyz - fragPosUnscaled));
 	vec3 radiance = light.color.xyz * attenuation; // the scaling by the angle between the normal of the surface and the solid angle (which is just the direction vector
 	// of the fragment to the light in this case) is in the final reflectance formula.
 
@@ -236,7 +233,7 @@ float PointShadowCalculation(vec3 fragPos, Light light, int shadowCasterIndex)
 	float currentDepth = length(fragToLight);
 	
 	float closestDepth = texture(pointShadowMap, vec4(fragToLight, shadowCasterIndex)).r;
-	closestDepth *= light.radius.x;   // undo mapping [0;1]
+	closestDepth *= light.radius;   // undo mapping [0;1]
 	
 	if(currentDepth > closestDepth)
 	{
@@ -257,7 +254,7 @@ vec3 CalcDirLight(Light light, vec3 N, vec3 V, vec3 F0)
 
 	float shadow = 0;
 
-	if (light.shadowCaster.x == 1) 
+	if (light.shadowCaster.x == true) 
 	{
 		shadow = DirShadowCalculation(FragPosLightSpaceDir, N, L);
 	}

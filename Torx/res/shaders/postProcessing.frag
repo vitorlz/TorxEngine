@@ -77,8 +77,6 @@ vec3 fresnelSchlick(float cosTheta, vec3 F0)
 
 void main()
 {
-
-	
 	vec3 FragPos = texture(gPosition, TexCoords).xyz;
 	vec3 RMA = texture(gRMA, TexCoords).rgb;
 	vec3 V = normalize(camPos - FragPos);

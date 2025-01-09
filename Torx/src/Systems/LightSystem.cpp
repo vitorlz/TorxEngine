@@ -12,19 +12,20 @@ extern Coordinator ecs;
 
 struct Light
 {
-	glm::vec4 type;
 	glm::vec4 position;
 	glm::vec4 color;
-	glm::vec4 radius;
-
-	// for spotlight
 	glm::vec4 direction;
-	glm::vec4 innerCutoff;
-	glm::vec4 outerCutoff;
-
-	glm::vec4 shadowCaster;
-	glm::vec4 isDirty;
 	glm::vec4 offset;
+
+	float type;
+	float radius;
+	float innerCutoff;
+	float outerCutoff;
+	
+	bool shadowCaster;
+	bool isDirty;
+	bool padding1[2];
+	float padding2[3];
 };
 
 std::vector<Light> lights;
@@ -65,22 +66,23 @@ void LightSystem::Init()
 		if (light.type == SPOT)
 		{
 			lightData.direction = glm::vec4(light.direction, 1.0f);
-			lightData.innerCutoff = glm::vec4(glm::cos(glm::radians(light.innerCutoff)));
-			lightData.outerCutoff = glm::vec4(glm::cos(glm::radians(light.outerCutoff)));
+			lightData.innerCutoff = glm::cos(glm::radians(light.innerCutoff));
+			lightData.outerCutoff = glm::cos(glm::radians(light.outerCutoff));
 		}
 
 		if (light.type == DIRECTIONAL)
 		{
 			lightData.position = glm::vec4(transform.position, 0.0f);
+
 		}
 		else
 		{
 			lightData.position = glm::vec4(transform.position + light.offset, 1.0f);
 		}
-		lightData.type = glm::vec4((float)light.type);
+		lightData.type = (float)light.type;
 		lightData.color = glm::vec4(light.color * light.strength, 1.0f);
-		lightData.radius = glm::vec4(light.radius);
-		lightData.shadowCaster = glm::vec4(light.shadowCaster);
+		lightData.radius = light.radius;
+		lightData.shadowCaster = light.shadowCaster;
 
 		EntityToLightMap[entity] = lightData;
 		EntityToLightIndexMap[entity] = mLightIndex - 1;
@@ -125,14 +127,14 @@ void LightSystem::Update(float deltaTime)
 		if (light.type == SPOT)
 		{
 			lightData.direction = glm::vec4(light.direction, 1.0f);
-			lightData.innerCutoff = glm::vec4(glm::cos(glm::radians(light.innerCutoff)));
-			lightData.outerCutoff = glm::vec4(glm::cos(glm::radians(light.outerCutoff)));
+			lightData.innerCutoff = glm::cos(glm::radians(light.innerCutoff));
+			lightData.outerCutoff = glm::cos(glm::radians(light.outerCutoff));
 		}
 
-		lightData.type = glm::vec4((float)light.type);
+		lightData.type = (float)light.type;
 		lightData.position = glm::vec4(transform.position + light.offset, 1.0f);
 		lightData.color = glm::vec4(light.color * light.strength, 1.0f);
-		lightData.radius = glm::vec4(light.radius);
+		lightData.radius = light.radius;
 
 		EntityToLightMap[entityAdded] = lightData;
 		EntityToLightIndexMap[entityAdded] = mLightIndex - 1;
@@ -152,8 +154,8 @@ void LightSystem::Update(float deltaTime)
 			if (light.type == SPOT)
 			{
 				EntityToLightMap[entity].direction = glm::vec4(light.direction, 1.0f);
-				EntityToLightMap[entity].innerCutoff = glm::vec4(glm::cos(glm::radians(light.innerCutoff)));
-				EntityToLightMap[entity].outerCutoff = glm::vec4(glm::cos(glm::radians(light.outerCutoff)));
+				EntityToLightMap[entity].innerCutoff = glm::cos(glm::radians(light.innerCutoff));
+				EntityToLightMap[entity].outerCutoff = glm::cos(glm::radians(light.outerCutoff));
 			}
 			if (light.type == DIRECTIONAL)
 			{
@@ -166,8 +168,8 @@ void LightSystem::Update(float deltaTime)
 			}
 
 			EntityToLightMap[entity].color = glm::vec4(light.color * light.strength, 1.0f);
-			EntityToLightMap[entity].radius = glm::vec4(light.radius);	
-			EntityToLightMap[entity].shadowCaster = glm::vec4(light.shadowCaster);
+			EntityToLightMap[entity].radius = light.radius;	
+			EntityToLightMap[entity].shadowCaster = light.shadowCaster;
 			
 			glNamedBufferSubData(mSsbo, EntityToLightIndexMap[entity] * sizeof(Light), sizeof(Light), (const void*)&EntityToLightMap[entity]);
 

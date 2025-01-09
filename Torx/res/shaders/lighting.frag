@@ -40,19 +40,16 @@ uniform bool showAO;
 //lights
 struct Light
 {
-	vec4 type;
 	vec4 position;
 	vec4 color;
-	vec4 radius;
-
-	// for spotlight
 	vec4 direction;
-	vec4 innerCutoff;
-	vec4 outerCutoff;
-
-	vec4 shadowCaster;
-	vec4 isDirty;
 	vec4 offset;
+	float type;
+	float radius;
+	float innerCutoff;
+	float outerCutoff;
+	bool shadowCaster;
+	bool isDirty;
 };
 
 layout(binding = 0, std430) buffer LightsSSBO 
@@ -148,7 +145,7 @@ void main()
 	vec3 Lo = vec3(0.0); // reflectance (total sum of radiance that comes from light sources and get reflected by a point P (the fragment in this case)
 	// ------ Directional Light ---------
 	for(int i = 0; i < lights.length(); i++) {
-		if (lights[i].type == vec4(0.0))
+		if (lights[i].type == 0.0)
 		{
 			Lo += CalcDirLight(lights[i], N, V, F0);
 		}
@@ -156,7 +153,7 @@ void main()
 
 	// ------ Point lights ---------
 	for(int i = 0; i < lights.length(); i++) {
-		if (lights[i].type == vec4(1.0))
+		if (lights[i].type == 1.0)
 		{
 			Lo += CalcPointLight(lights[i], N, V, F0);
 		}
@@ -164,7 +161,7 @@ void main()
 
 	// ------ Spot lights ---------
 	for(int i = 0; i < lights.length(); i++) {
-		if (lights[i].type == vec4(2.0))
+		if (lights[i].type == 2.0)
 		{
 			Lo += CalcSpotLight(lights[i], N, V, F0);
 		}
@@ -449,7 +446,7 @@ vec3 CalcPointLight(Light light, vec3 N, vec3 V, vec3 F0)
 {
 	float shadow = 0;
 
-	if (light.shadowCaster.x == 1) 
+	if (light.shadowCaster.x == true) 
 	{
 		shadow = PointShadowCalculation(FragPos, light, pointShadowCasterIndex);
 		pointShadowCasterIndex++;
@@ -459,7 +456,7 @@ vec3 CalcPointLight(Light light, vec3 N, vec3 V, vec3 F0)
 	vec3 H = normalize(V + L); // halfway vector
 
 	//float distance = length(light.position.xyz - FragPos);
-	float attenuation = smoothstep(light.radius.x, 0.0, length(light.position.xyz - FragPos));
+	float attenuation = smoothstep(light.radius, 0.0, length(light.position.xyz - FragPos));
 	vec3 radiance = light.color.xyz * attenuation; // the scaling by the angle between the normal of the surface and the solid angle (which is just the direction vector
 	// of the fragment to the light in this case) is in the final reflectance formula.
 
@@ -513,7 +510,7 @@ vec3 CalcDirLight(Light light, vec3 N, vec3 V, vec3 F0)
 
 	float shadow = 0;
 
-	if (light.shadowCaster.x == 1) 
+	if (light.shadowCaster.x == true) 
 	{
 		shadow = DirShadowCalculation(FragPosLightSpaceDir, N, L);
 	}
@@ -547,10 +544,10 @@ vec3 CalcSpotLight(Light light, vec3 N, vec3 V, vec3 F0)
 	vec3 H = normalize(V + L); // halfway vector
 
 	float distance = length(light.position.xyz - FragPos);
-	float attenuation = smoothstep(light.radius.x, 0.0, length(light.position.xyz - FragPos));
+	float attenuation = smoothstep(light.radius, 0.0, length(light.position.xyz - FragPos));
 	float theta = dot(normalize(-light.direction.xyz), L);
-	float episilon = light.innerCutoff.x - light.outerCutoff.x;
-	float intensity = clamp((theta - light.outerCutoff.x) / episilon, 0.0, 1.0); 
+	float episilon = light.innerCutoff - light.outerCutoff;
+	float intensity = clamp((theta - light.outerCutoff) / episilon, 0.0, 1.0); 
 	vec3 radiance = light.color.xyz * attenuation * intensity; 
 
 	float NDF = DistributionGGX(N, H, roughness);
@@ -613,13 +610,13 @@ float PointShadowCalculation(vec3 fragPos, Light light, int shadowCasterIndex)
 	for(int i = 0; i < samples; ++i)
 	{
 		float closestDepth = texture(pointShadowMap, vec4(fragToLight + sampleOffsetDirections[i] * diskRadius, shadowCasterIndex)).r;
-		closestDepth *= light.radius.x;   // undo mapping [0;1]
+		closestDepth *= light.radius;   // undo mapping [0;1]
 		if(currentDepth - bias > closestDepth)
 			shadow += 1.0;
 	}
 	shadow /= float(samples) * 1.1;  
 		
-	float unitDepth = currentDepth / light.radius.x;
+	float unitDepth = currentDepth / light.radius;
 
 	return mix(shadow, 0, unitDepth / 10);
 }
