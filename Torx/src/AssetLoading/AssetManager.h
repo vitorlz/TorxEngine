@@ -13,10 +13,7 @@ public:
 	static Animation& GetAnimation(const std::string name);
 	static TextRendering& GetTextFont(const std::string name);
 	static std::vector<Texture> LoadMeshTextures(const char* tag);
-	static void LoadModels();
-	static void LoadMeshes();
-	static void LoadAnimations();
-	static void LoadFonts();
+	static void LoadAssets();
 
 	static std::unordered_map<std::string, Model>& GetModelMap();
 	static std::vector<std::string> GetModelNames();	
@@ -27,5 +24,9 @@ private:
 	static std::vector<Texture> m_LoadedMeshTextures;
 	static std::unordered_map<std::string, TextRendering> m_textFonts;
 
+	static void LoadModels();
+	static void LoadMeshes();
+	static void LoadAnimations();
+	static void LoadFonts();
 };
 

@@ -1,6 +1,7 @@
 #include "ShaderManager.h"
 #include "memory"
 #include <vector>
+#include <glad/glad.h>
 
 std::unordered_map<std::string, std::shared_ptr<Shader>> ShaderManager::shaderPrograms;
 

@@ -194,3 +194,11 @@ std::vector<std::string> AssetManager::GetModelNames()
 	}
 	return names;
 }
+
+void AssetManager::LoadAssets()
+{
+	LoadModels();
+	LoadMeshes();
+	LoadAnimations();
+	LoadFonts();
+}

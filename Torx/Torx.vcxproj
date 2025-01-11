@@ -74,7 +74,7 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>NDEBUG;_CONSOLE;GLFW_INCLUDE_NONE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <AdditionalIncludeDirectories>vendor/GLFW/include;vendor/glad/include;vendor/glm/include;vendor/stb_image;vendor/assimp/include;vendor/bulletphysics/include;imgui;vendor/imguizmo;vendor/imgui;vendor/nlohmann/include;vendor/freetype/include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp20</LanguageStandard>
@@ -99,7 +99,9 @@
     <ClCompile Include="src\Components\CAnimator.h" />
     <ClCompile Include="src\Components\CSingleton_Input.h" />
     <ClCompile Include="src\Core\Common.cpp" />
+    <ClCompile Include="src\Core\ECSCore.cpp" />
     <ClCompile Include="src\Editor\Editor.cpp" />
+    <ClCompile Include="src\Engine.cpp" />
     <ClCompile Include="src\Physics\BulletDebugDrawer.cpp" />
     <ClCompile Include="src\Physics\Raycast.cpp" />
     <ClCompile Include="src\Rendering\Bloom.cpp" />
@@ -136,6 +138,7 @@
     <ClCompile Include="vendor\stb_image\stb_img_implementation.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="include\Engine.h" />
     <ClInclude Include="src\AssetLoading\Animation.h" />
     <ClInclude Include="src\AssetLoading\Animator.h" />
     <ClInclude Include="src\AssetLoading\AssetManager.h" />
@@ -149,6 +152,7 @@
     <ClInclude Include="src\Components\CPlayer.h" />
     <ClInclude Include="src\Components\CRigidBody.h" />
     <ClInclude Include="src\Core\Common.h" />
+    <ClInclude Include="src\Core\ECSCore.h" />
     <ClInclude Include="src\Editor\Editor.h" />
     <ClInclude Include="src\Physics\BulletDebugDrawer.h" />
     <ClInclude Include="src\Physics\Raycast.h" />

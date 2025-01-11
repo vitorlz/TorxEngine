@@ -1,5 +1,5 @@
 #include "RenderingUtil.h"
-#include "glad/glad.h"
+#include <glad/glad.h>
 #include "../Core/Common.h"
 #include "iostream"
 #include <glm/glm.hpp>

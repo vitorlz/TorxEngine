@@ -3,7 +3,6 @@
 #include "Shader.h"
 #include <unordered_map>
 #include <iostream>
-#include <glad/glad.h>
 
 class ShaderManager {
 public:

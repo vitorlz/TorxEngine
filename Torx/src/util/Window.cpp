@@ -1,8 +1,11 @@
 #include "Window.h"
+
 #include "../Core/InputManager.h"
 #include "../Util/ShaderManager.h"
 #include "../UI/UI.h"
 #include "../Core/Common.h"
+
+#include <glad/glad.h>
 
 int Window::screenWidth;
 int Window::screenHeight;
@@ -10,9 +13,8 @@ int Window::screenHeight;
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods);
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 
-Window::Window(int width, int height, const char* windowTitle) 
+void Window::Init(int width, int height, const char* windowTitle)
 {
-
 	Window::screenWidth = width;
 	Window::screenHeight = height;
 
@@ -30,9 +32,9 @@ Window::Window(int width, int height, const char* windowTitle)
 	glfwWindowHint(GLFW_REFRESH_RATE, mode->refreshRate);
 
 	mWindow = glfwCreateWindow(mode->width, mode->height, windowTitle, glfwGetPrimaryMonitor(), NULL);*/
-	
+
 	mWindow = glfwCreateWindow(screenWidth, screenHeight, windowTitle, NULL, NULL);
-	
+
 	if (mWindow == NULL)
 	{
 		std::cout << "Failed to create GLFW window" << std::endl;
@@ -47,7 +49,7 @@ Window::Window(int width, int height, const char* windowTitle)
 	glfwSetKeyCallback(mWindow, key_callback);
 }
 
-GLFWwindow* Window::GetWindow() const{
+GLFWwindow* Window::GetPointer() const{
 	return mWindow;
 }
 

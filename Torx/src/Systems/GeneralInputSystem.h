@@ -6,7 +6,7 @@
 class GeneralInputSystem : public System
 {
 public:
-	void Init();
+	void Init() override;
 
-	void Update(float deltaTime, GLFWwindow* window);
+	void Update(float deltaTime) override;
 };

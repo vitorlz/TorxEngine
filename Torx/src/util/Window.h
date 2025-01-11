@@ -1,12 +1,15 @@
-#include <glad/glad.h>
+#pragma once
+
 #include <GLFW/glfw3.h>
 #include <iostream>
 
 struct Window 
 {
-	Window(int width, int height, const char* windowTitle);
 
-	GLFWwindow* GetWindow() const;
+	Window() = default;
+
+	void Init(int width, int height, const char* windowTitle);
+	GLFWwindow* GetPointer() const;
 	void EnableVsync() const;
 	void DisableVsync() const;
 	void Update() const;

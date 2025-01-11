@@ -6,7 +6,7 @@
 class PlayerInputSystem : public System
 {
 public:
-	void Init();
+	void Init() override;
 
-	void Update(float deltaTime);
+	void Update(float deltaTime) override;
 };

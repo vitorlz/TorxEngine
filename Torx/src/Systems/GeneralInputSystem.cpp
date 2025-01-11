@@ -6,20 +6,29 @@
 #include "../Core/Common.h"
 #include "../UI/UI.h"
 #include <iostream>
+#include "../include/Engine.h"
 
 
 
 extern Coordinator ecs;
 
+static GLFWwindow* window{};
+
+
 void GeneralInputSystem::Init() 
 {
 	CSingleton_Input& inputSing = CSingleton_Input::getInstance();
 
+	window = Torx::Engine::GetWindow().GetPointer();
+
+
 	inputSing.firstMouse = true;
 }
 
-void GeneralInputSystem::Update(float deltaTime, GLFWwindow* window)
+void GeneralInputSystem::Update(float deltaTime)
 {	
+
+
 	CSingleton_Input& inputSing = CSingleton_Input::getInstance();
 
 	// Key input
