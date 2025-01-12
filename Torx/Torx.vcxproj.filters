@@ -30,9 +30,6 @@
     <ClCompile Include="src\Util\Window.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\Core\InputManager.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="src\AssetLoading\mesh.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -147,6 +144,15 @@
     <ClCompile Include="src\Rendering\TextRendering.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="src\Core\ECSCore.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Engine.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Editor\EditorCamera.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\Util\Shader.h">
@@ -177,9 +183,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\Core\Coordinator.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\Core\InputManager.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\AssetLoading\mesh.h">
@@ -318,6 +321,15 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\Rendering\TextRendering.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\Engine.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Core\ECSCore.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Editor\EditorCamera.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

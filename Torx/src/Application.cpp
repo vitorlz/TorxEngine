@@ -12,6 +12,7 @@
 #include "Rendering/TextRendering.h"
 #include "../include/Engine.h"
 #include <filesystem>
+#include "Editor/EditorCamera.h"
 
 #include <iostream>
 
@@ -23,15 +24,17 @@ int main()
     float deltaTime{};
     float lastFrame{};
 
-    Torx::Engine engine;
+    Torx::Engine& engine = Torx::Engine::getInstance();
 
     engine.ConfigWindow(Common::SCR_WIDTH, Common::SCR_HEIGHT, "Torx");
 
-    engine.Init("testscene3.json");
+    engine.Init();
 
     UI gui;
 
     gui.Init(engine.GetWindow().GetPointer());
+
+    EditorCamera& editorCamera = EditorCamera::getInstance();
      
     while (!glfwWindowShouldClose(engine.GetWindow().GetPointer()))
     {
@@ -42,6 +45,7 @@ int main()
         gui.NewFrame();
 
         engine.Run(deltaTime);
+        editorCamera.Update(deltaTime);
 
         gui.Update();
 

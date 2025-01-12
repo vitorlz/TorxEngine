@@ -92,11 +92,6 @@ namespace Editor
         // you need to create a camera component and give it to the player and store the projection and view matrix inside it.
        // the way we are getting the view and projection matrix right now is just ugly.
 
-        Entity playerEnt = ecs.GetPlayers()[0];
-        CPlayer& playerComp = ecs.GetComponent<CPlayer>(playerEnt);
-
-        glm::mat4 view = playerComp.viewMatrix;
-        glm::mat4 projection = playerComp.projectionMatrix;
 
         glm::mat4 model = glm::mat4(1.0f);
         model = glm::translate(model, transform.position);
@@ -111,7 +106,7 @@ namespace Editor
         if (inputSing.pressedKeys[NUMBER_3]) 
             currentGizmoOperation = ImGuizmo::SCALE;
 
-        ImGuizmo::Manipulate(glm::value_ptr(view), glm::value_ptr(projection), currentGizmoOperation, ImGuizmo::LOCAL, glm::value_ptr(model), NULL, useSnap ? snap.data() : NULL, boundSizing ? bounds : NULL, boundSizingSnap ? boundsSnap : NULL);
+        ImGuizmo::Manipulate(glm::value_ptr(Common::currentViewMatrix), glm::value_ptr(Common::currentProjMatrix), currentGizmoOperation, ImGuizmo::LOCAL, glm::value_ptr(model), NULL, useSnap ? snap.data() : NULL, boundSizing ? bounds : NULL, boundSizingSnap ? boundsSnap : NULL);
         
         if (ImGuizmo::IsUsing())
         {

@@ -27,7 +27,9 @@ enum InputKey {
 	LEFT_CONTROL,
 	ESC,
 	MOUSE_LEFT,
-	MOUSE_RIGHT
+	MOUSE_RIGHT,
+	MOUSE_MIDDLE,
+	MOUSE_MIDDLE_SHIFT
 };
 
 class Common
@@ -84,5 +86,7 @@ public:
 	static bool ssaoOn;
 	static bool showAO;
 	static glm::vec3 textColor;
-
+	static glm::mat4 currentViewMatrix;
+	static glm::mat4 currentProjMatrix;
+	static glm::vec3 currentCamPos;
 };

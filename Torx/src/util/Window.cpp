@@ -1,17 +1,20 @@
 #include "Window.h"
 
-#include "../Core/InputManager.h"
 #include "../Util/ShaderManager.h"
 #include "../UI/UI.h"
 #include "../Core/Common.h"
+#include "../include/Engine.h"
+#include "../Editor/EditorCamera.h"
 
 #include <glad/glad.h>
 
 int Window::screenWidth;
 int Window::screenHeight;
+double Window::m_scrollOffset{ 0 };
 
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods);
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
+void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
 
 void Window::Init(int width, int height, const char* windowTitle)
 {
@@ -47,6 +50,8 @@ void Window::Init(int width, int height, const char* windowTitle)
 	glfwSetInputMode(mWindow, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 	glfwSetFramebufferSizeCallback(mWindow, framebuffer_size_callback);
 	glfwSetKeyCallback(mWindow, key_callback);
+	glfwSetScrollCallback(mWindow, scroll_callback);
+	
 }
 
 GLFWwindow* Window::GetPointer() const{
@@ -78,9 +83,19 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 
 	if (key == GLFW_KEY_TAB && action == GLFW_PRESS) 
 	{
-		UI::isOpen = !UI::isOpen;
+
+		if (Torx::Engine::MODE == Torx::EDITOR)
+		{
+			Torx::Engine::MODE = Torx::PLAY;
+		}
+		else
+		{
+			Torx::Engine::MODE = Torx::EDITOR;
+
+		}
+		
 		UI::firstMouseUpdateAfterMenu = true;
-		if (!UI::isOpen)
+		if (Torx::Engine::MODE == Torx::PLAY)
 		{
 			glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 		}
@@ -94,6 +109,35 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 	{
 		ShaderManager::ReloadShaders();
 	}
+}
+
+void Window::SetScrollOffset(double offset)
+{
+	m_scrollOffset = offset;
+}
+
+double Window::GetScrollOffset()
+{
+	return m_scrollOffset;
+}
+
+
+void scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
+{
+	Window::SetScrollOffset(yoffset);
+
+	EditorCamera& editorCamera = EditorCamera::getInstance();
+
+	static float fov = 45.0f;
+	
+	fov -= (float)yoffset;
+	if (fov < 1.0f)
+		fov = 1.0f;
+	if (fov > 90.0f)
+		fov = 90.0f;
+
+	editorCamera.SetFov(fov);
+
 }
 
 // glfw: whenever the window size changed (by OS or user resize) this callback function executes

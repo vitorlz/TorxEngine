@@ -9,16 +9,22 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/quaternion.hpp>
 #include "../UI/UI.h"
+#include "../include/Engine.h"
 
 void PlayerInputSystem::Init() {}
 extern Coordinator ecs;
-CSingleton_Input& inputSing = CSingleton_Input::getInstance();
+static CSingleton_Input& inputSing = CSingleton_Input::getInstance();
 void flashlightLogic(CPlayer& player, CLight& light);
 
 void PlayerInputSystem::Update(float deltaTime)
 {
     // maybe make this change settings in the player component that has like playerForward, playerPrimaryFire.
 
+
+    if (Torx::Engine::MODE == Torx::EDITOR)
+    {
+        return;
+    }
     static glm::vec3 rotationEuler;
 
     for (auto& entity : mEntities)
@@ -28,11 +34,13 @@ void PlayerInputSystem::Update(float deltaTime)
 
         float velocity = player.movementSpeed * deltaTime;
 
-        if (!UI::isOpen) {
-            rotationEuler.x -= inputSing.mouseOffsetY * 0.05; 
-            rotationEuler.y -= inputSing.mouseOffsetX * 0.05;
-            rotationEuler.x = std::clamp(rotationEuler.x, -90.0f, 90.0f);
-        }
+        // change this later so that this whole function only updated if the engine is in play mode
+
+      
+        rotationEuler.x -= inputSing.mouseOffsetY * 0.05; 
+        rotationEuler.y -= inputSing.mouseOffsetX * 0.05;
+        rotationEuler.x = std::clamp(rotationEuler.x, -90.0f, 90.0f);
+        
 
         transform.rotation = glm::quat(glm::radians(rotationEuler));
 
@@ -82,6 +90,10 @@ void PlayerInputSystem::Update(float deltaTime)
             auto& light = ecs.GetComponent<CLight>(entity);
             flashlightLogic(player, light);    
         }
+
+        Common::currentViewMatrix = player.viewMatrix;
+        Common::currentProjMatrix = player.projectionMatrix;
+        Common::currentCamPos = transform.position;
     }
 }
 

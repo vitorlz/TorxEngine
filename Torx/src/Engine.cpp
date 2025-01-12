@@ -14,6 +14,16 @@ using namespace Torx;
 
 Window Engine::m_window;
 
+EngineMode Engine::MODE{ EDITOR };
+
+Engine::Engine() {};
+
+Engine& Engine::getInstance()
+{
+	static Engine instance;
+	return instance;
+}
+
 void Engine::ConfigWindow(int width, int height, const char* title) 
 {
 	m_window.Init(width, height, title);

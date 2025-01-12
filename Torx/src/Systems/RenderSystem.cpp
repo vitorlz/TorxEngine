@@ -26,12 +26,10 @@
 #include "../Rendering/Bloom.h"
 #include "../Components/CAnimator.h"
 #include "../Rendering/TextRendering.h"
+#include "../include/Engine.h"
 
 
 extern Coordinator ecs;
-
-
-
 
 void RenderSystem::Init() 
 {
@@ -94,11 +92,7 @@ void RenderSystem::voxelizationPass()
 
     voxelizationShader.use();
 
-    Entity playerEnt = ecs.GetPlayers()[0];
-    CPlayer& playerComp = ecs.GetComponent<CPlayer>(playerEnt);
-
-    glm::mat4 playerViewMatrix = playerComp.viewMatrix;
-    glm::mat4 playerProjMatrix = playerComp.projectionMatrix;
+   
 
     voxelizationShader.setFloat("voxelizationAreaSize", Common::voxelizationAreaSize);
 
@@ -141,7 +135,7 @@ void RenderSystem::voxelizationPass()
 
         voxelizationShader.setMat4("model", model);
         voxelizationShader.setMat3("normalMatrix", normalMatrix);
-        voxelizationShader.setVec3("camPos", ecs.GetComponent<CTransform>(playerEnt).position);
+        voxelizationShader.setVec3("camPos", Common::currentCamPos);
 
         if (ecs.HasComponent<CModel>(entity))
         {
@@ -392,17 +386,13 @@ void RenderSystem::geometryPass()
     Shader& gBufferShader = ShaderManager::GetShaderProgram("gBufferShader");
     gBufferShader.use();
 
-    Entity playerEnt = ecs.GetPlayers()[0];
-    CPlayer& playerComp = ecs.GetComponent<CPlayer>(playerEnt);
+    
 
-    glm::mat4 playerViewMatrix = playerComp.viewMatrix;
-    glm::mat4 playerProjMatrix = playerComp.projectionMatrix;
-
-    gBufferShader.setMat4("view", playerViewMatrix);
-    gBufferShader.setMat4("projection", playerProjMatrix);
+    gBufferShader.setMat4("view", Common::currentViewMatrix);
+    gBufferShader.setMat4("projection", Common::currentProjMatrix);
     gBufferShader.setMat4("dirLightSpaceMatrix", DirectionalShadows::g_lightSpaceMatrix);
 
-    glm::mat3 normalViewMatrix = glm::transpose(glm::inverse(playerViewMatrix));
+    glm::mat3 normalViewMatrix = glm::transpose(glm::inverse(Common::currentViewMatrix));
     gBufferShader.setMat3("viewNormalMatrix", normalViewMatrix);
 
     for (const auto& entity : mEntities)
@@ -474,12 +464,9 @@ void RenderSystem::ssaoPass()
     Shader& ssaoShader = ShaderManager::GetShaderProgram("ssaoShader");
     ssaoShader.use();
 
-    Entity playerEnt = ecs.GetPlayers()[0];
-    CPlayer& playerComp = ecs.GetComponent<CPlayer>(playerEnt);
+ 
 
-    glm::mat4& playerProjMatrix = playerComp.projectionMatrix;
-
-    ssaoShader.setMat4("projection", playerProjMatrix);
+    ssaoShader.setMat4("projection", Common::currentProjMatrix);
 
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, RenderingUtil::gViewPosition);
@@ -547,17 +534,12 @@ void RenderSystem::lightingPass()
     glEnable(GL_CULL_FACE);
     glCullFace(GL_BACK);
 
-    Entity playerEnt = ecs.GetPlayers()[0];
-    CPlayer& playerComp = ecs.GetComponent<CPlayer>(playerEnt);
-
-    glm::mat4 playerViewMatrix = playerComp.viewMatrix;
-    glm::mat4 playerProjMatrix = playerComp.projectionMatrix;
-
+ 
     if (!Common::showVoxelDebug)
     {
-        if (UI::isOpen)
+        if (Torx::Engine::MODE == Torx::EDITOR)
         {
-            Raycast::calculateMouseRaycast(playerProjMatrix * playerViewMatrix);
+            Raycast::calculateMouseRaycast(Common::currentProjMatrix * Common::currentViewMatrix);
         }
 
         Shader& lightingShader = ShaderManager::GetShaderProgram("lightingShader");
@@ -582,8 +564,8 @@ void RenderSystem::lightingPass()
         lightingShader.setFloat("specularConeOriginOffset", Common::specularConeOriginOffset);
         lightingShader.setFloat("showTotalIndirectSpecularLight", Common::showTotalIndirectSpecularLight);
         lightingShader.setFloat("specularConeMaxDistance", Common::specularConeMaxDistance);
-        lightingShader.setMat4("view", playerViewMatrix);
-        lightingShader.setVec3("camPos", ecs.GetComponent<CTransform>(playerEnt).position);
+        lightingShader.setMat4("view", Common::currentViewMatrix);
+        lightingShader.setVec3("camPos", Common::currentCamPos);
         lightingShader.setBool("showNormals", Common::normalsDebug);
         lightingShader.setBool("worldPosDebug", Common::worldPosDebug);
         lightingShader.setBool("albedoDebug", Common::albedoDebug);
@@ -651,12 +633,8 @@ void RenderSystem::ssrPass()
     Shader& ssrShader = ShaderManager::GetShaderProgram("ssrShader");
     ssrShader.use();
 
-    Entity playerEnt = ecs.GetPlayers()[0];
-    CPlayer& playerComp = ecs.GetComponent<CPlayer>(playerEnt);
 
-    glm::mat4& playerProjMatrix = playerComp.projectionMatrix;
-
-    ssrShader.setMat4("projection", playerProjMatrix);
+    ssrShader.setMat4("projection", Common::currentProjMatrix);
     ssrShader.setFloat("maxDistance", Common::ssrMaxDistance);
     ssrShader.setFloat("resolution", Common::ssrResolution);
     ssrShader.setInt("steps", Common::ssrSteps);
@@ -727,14 +705,10 @@ void RenderSystem::skyboxPass()
 
     skyBoxShader.use();
 
-    Entity playerEnt = ecs.GetPlayers()[0];
-    CPlayer& playerComp = ecs.GetComponent<CPlayer>(playerEnt);
+   
 
-    glm::mat4 playerViewMatrix = playerComp.viewMatrix;
-    glm::mat4 playerProjMatrix = playerComp.projectionMatrix;
-
-    skyBoxShader.setMat4("projection", playerProjMatrix);
-    skyBoxShader.setMat4("view", glm::mat4(glm::mat3(playerViewMatrix)));
+    skyBoxShader.setMat4("projection", Common::currentProjMatrix);
+    skyBoxShader.setMat4("view", glm::mat4(glm::mat3(Common::currentViewMatrix)));
     glBindVertexArray(RenderingUtil::mUnitCubeVAO);
     skyBoxShader.setInt("skybox", 1);
     glActiveTexture(GL_TEXTURE1);
@@ -796,7 +770,7 @@ void RenderSystem::postProcessingPass()
     glClear(GL_COLOR_BUFFER_BIT);
 
 
-    Entity playerEnt = ecs.GetPlayers()[0];
+    
     
     Shader& postProcessingShader = ShaderManager::GetShaderProgram("postProcessingShader");
     postProcessingShader.use();
@@ -810,7 +784,7 @@ void RenderSystem::postProcessingPass()
     postProcessingShader.setBool("uncharted2", Common::uncharted);
     postProcessingShader.setBool("ACES", Common::aces);
     postProcessingShader.setBool("bloom", Common::bloomOn);
-    postProcessingShader.setVec3("camPos", ecs.GetComponent<CTransform>(playerEnt).position);
+    postProcessingShader.setVec3("camPos", Common::currentCamPos);
     postProcessingShader.setFloat("ssrMaxBlurDistance", Common::ssrMaxBlurDistance);
     postProcessingShader.setFloat("ssrSpecularBias", Common::ssrSpecularBias);
 
@@ -864,11 +838,7 @@ void RenderSystem::forwardRenderingPass()
 
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
-    Entity playerEnt = ecs.GetPlayers()[0];
-    CPlayer& playerComp = ecs.GetComponent<CPlayer>(playerEnt);
-
-    glm::mat4 playerViewMatrix = playerComp.viewMatrix;
-    glm::mat4 playerProjMatrix = playerComp.projectionMatrix;
+  
 
     if (Common::lightPosDebug)
     {
@@ -888,8 +858,8 @@ void RenderSystem::forwardRenderingPass()
                 model = glm::translate(model, transform.position + light.offset);
                 model = glm::scale(model, glm::vec3(0.1f));
 
-                solidColorShader.setMat4("projection", playerProjMatrix);
-                solidColorShader.setMat4("view", playerViewMatrix);
+                solidColorShader.setMat4("projection", Common::currentProjMatrix);
+                solidColorShader.setMat4("view", Common::currentViewMatrix);
                 solidColorShader.setMat4("model", model);
                 solidColorShader.setVec3("color", light.color);
 
@@ -948,17 +918,11 @@ void RenderSystem::renderVoxelDebug()
 
     voxelVisualizationShader.use();
 
-    Entity playerEnt = ecs.GetPlayers()[0];
-    CPlayer& playerComp = ecs.GetComponent<CPlayer>(playerEnt);
-
-    glm::mat4 playerViewMatrix = playerComp.viewMatrix;
-    glm::mat4 playerProjMatrix = playerComp.projectionMatrix;
-
     glUniform3i(glGetUniformLocation(voxelVisualizationShader.ID, "gridDimensions"), Common::voxelGridDimensions, Common::voxelGridDimensions, Common::voxelGridDimensions);
 
-    voxelVisualizationShader.setMat4("view", playerViewMatrix);
-    voxelVisualizationShader.setMat4("projection", playerProjMatrix);
-    voxelVisualizationShader.setVec3("camPos", ecs.GetComponent<CTransform>(playerEnt).position);
+    voxelVisualizationShader.setMat4("view", Common::currentViewMatrix);
+    voxelVisualizationShader.setMat4("projection", Common::currentProjMatrix);
+    voxelVisualizationShader.setVec3("camPos", Common::currentCamPos);
 
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_3D, RenderingUtil::mVoxelTexture);
@@ -977,14 +941,8 @@ void RenderSystem::renderPhysicsDebug()
 
     lineDebugShader.use();
 
-    Entity playerEnt = ecs.GetPlayers()[0];
-    CPlayer& playerComp = ecs.GetComponent<CPlayer>(playerEnt);
-
-    glm::mat4 playerViewMatrix = playerComp.viewMatrix;
-    glm::mat4 playerProjMatrix = playerComp.projectionMatrix;
-
-    lineDebugShader.setMat4("projection", playerProjMatrix);
-    lineDebugShader.setMat4("view", playerViewMatrix);
+    lineDebugShader.setMat4("projection", Common::currentProjMatrix);
+    lineDebugShader.setMat4("view", Common::currentViewMatrix);
 
     BulletDebugDrawer::drawLines();
 }

@@ -2,6 +2,7 @@
 #include "../Core/Common.h"
 #include "../UI/UI.h"
 #include <iostream>
+#include "../include/Engine.h"
 
 glm::vec4 Raycast::m_MouseRayStartWorld{};
 glm::vec3 Raycast::m_MouseRayDirWorld{};
@@ -74,7 +75,7 @@ int Raycast::getSelectedEntity()
 	CSingleton_Input& inputSing = CSingleton_Input::getInstance();
 
 	static bool rayFired{ false };
-	if (UI::isOpen)
+	if (Torx::Engine::MODE == Torx::EDITOR)
 	{
 		if (inputSing.pressedKeys[MOUSE_RIGHT] && !rayFired)
 		{

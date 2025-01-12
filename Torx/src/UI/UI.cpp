@@ -22,8 +22,10 @@
 #include <iomanip>
 #include <sstream>
 #include "../Util/Util.h"
+#include "../include/Engine.h"
+#include "../Editor/EditorCamera.h"
 
-bool UI::isOpen{ false };
+bool UI::isOpen{ true };
 bool UI::firstMouseUpdateAfterMenu{ false };
 
 void showComponents(Entity entity);
@@ -35,13 +37,6 @@ Entity playerEntity;
 
 void UI::Init(GLFWwindow* window) 
 {
-    for (Entity entity : ecs.GetLivingEntities())
-    {
-        if (ecs.HasComponent<CPlayer>(entity))
-        {
-            playerEntity = entity;
-        }
-    }
    
     IMGUI_CHECKVERSION();
     ImGui::CreateContext();
@@ -65,9 +60,21 @@ void UI::Update()
     ImGui::Shortcut(ImGuiKey_Tab, ImGuiInputFlags_None);
     
     
-    static bool editorMode{ false };
+    static bool editorMode{ true };
     ImGui::Checkbox("Editor Mode", &editorMode);
-    Editor::setStatus(editorMode);
+
+    
+    
+    
+    if (Torx::Engine::MODE == Torx::EDITOR)
+    {
+        editorMode = true;
+    }
+    else
+    {
+        editorMode = false;
+    }
+   
 
     CSingleton_Input& inputSing = CSingleton_Input::getInstance();
 
@@ -305,7 +312,7 @@ void UI::Update()
 
     // Gizmos
     
-    if (Editor::isOn())
+    if (Torx::Engine::MODE == Torx::EDITOR)
     {
         ImGui::Begin("Editor");
 
@@ -641,7 +648,7 @@ void showEntityOptions(Entity entity, bool addingNewEntity)
 {
 
     static int selectedComponent = -1;
-    const char* singleChoiceComponents[] = { "Transform" };
+    const char* singleChoiceComponents[] = { "Transform", "Player"};
     const char* multipleChoiceComponents[] = { "Mesh", "Model", "Rigid body", "Light"};
 
     if (ImGui::Button("Add Component"))
@@ -766,6 +773,7 @@ void showEntityOptions(Entity entity, bool addingNewEntity)
 
                     }
                 }
+
                 ImGui::EndMenu();
             }
         }
@@ -775,17 +783,29 @@ void showEntityOptions(Entity entity, bool addingNewEntity)
     else if (singleChoiceComponents[selectedComponent] == "Transform" && !ecs.HasComponent<CTransform>(entity))
     {
 
-        const auto& playerFront = ecs.GetComponent<CPlayer>(playerEntity).front;
-        auto& playerPosition = ecs.GetComponent<CTransform>(playerEntity).position;
-
+        EditorCamera& editorCamera = EditorCamera::getInstance();
+      
         ecs.AddComponent<CTransform>(
             entity,
             CTransform{
-                .position = playerPosition + playerFront * 2.0f,
+                .position = editorCamera.GetCamPos() + editorCamera.GetFront() * 2.0f,
                 .scale = glm::vec3(1.0f),
                 .rotation = glm::quat(),
             });
 
+        selectedComponent = -1;
+    }
+    
+    else if (singleChoiceComponents[selectedComponent] == "Player" && !ecs.HasComponent<CPlayer>(entity))
+    {
+
+         ecs.AddComponent<CPlayer>(
+                entity,
+                CPlayer{
+                    .flashlightOn = false,
+                    .movementSpeed = 3.0f,
+                });
+  
         selectedComponent = -1;
     }
 

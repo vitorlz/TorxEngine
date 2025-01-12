@@ -14,6 +14,7 @@
 #include "../Physics/Raycast.h"
 #include "../UI/UI.h"
 #include "../Editor/Editor.h"
+#include "../include/Engine.h"
 
 #include "btBulletDynamicsCommon.h"
 #include <BulletCollision/CollisionShapes/btShapeHull.h>
@@ -478,9 +479,9 @@ void PhysicsSystem::Update(float deltaTime)
 	CSingleton_Input& inputSing = CSingleton_Input::getInstance();
 
 	static bool shotFired{ false };
-	if (UI::isOpen)
+	if (Torx::Engine::MODE == Torx::EDITOR)
 	{
-		if (inputSing.pressedKeys[MOUSE_LEFT] && !shotFired && !Editor::isOn())
+		if (inputSing.pressedKeys[MOUSE_LEFT] && !shotFired)
 		{
 			int entityHit = Raycast::mouseRaycast();
 
@@ -488,14 +489,21 @@ void PhysicsSystem::Update(float deltaTime)
 			shotFired = true;
 			//std::cout << Util::vec3ToString(mouseRayDir);
 			btRigidBody* entityHitRb = ecs.GetComponent<CRigidBody>(entityHit).body;
-			btVector3 offset = Raycast::getMouseHitPointWorld() - entityHitRb->getCenterOfMassPosition() ;
 
-			std::cout << "entity hit: " << entityHit << "\n";
-			std::cout << "Hitpoint World: " << Raycast::getMouseHitPointWorld().x() << ", " << Raycast::getMouseHitPointWorld().y() << ", " << Raycast::getMouseHitPointWorld().z() << "\n";
-			std::cout << "Center of mass position: " << entityHitRb->getCenterOfMassPosition().x() << ", " << entityHitRb->getCenterOfMassPosition().y() << ", " << entityHitRb->getCenterOfMassPosition().z() << "\n";
-			std::cout << "Offset: " << offset.x() << ", " << offset.y() << ", " << offset.z() << "\n";
-			entityHitRb->activate();
-			entityHitRb->applyImpulse(btVector3(mouseRayDir.x, mouseRayDir.y, mouseRayDir.z) * 2, offset);
+			if (entityHitRb)
+			{
+				btVector3 offset = Raycast::getMouseHitPointWorld() - entityHitRb->getCenterOfMassPosition() ;
+
+				std::cout << "entity hit: " << entityHit << "\n";
+				std::cout << "Hitpoint World: " << Raycast::getMouseHitPointWorld().x() << ", " << Raycast::getMouseHitPointWorld().y() << ", " << Raycast::getMouseHitPointWorld().z() << "\n";
+				std::cout << "Center of mass position: " << entityHitRb->getCenterOfMassPosition().x() << ", " << entityHitRb->getCenterOfMassPosition().y() << ", " << entityHitRb->getCenterOfMassPosition().z() << "\n";
+				std::cout << "Offset: " << offset.x() << ", " << offset.y() << ", " << offset.z() << "\n";
+
+			
+				entityHitRb->activate();
+				entityHitRb->applyImpulse(btVector3(mouseRayDir.x, mouseRayDir.y, mouseRayDir.z) * 2, offset);
+			}
+			
 		}
 		else if (!inputSing.pressedKeys[MOUSE_RIGHT])
 		{

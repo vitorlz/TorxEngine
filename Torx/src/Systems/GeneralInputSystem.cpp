@@ -145,6 +145,14 @@ void GeneralInputSystem::Update(float deltaTime)
 	{
 		inputSing.pressedKeys[SHIFT_D] = false;
 	}
+	if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_MIDDLE) == GLFW_PRESS && glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS)
+	{
+		inputSing.pressedKeys[MOUSE_MIDDLE_SHIFT] = true;
+	}
+	else if ((glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_MIDDLE) == GLFW_RELEASE || glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_RELEASE))
+	{
+		inputSing.pressedKeys[MOUSE_MIDDLE_SHIFT] = false;
+	}
 	if (glfwGetKey(window, GLFW_KEY_TAB) == GLFW_PRESS)
 	{
 		inputSing.pressedKeys[TAB] = true;
@@ -168,6 +176,14 @@ void GeneralInputSystem::Update(float deltaTime)
 	else if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_RIGHT) == GLFW_RELEASE)
 	{
 		inputSing.pressedKeys[MOUSE_RIGHT] = false;
+	}
+	if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_MIDDLE) == GLFW_PRESS)
+	{
+		inputSing.pressedKeys[MOUSE_MIDDLE] = true;
+	}
+	else if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_RIGHT) == GLFW_RELEASE)
+	{
+		inputSing.pressedKeys[MOUSE_MIDDLE] = false;
 	}
 	if (glfwGetKey(window, GLFW_KEY_1) == GLFW_PRESS)
 	{

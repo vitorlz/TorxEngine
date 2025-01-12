@@ -14,9 +14,12 @@ struct Window
 	void DisableVsync() const;
 	void Update() const;
 	void Terminate() const;
+	static void SetScrollOffset(double offset);
+	static double GetScrollOffset();
 	static int screenWidth;
 	static int screenHeight;
 
 private:
+	static double m_scrollOffset;
 	GLFWwindow* mWindow;
 };

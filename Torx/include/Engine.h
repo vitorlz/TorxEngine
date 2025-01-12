@@ -5,12 +5,29 @@
 #include <iostream>
 #include "../src/Core/ECSCore.h"
 
+
+
 namespace Torx
 {
+
+	enum EngineMode
+	{
+		EDITOR,
+		PLAY
+	};   
+
 	class Engine
 	{
 	public:
-		Engine() = default;
+
+		static Engine& getInstance();
+
+	private:
+		Engine();
+
+	public:
+		Engine(Engine const&) = delete;
+		void operator = (Engine const&) = delete;
 
 		static void ConfigWindow(int width, int height, const char*  title);
 
@@ -20,8 +37,10 @@ namespace Torx
 		void Init();
 
 		void Run(float deltaTime);
-	private:
 
+		static EngineMode MODE;
+
+	private:
 		static Window m_window;
 	};
 }

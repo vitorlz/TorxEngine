@@ -101,6 +101,7 @@
     <ClCompile Include="src\Core\Common.cpp" />
     <ClCompile Include="src\Core\ECSCore.cpp" />
     <ClCompile Include="src\Editor\Editor.cpp" />
+    <ClCompile Include="src\Editor\EditorCamera.cpp" />
     <ClCompile Include="src\Engine.cpp" />
     <ClCompile Include="src\Physics\BulletDebugDrawer.cpp" />
     <ClCompile Include="src\Physics\Raycast.cpp" />
@@ -116,7 +117,6 @@
     <ClCompile Include="src\Systems\RenderSystem.cpp" />
     <ClCompile Include="src\UI\UI.cpp" />
     <ClCompile Include="src\Application.cpp" />
-    <ClCompile Include="src\Core\InputManager.cpp" />
     <ClCompile Include="src\Util\ShaderManager.cpp" />
     <ClCompile Include="src\Util\TextureLoader.cpp" />
     <ClCompile Include="src\Util\Util.cpp" />
@@ -154,6 +154,7 @@
     <ClInclude Include="src\Core\Common.h" />
     <ClInclude Include="src\Core\ECSCore.h" />
     <ClInclude Include="src\Editor\Editor.h" />
+    <ClInclude Include="src\Editor\EditorCamera.h" />
     <ClInclude Include="src\Physics\BulletDebugDrawer.h" />
     <ClInclude Include="src\Physics\Raycast.h" />
     <ClInclude Include="src\Rendering\Bloom.h" />
@@ -173,7 +174,6 @@
     <ClInclude Include="src\Core\ComponentManager.hpp" />
     <ClInclude Include="src\Core\Coordinator.hpp" />
     <ClInclude Include="src\Core\EntityManager.hpp" />
-    <ClInclude Include="src\Core\InputManager.h" />
     <ClInclude Include="src\Core\System.hpp" />
     <ClInclude Include="src\Core\SystemManager.hpp" />
     <ClInclude Include="src\Core\Types.hpp" />

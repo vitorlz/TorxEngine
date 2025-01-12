@@ -1,4 +1,6 @@
 #include "Common.h"
+#include "../UI/UI.h"
+#include "../Editor/EditorCamera.h"
 
 
 // -------- SCREEN SETTINGS -----------------------------------
@@ -39,7 +41,7 @@ bool Common::usingGuizmo{ false };
 // --------------- VXGI ----------------------------------------
 bool Common::voxelize{ true };
 bool Common::showVoxelDebug{ false };
-int	Common::voxelGridDimensions{ 128 };
+int	Common::voxelGridDimensions{ 64 };
 bool Common::vxgi{ true };
 bool Common::showDiffuseAccumulation{ false };
 bool Common::showTotalIndirectDiffuseLight{ false };
@@ -70,3 +72,9 @@ bool Common::showAO{ false };
 glm::vec3 Common::textColor{ 0.5f, 0.2f, 0.2f };
 
 
+// -------------- CURRENT MATRICES --------------------------------
+
+static EditorCamera& editorCamera = EditorCamera::getInstance();
+glm::mat4 Common::currentViewMatrix{ editorCamera.GetViewMatrix() };
+glm::mat4 Common::currentProjMatrix{ editorCamera.GetProjMatrix() };
+glm::vec3 Common::currentCamPos{ editorCamera.GetCamPos() };

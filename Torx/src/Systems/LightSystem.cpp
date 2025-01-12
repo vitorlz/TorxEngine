@@ -1,4 +1,4 @@
-#include "LightSystem.h"
+   #include "LightSystem.h"
 #include "../Core/Coordinator.hpp"
 #include "../Components/CTransform.h"
 #include "../Components/CLight.h"
