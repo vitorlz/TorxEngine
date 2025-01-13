@@ -24,6 +24,8 @@
 #include "../Util/Util.h"
 #include "../include/Engine.h"
 #include "../Editor/EditorCamera.h"
+#include "../Scene/Scene.h"
+#include "../Util/WindowsPlatform/WindowsUtil.h"
 
 bool UI::isOpen{ true };
 bool UI::firstMouseUpdateAfterMenu{ false };
@@ -63,8 +65,6 @@ void UI::Update()
     static bool editorMode{ true };
     ImGui::Checkbox("Editor Mode", &editorMode);
 
-    
-    
     
     if (Torx::Engine::MODE == Torx::EDITOR)
     {
@@ -370,6 +370,34 @@ void UI::Update()
 
         ImGui::End();
     }
+
+    if (ImGui::BeginMainMenuBar())
+    {
+
+        if (ImGui::BeginMenu("Menu"))
+        {
+            if (ImGui::MenuItem("Open...", "Ctrl+O")) 
+            {
+                std::string filePath = FileDialogs::OpenFile("Json files (*.json)\0*.json\0");
+                if (!filePath.empty())
+                {
+                    for (Entity e : ecs.GetLivingEntities())
+                    {
+                        ecs.DestroyEntity(e);
+                    }
+                    Scene::LoadSceneFromJson(filePath);
+                }
+            } 
+            if (ImGui::MenuItem("Save as...")) 
+            {
+                
+            }
+            ImGui::EndMenu();
+        }
+
+        ImGui::EndMainMenuBar();
+    }
+
 
     ImGui::Render();
     ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());

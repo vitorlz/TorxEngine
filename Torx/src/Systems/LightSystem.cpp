@@ -93,31 +93,76 @@ void LightSystem::Init()
 
 void LightSystem::Update(float deltaTime)
 {
-	// Here we fetch the light data for each entity and update it.
-	// We need this to send the updated light data to the ssbo. 
+	
+	
+	// delete lights 
+	if (mEntities.size() < mLightIndex)
+	{
+		Entity entityDeleted{};
 
+		for (const auto& pair : EntityToLightIndexMap)
+		{
+			if (!mEntities.contains(pair.first))
+			{
+				entityDeleted = pair.first;
+				std::cout << "Entity deleted :" << entityDeleted << "\n";
+			}
+		}
+
+		// replace the deleted light with an empty light struct in the ssbo.
+		Light emptyLight;
+		int indexOfDeletedLight = EntityToLightIndexMap[entityDeleted];
+		glNamedBufferSubData(mSsbo, indexOfDeletedLight * sizeof(Light), sizeof(Light), (const void*)&emptyLight);
+
+		// shift lights that had an index greater than the deleted light backwards.
+		for (Entity e : mEntities)
+		{
+			if (EntityToLightIndexMap[e] > indexOfDeletedLight)
+			{
+				EntityToLightIndexMap[e] -= 1;
+			}
+		}
+
+		EntityToLightIndexMap.erase(EntityToLightIndexMap.find(entityDeleted));
+		EntityToLightMap.erase(EntityToLightMap.find(entityDeleted));
+		mLightIndex--;
+
+		for (Entity entity : mEntities)
+		{
+			auto& light = ecs.GetComponent<CLight>(entity);
+			light.isDirty = true;
+		}
+	}
+
+	// add new lights
 	if (mEntities.size() > mLightIndex)
 	{
-
-		std::cout << "Entities before addition: " << mEntities.size() << "\n";
-
-		std::cout << "Light index before addition: " << mLightIndex << "\n";
-
+		
 		mLightIndex++;
 
-		std::cout << "Light index after addition: " << mLightIndex << "\n";
-		std::cout << "Entities after addition: " << mEntities.size() << "\n";
+		for (Entity e : mEntities)
+		{
+			std::cout << "light entity: " << e << "\n";
+		}
 
 		Entity entityAdded{};
 		for (const auto& entity : mEntities)
 		{
 			if (!EntityToLightIndexMap.contains(entity))
 			{
-				entityAdded = entity;			
+				entityAdded = entity;	
+				std::cout << "new light entity: " << entityAdded << "\n";
+
+				break;
 			}
 		}
 
-		std::cout << "new light entity: " << entityAdded << "\n";
+		for (const auto& pair : EntityToLightIndexMap)
+		{
+			// entities are all being added at once???
+			std::cout << "entities in light index map: " << pair.first << "\n";
+		}
+		
 
 		const auto& transform = ecs.GetComponent<CTransform>(entityAdded);
 		const auto& light = ecs.GetComponent<CLight>(entityAdded);
@@ -142,13 +187,22 @@ void LightSystem::Update(float deltaTime)
 		glNamedBufferSubData(mSsbo, EntityToLightIndexMap[entityAdded] * sizeof(Light), sizeof(Light), (const void*)&lightData);
 	}
 
-
+	// update already existing lights
+	// Here we fetch the light data for each entity and update it.
+	// We need this to send the updated light data to the ssbo.
 	for (const auto& entity : mEntities) 
 	{
 		auto& light = ecs.GetComponent<CLight>(entity);
 
+		if (!EntityToLightIndexMap.contains(entity))
+		{
+			continue;
+		}
+
 		if (light.isDirty) 
 		{	
+
+			
 			auto& transform = ecs.GetComponent<CTransform>(entity);
 
 			if (light.type == SPOT)
@@ -175,44 +229,5 @@ void LightSystem::Update(float deltaTime)
 
 			light.isDirty = false;
 		}
-	}
-
-	// check if any lights were deleted to update ssbo. If no lights were added or deleted, the number of entities will be equal to the lightIndex.
-	if (mEntities.size() < mLightIndex)
-	{
-		Entity entityDeleted{};
-
-		for (const auto& pair : EntityToLightIndexMap)
-		{
-			if (!mEntities.contains(pair.first))
-			{
-				entityDeleted = pair.first;
-				std::cout << "Entity deleted :" << entityDeleted << "\n";
-			}
-		}
-
-		// replace the deleted light with an empty light struct in the ssbo.
-		Light emptyLight;
-		int indexOfDeletedLight = EntityToLightIndexMap[entityDeleted];
-		glNamedBufferSubData(mSsbo, indexOfDeletedLight * sizeof(Light), sizeof(Light), (const void*)&emptyLight);
-
-		// shift lights that had an index greater than the deleted light backwards.
-		for (Entity e : mEntities)
-		{
-			if (EntityToLightIndexMap[e] > indexOfDeletedLight)
-			{
-				EntityToLightIndexMap[e] -= 1;
-			}	
-		}
-
-		EntityToLightIndexMap.erase(EntityToLightIndexMap.find(entityDeleted));
-		EntityToLightMap.erase(EntityToLightMap.find(entityDeleted));
-		mLightIndex--;
-
-		for (Entity entity : mEntities)
-		{
-			auto& light = ecs.GetComponent<CLight>(entity);
-			light.isDirty = true;
-		}
-	}
+	}	
 }

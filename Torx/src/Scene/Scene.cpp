@@ -26,7 +26,7 @@ namespace Scene
 
 	std::string environmentMap;
 
-	void SaveSceneToJson(const std::string& filename)
+	void SaveSceneToJson(const std::string& path)
 	{
 		std::vector<Entity> livingEntities = ecs.GetLivingEntities();
 		nlohmann::json json;
@@ -133,7 +133,7 @@ namespace Scene
 		json["config"]["ssao"]["ssaoKernelSize"] = Common::ssaoKernelSize;
 		json["config"]["ssao"]["ssaoOn"] = Common::ssaoOn;
 
-		std::ofstream o("res/scenes/" + filename);
+		std::ofstream o(path);
 		if (!o.is_open())
 		{
 			std::cout << "Failed to open json file.\n";
@@ -146,11 +146,11 @@ namespace Scene
 	}
 
 
-	void LoadSceneFromJson(const std::string& filename)
+	void LoadSceneFromJson(const std::string& path)
 	{
 		std::cout << "Loading scene..." << "\n";
 
-		std::ifstream f("res/scenes/" + filename);
+		std::ifstream f(path);
 		if (!f.is_open())
 		{
 			std::cout << "Failed to open json file. \n";
