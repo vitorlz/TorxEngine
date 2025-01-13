@@ -70,27 +70,6 @@ void Raycast::setDynamicsWorld(btDiscreteDynamicsWorld* dynamicsWorld)
 	m_dynamicsWorld = dynamicsWorld;
 }
 
-int Raycast::getSelectedEntity()
-{
-	CSingleton_Input& inputSing = CSingleton_Input::getInstance();
-
-	static bool rayFired{ false };
-	if (Torx::Engine::MODE == Torx::EDITOR)
-	{
-		if (inputSing.pressedKeys[MOUSE_RIGHT] && !rayFired)
-		{
-			m_SelectedEntity = mouseRaycast();
-			rayFired = true;
-		}
-		else if (!inputSing.pressedKeys[MOUSE_RIGHT])
-		{
-			rayFired = false;
-		}
-	}
-
-	return m_SelectedEntity;
-}
-
 void Raycast::setSelectedEntity(int entity)
 {
 	m_SelectedEntity == entity;

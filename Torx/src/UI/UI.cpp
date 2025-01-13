@@ -319,12 +319,18 @@ void UI::Update()
         static int selectedEntity{ -1 };
         static bool addingNewEntity{ false };
         static Entity newEntity;
+        static bool rayFired{ false };
 
-        if (!ImGuizmo::IsOver() && !ImGui::IsWindowHovered(ImGuiHoveredFlags_AnyWindow) && !ImGui::IsAnyItemHovered() && !addingNewEntity)
+        if (!ImGuizmo::IsOver() && !ImGui::IsWindowHovered(ImGuiHoveredFlags_AnyWindow) && !ImGui::IsAnyItemHovered() && !addingNewEntity && inputSing.pressedKeys[MOUSE_RIGHT] && !rayFired)
         {
-            selectedEntity = Raycast::getSelectedEntity();
+            selectedEntity = Raycast::mouseRaycast();
+            rayFired = true;
         }
-
+        else if (!inputSing.pressedKeys[MOUSE_RIGHT])
+        {
+            rayFired = false;
+        }
+        
         if (selectedEntity >= 0 && ecs.isAlive(selectedEntity))
         {
             if (!addingNewEntity)

@@ -69,6 +69,7 @@ void ECSCore::RegisterCoreComponentsAndSystems()
     {
         Signature signature;
         signature.set(ecs.GetComponentType<CPlayer>());
+        signature.set(ecs.GetComponentType<CTransform>());
         ecs.SetSystemSignature<PlayerInputSystem>(signature);
     }
 

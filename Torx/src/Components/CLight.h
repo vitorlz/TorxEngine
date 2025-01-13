@@ -27,6 +27,7 @@ struct CLight
 	glm::vec3 offset;
 
 	bool dynamic{ false };
+
 };
 
 
