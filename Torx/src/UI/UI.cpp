@@ -184,7 +184,7 @@ void UI::Update()
                     RenderingUtil::LoadNewEnvironmentMap(envMaps[i].c_str());
                 }
 
-                ImGui::PopID();
+                ImGui::PopID(); 
             }
             ImGui::EndCombo();
         }
@@ -380,9 +380,9 @@ void UI::Update()
     if (ImGui::BeginMainMenuBar())
     {
 
-        if (ImGui::BeginMenu("Menu"))
+        if (ImGui::BeginMenu("File"))
         {
-            if (ImGui::MenuItem("Open...", "Ctrl+O")) 
+            if (ImGui::MenuItem("Open...")) 
             {
                 std::string filePath = FileDialogs::OpenFile("Json files (*.json)\0*.json\0");
                 if (!filePath.empty())
@@ -391,12 +391,21 @@ void UI::Update()
                     {
                         ecs.DestroyEntity(e);
                     }
+                    ECSCore::UpdateSystems(0.0f);
                     Scene::LoadSceneFromJson(filePath);
                 }
             } 
+            if (ImGui::MenuItem("Save"))
+            {
+                if (!Scene::g_currentScenePath.empty())
+                {
+                    Scene::SaveSceneToJson(Scene::g_currentScenePath);
+                }
+            }
             if (ImGui::MenuItem("Save as...")) 
             {
-                
+                std::string filePath = FileDialogs::SaveFile("Json files (*.json)\0*.json\0");
+                Scene::SaveSceneToJson(filePath);
             }
             ImGui::EndMenu();
         }

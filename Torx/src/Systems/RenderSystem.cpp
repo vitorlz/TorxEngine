@@ -92,8 +92,6 @@ void RenderSystem::voxelizationPass()
 
     voxelizationShader.use();
 
-   
-
     voxelizationShader.setFloat("voxelizationAreaSize", Common::voxelizationAreaSize);
 
     glActiveTexture(GL_TEXTURE5);

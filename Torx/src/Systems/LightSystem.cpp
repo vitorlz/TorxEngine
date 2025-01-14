@@ -94,50 +94,51 @@ void LightSystem::Init()
 void LightSystem::Update(float deltaTime)
 {
 	
-	
 	// delete lights 
 	if (mEntities.size() < mLightIndex)
 	{
-		Entity entityDeleted{};
+		std::vector<Entity> entitiesDeleted{};
 
 		for (const auto& pair : EntityToLightIndexMap)
 		{
 			if (!mEntities.contains(pair.first))
 			{
-				entityDeleted = pair.first;
-				std::cout << "Entity deleted :" << entityDeleted << "\n";
+				entitiesDeleted.push_back(pair.first);
+				std::cout << "Light deleted :" << pair.first << "\n";
 			}
 		}
 
-		// replace the deleted light with an empty light struct in the ssbo.
-		Light emptyLight;
-		int indexOfDeletedLight = EntityToLightIndexMap[entityDeleted];
-		glNamedBufferSubData(mSsbo, indexOfDeletedLight * sizeof(Light), sizeof(Light), (const void*)&emptyLight);
-
-		// shift lights that had an index greater than the deleted light backwards.
-		for (Entity e : mEntities)
+		for (Entity deletedEntity : entitiesDeleted)
 		{
-			if (EntityToLightIndexMap[e] > indexOfDeletedLight)
+			// replace the deleted light with an empty light struct in the ssbo.
+			Light emptyLight;
+			int indexOfDeletedLight = EntityToLightIndexMap[deletedEntity];
+			glNamedBufferSubData(mSsbo, indexOfDeletedLight * sizeof(Light), sizeof(Light), (const void*)&emptyLight);
+
+			// shift lights that had an index greater than the deleted light backwards.
+			for (Entity e : mEntities)
 			{
-				EntityToLightIndexMap[e] -= 1;
+				if (EntityToLightIndexMap[e] > indexOfDeletedLight)
+				{
+					EntityToLightIndexMap[e] -= 1;
+				}
 			}
-		}
 
-		EntityToLightIndexMap.erase(EntityToLightIndexMap.find(entityDeleted));
-		EntityToLightMap.erase(EntityToLightMap.find(entityDeleted));
-		mLightIndex--;
+			EntityToLightIndexMap.erase(EntityToLightIndexMap.find(deletedEntity));
+			EntityToLightMap.erase(EntityToLightMap.find(deletedEntity));
+			mLightIndex--;
 
-		for (Entity entity : mEntities)
-		{
-			auto& light = ecs.GetComponent<CLight>(entity);
-			light.isDirty = true;
+			for (Entity entity : mEntities)
+			{
+				auto& light = ecs.GetComponent<CLight>(entity);
+				light.isDirty = true;
+			}
 		}
 	}
 
 	// add new lights
 	if (mEntities.size() > mLightIndex)
 	{
-		
 		mLightIndex++;
 
 		for (Entity e : mEntities)
@@ -145,46 +146,42 @@ void LightSystem::Update(float deltaTime)
 			std::cout << "light entity: " << e << "\n";
 		}
 
-		Entity entityAdded{};
+		std::vector<Entity> entitiesAdded;
 		for (const auto& entity : mEntities)
 		{
 			if (!EntityToLightIndexMap.contains(entity))
 			{
-				entityAdded = entity;	
-				std::cout << "new light entity: " << entityAdded << "\n";
+				entitiesAdded.push_back(entity);
+				std::cout << "new light entity: " << entity << "\n";
 
 				break;
 			}
 		}
 
-		for (const auto& pair : EntityToLightIndexMap)
+		for (Entity addedEntity : entitiesAdded)
 		{
-			// entities are all being added at once???
-			std::cout << "entities in light index map: " << pair.first << "\n";
+			const auto& transform = ecs.GetComponent<CTransform>(addedEntity);
+			const auto& light = ecs.GetComponent<CLight>(addedEntity);
+
+			std::cout << "light type: " << light.type << "\n";
+
+			if (light.type == SPOT)
+			{
+				lightData.direction = glm::vec4(light.direction, 1.0f);
+				lightData.innerCutoff = glm::cos(glm::radians(light.innerCutoff));
+				lightData.outerCutoff = glm::cos(glm::radians(light.outerCutoff));
+			}
+
+			lightData.type = (float)light.type;
+			lightData.position = glm::vec4(transform.position + light.offset, 1.0f);
+			lightData.color = glm::vec4(light.color * light.strength, 1.0f);
+			lightData.radius = light.radius;
+
+			EntityToLightMap[addedEntity] = lightData;
+			EntityToLightIndexMap[addedEntity] = mLightIndex - 1;
+
+			glNamedBufferSubData(mSsbo, EntityToLightIndexMap[addedEntity] * sizeof(Light), sizeof(Light), (const void*)&lightData);
 		}
-		
-
-		const auto& transform = ecs.GetComponent<CTransform>(entityAdded);
-		const auto& light = ecs.GetComponent<CLight>(entityAdded);
-
-		std::cout << "light type: " << light.type << "\n";
-
-		if (light.type == SPOT)
-		{
-			lightData.direction = glm::vec4(light.direction, 1.0f);
-			lightData.innerCutoff = glm::cos(glm::radians(light.innerCutoff));
-			lightData.outerCutoff = glm::cos(glm::radians(light.outerCutoff));
-		}
-
-		lightData.type = (float)light.type;
-		lightData.position = glm::vec4(transform.position + light.offset, 1.0f);
-		lightData.color = glm::vec4(light.color * light.strength, 1.0f);
-		lightData.radius = light.radius;
-
-		EntityToLightMap[entityAdded] = lightData;
-		EntityToLightIndexMap[entityAdded] = mLightIndex - 1;
-
-		glNamedBufferSubData(mSsbo, EntityToLightIndexMap[entityAdded] * sizeof(Light), sizeof(Light), (const void*)&lightData);
 	}
 
 	// update already existing lights

@@ -289,6 +289,9 @@ namespace Scene
 			Common::ssaoOn = jsonData["config"]["ssao"]["ssaoOn"].get<bool>();
 		}
 
+
+		g_currentScenePath = path;
+
 		std::cout << "scene loaded " << "\n";
 	}
 

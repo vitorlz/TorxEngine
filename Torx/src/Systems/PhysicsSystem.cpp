@@ -230,7 +230,34 @@ void PhysicsSystem::Init()
 
 void PhysicsSystem::Update(float deltaTime)
 {
+	if (!dynamicsWorld)
+	{
+		return;
+	}
+
 	dynamicsWorld->stepSimulation(deltaTime, 20, 1.0f / 165.0f);
+
+	if (mEntities.size() < dynamicsWorld->getNumCollisionObjects())
+	{
+		for (int i = dynamicsWorld->getNumCollisionObjects() - 1; i >= 0; i--)
+		{
+			Entity entity = dynamicsWorld->getCollisionObjectArray()[i]->getUserIndex();
+			if (!ecs.isAlive(entity) || !ecs.HasComponent<CRigidBody>(entity))
+			{
+				btCollisionObject* obj = dynamicsWorld->getCollisionObjectArray()[i];
+				btRigidBody* body = btRigidBody::upcast(obj);
+				if (body && body->getMotionState())
+				{
+					delete body->getMotionState();
+				}
+				dynamicsWorld->removeCollisionObject(obj);
+				delete obj->getCollisionShape();
+				delete obj;
+
+				std::cout << "deleted rigid body: " << entity << "\n";
+			};
+		}
+	}
 
 	if (mEntities.size() > dynamicsWorld->getNumCollisionObjects())
 	{
@@ -508,26 +535,6 @@ void PhysicsSystem::Update(float deltaTime)
 		else if (!inputSing.pressedKeys[MOUSE_RIGHT])
 		{
 			shotFired = false;
-		}
-	}
-
-	if (mEntities.size() < dynamicsWorld->getNumCollisionObjects())
-	{
-		for (int i = dynamicsWorld->getNumCollisionObjects() - 1; i >= 0; i--)
-		{
-			Entity entity = dynamicsWorld->getCollisionObjectArray()[i]->getUserIndex();
-			if (!ecs.isAlive(entity) || !ecs.HasComponent<CRigidBody>(entity))
-			{
-				btCollisionObject* obj = dynamicsWorld->getCollisionObjectArray()[i];
-				btRigidBody* body = btRigidBody::upcast(obj);
-				if (body && body->getMotionState())
-				{
-					delete body->getMotionState();
-				}
-				dynamicsWorld->removeCollisionObject(obj);
-				delete obj->getCollisionShape();
-				delete obj;
-			};
 		}
 	}
 
