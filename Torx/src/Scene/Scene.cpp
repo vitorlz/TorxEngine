@@ -14,6 +14,7 @@
 #include "../Util/Util.h"
 #include "../AssetLoading/AssetManager.h"
 #include "../Rendering/RenderingUtil.h"
+#include "../Editor/EditorCamera.h"
 
 extern Coordinator ecs;
 
@@ -133,6 +134,11 @@ namespace Scene
 		json["config"]["ssao"]["ssaoKernelSize"] = Common::ssaoKernelSize;
 		json["config"]["ssao"]["ssaoOn"] = Common::ssaoOn;
 
+		// EDITOR INFO
+		EditorCamera& editorCamera = EditorCamera::getInstance();
+		json["editor"]["editorCamera"]["transform"]["position"] = { editorCamera.GetTransform().position.x, editorCamera.GetTransform().position.y, editorCamera.GetTransform().position.z};
+		json["editor"]["editorCamera"]["transform"]["rotation"] = { editorCamera.GetTransform().rotation.w, editorCamera.GetTransform().rotation.x, editorCamera.GetTransform().rotation.y, editorCamera.GetTransform().rotation.z };
+		
 		std::ofstream o(path);
 		if (!o.is_open())
 		{
@@ -289,6 +295,17 @@ namespace Scene
 			Common::ssaoOn = jsonData["config"]["ssao"]["ssaoOn"].get<bool>();
 		}
 
+		// EDITOR INFO
+		
+		if (jsonData["editor"].contains("editorCamera"))
+		{			
+			EditorCamera& editorCamera = EditorCamera::getInstance();
+			editorCamera.SetTransform(
+				EditorCameraTransform{
+					.position = jsonToVec3(jsonData["editor"]["editorCamera"]["transform"]["position"]),
+					.rotation = jsonToQuat(jsonData["editor"]["editorCamera"]["transform"]["rotation"])				
+				});
+		}
 
 		g_currentScenePath = path;
 

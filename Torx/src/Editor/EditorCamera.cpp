@@ -6,6 +6,9 @@
 #include "../Util/Window.h"
 #include "../Util/Util.h"
 
+
+//#include <glm/gtc/quaternion.hpp>
+
 static CSingleton_Input& inputSing = CSingleton_Input::getInstance();
 
 
@@ -26,9 +29,25 @@ glm::mat4& EditorCamera::GetViewMatrix()
     return m_viewMatrix;
 }
 
+EditorCameraTransform EditorCamera::GetTransform()
+{
+    return m_transform;
+}
+
+void EditorCamera::SetTransform(EditorCameraTransform transform)
+{
+    m_transform = transform;
+}
+
+
 glm::vec3 EditorCamera::GetCamPos()
 {
     return m_transform.position;
+}
+
+void EditorCamera::SetCamPos(glm::vec3 pos)
+{
+    m_transform.position = pos;
 }
 
 glm::vec3 EditorCamera::GetFront()
@@ -36,14 +55,29 @@ glm::vec3 EditorCamera::GetFront()
     return m_front;
 }
 
+void EditorCamera::SetFront(glm::vec3 front)
+{
+    m_front = front;
+}
+
 glm::vec3 EditorCamera::GetRight()
 {
     return m_right;
 }
 
+void EditorCamera::SetRight(glm::vec3 right)
+{
+    m_right = right;
+}
+
 glm::vec3 EditorCamera::GetUp()
 {
     return m_up;
+}
+
+void EditorCamera::SetUp(glm::vec3 up)
+{
+    m_up = up;
 }
 
 void EditorCamera::SetZOffset(float zOffset)
@@ -60,24 +94,22 @@ EditorCamera& EditorCamera::getInstance()
 
 void EditorCamera::Update(float dt)
 {
-    if (Torx::Engine::MODE == Torx::PLAY) 
+    if (Torx::Engine::MODE != Torx::EDITOR) 
     {
         return;
     }   
 
-    // Editor camera works similarly to blender's camera
-
-    static glm::vec3 rotationEuler;
-
     // middle mouse button to pan the camera
     if (inputSing.pressedKeys[MOUSE_MIDDLE] && !inputSing.pressedKeys[MOUSE_MIDDLE_SHIFT])
     {
-        rotationEuler.x += inputSing.mouseOffsetY * 0.1f;
-        rotationEuler.y += inputSing.mouseOffsetX * 0.1f;
-        rotationEuler.x = std::clamp(rotationEuler.x, -90.0f, 90.0f);
+        float pitchDelta = glm::radians(inputSing.mouseOffsetY * 0.1f);
+        float yawDelta = glm::radians(inputSing.mouseOffsetX * 0.1f);
+
+        glm::quat pitchQuat = glm::angleAxis(pitchDelta, glm::vec3(1.0f, 0.0f, 0.0f)); 
+        glm::quat yawQuat = glm::angleAxis(yawDelta, glm::vec3(0.0f, 1.0f, 0.0f));     
+       
+        m_transform.rotation = yawQuat * m_transform.rotation * pitchQuat;
     }
-  
-    m_transform.rotation = glm::quat(glm::radians(rotationEuler));
 
     glm::mat4 model = glm::translate(glm::mat4(1.0f), m_transform.position);
     glm::mat4 rotMatrix = glm::mat4_cast(m_transform.rotation);

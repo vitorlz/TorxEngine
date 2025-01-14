@@ -113,6 +113,11 @@ public:
 		return mEntityManager->isAlive(entity);
 	}
 
+	void ResetEntityIDs()
+	{
+		mEntityManager->ResetEntityIDs();
+	}
+
 private:
 	std::unique_ptr<ComponentManager> mComponentManager;
 	std::unique_ptr<EntityManager> mEntityManager;

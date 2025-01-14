@@ -88,6 +88,18 @@ public:
 		return false;
 	}
 
+	void ResetEntityIDs()
+	{
+
+		std::queue<Entity> empty;
+		std::swap(mAvailableEntities, empty);
+
+		for (Entity entity = 0; entity < MAX_ENTITIES; ++entity)
+		{
+			mAvailableEntities.push(entity);
+		}
+	}
+
 private:
 	// Queue of unused entity IDs
 	std::queue<Entity> mAvailableEntities{};

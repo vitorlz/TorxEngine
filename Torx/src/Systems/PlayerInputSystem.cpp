@@ -22,11 +22,11 @@ void PlayerInputSystem::Update(float deltaTime)
     // maybe make this change settings in the player component that has like playerForward, playerPrimaryFire.
 
 
-    if (Torx::Engine::MODE == Torx::EDITOR)
+    if (Torx::Engine::MODE != Torx::PLAY)
     {
         return;
     }
-    static glm::vec3 rotationEuler;
+   // static glm::vec3 rotationEuler;
 
     for (auto& entity : mEntities)
     {
@@ -37,13 +37,13 @@ void PlayerInputSystem::Update(float deltaTime)
 
         // change this later so that this whole function only updated if the engine is in play mode
 
-      
-        rotationEuler.x -= inputSing.mouseOffsetY * 0.05; 
-        rotationEuler.y -= inputSing.mouseOffsetX * 0.05;
-        rotationEuler.x = std::clamp(rotationEuler.x, -90.0f, 90.0f);
-        
+        float pitchDelta = glm::radians(-inputSing.mouseOffsetY * 0.05f);
+        float yawDelta = glm::radians(-inputSing.mouseOffsetX * 0.05f);
 
-        transform.rotation = glm::quat(glm::radians(rotationEuler));
+        glm::quat pitchQuat = glm::angleAxis(pitchDelta, glm::vec3(1.0f, 0.0f, 0.0f));
+        glm::quat yawQuat = glm::angleAxis(yawDelta, glm::vec3(0.0f, 1.0f, 0.0f));
+
+        transform.rotation = yawQuat * transform.rotation * pitchQuat;
 
         glm::mat4 model = glm::translate(glm::mat4(1.0f), transform.position);
         glm::mat4 rotMatrix = glm::mat4_cast(transform.rotation);

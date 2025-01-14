@@ -391,6 +391,7 @@ void UI::Update()
                     {
                         ecs.DestroyEntity(e);
                     }
+                    ecs.ResetEntityIDs();
                     ECSCore::UpdateSystems(0.0f);
                     Scene::LoadSceneFromJson(filePath);
                 }
@@ -831,7 +832,7 @@ void showEntityOptions(Entity entity, bool addingNewEntity)
         ecs.AddComponent<CTransform>(
             entity,
             CTransform{
-                .position = editorCamera.GetCamPos() + editorCamera.GetFront() * 2.0f,
+                .position = editorCamera.GetTransform().position + editorCamera.GetFront() * 2.0f,
                 .scale = glm::vec3(1.0f),
                 .rotation = glm::quat(),
             });
