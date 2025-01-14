@@ -23,13 +23,13 @@ public:
 	glm::vec3 GetRight();
 	glm::vec3 GetUp();
 
-	void SetFov(float fov);
+	void SetZOffset(float zOffset);
 
 	void Update(float dt);
 private:
 	EditorCamera();
 	EditorCameraTransform m_transform;
-	float m_fov;
+	float m_zOffset;
 	glm::mat4 m_viewMatrix;
 	glm::mat4 m_projection;
 	glm::vec3 m_front;

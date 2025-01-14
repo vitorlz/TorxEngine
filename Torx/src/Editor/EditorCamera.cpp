@@ -4,6 +4,7 @@
 #include <algorithm>
 #include "../include/Engine.h"
 #include "../Util/Window.h"
+#include "../Util/Util.h"
 
 static CSingleton_Input& inputSing = CSingleton_Input::getInstance();
 
@@ -11,7 +12,7 @@ static CSingleton_Input& inputSing = CSingleton_Input::getInstance();
 EditorCamera::EditorCamera()
     : m_viewMatrix(glm::mat4(1.0f)),
     m_projection(glm::perspective(glm::radians(45.0f), (float)Common::SCR_WIDTH / (float)Common::SCR_HEIGHT, 0.1f, 100.0f)),
-    m_fov(45.0f)
+    m_zOffset(0.0f)
 { 
 }
 
@@ -45,9 +46,9 @@ glm::vec3 EditorCamera::GetUp()
     return m_up;
 }
 
-void EditorCamera::SetFov(float fov)
+void EditorCamera::SetZOffset(float zOffset)
 {
-    m_fov = fov;
+     m_zOffset = zOffset;
 }
 
 EditorCamera& EditorCamera::getInstance()
@@ -64,9 +65,11 @@ void EditorCamera::Update(float dt)
         return;
     }   
 
+    // Editor camera works similarly to blender's camera
+
     static glm::vec3 rotationEuler;
 
-    
+    // middle mouse button to pan the camera
     if (inputSing.pressedKeys[MOUSE_MIDDLE] && !inputSing.pressedKeys[MOUSE_MIDDLE_SHIFT])
     {
         rotationEuler.x += inputSing.mouseOffsetY * 0.1f;
@@ -88,14 +91,21 @@ void EditorCamera::Update(float dt)
     m_up = cameraUp;
     m_front = cameraFront;
 
+    // middle mouse button + shift to move in the x and y axis
     if (inputSing.pressedKeys[MOUSE_MIDDLE_SHIFT])
     {
-
-        float sensitivity = 5.0f;
+        float sensitivity = 7.0f;
 
         m_transform.position += cameraUp * sensitivity * ((float)inputSing.mouseOffsetY / (float)Common::SCR_HEIGHT);
         m_transform.position -= cameraRight * sensitivity * ((float)inputSing.mouseOffsetX / (float)Common::SCR_WIDTH);
     }
+
+    // Scroll to move in z axis
+    float speed = 0.5f;
+    m_transform.position += cameraFront * speed * m_zOffset;
+    m_zOffset = 0;
+
+    std::cout << Util::vec3ToString(m_transform.position) << "\n";
 
     model = glm::mat4(1.0f);
     model = glm::translate(model, m_transform.position);
@@ -105,6 +115,6 @@ void EditorCamera::Update(float dt)
     m_viewMatrix = glm::inverse(model);
 
     Common::currentViewMatrix = m_viewMatrix;
-    Common::currentProjMatrix = glm::perspective(glm::radians(m_fov), (float)Common::SCR_WIDTH / (float)Common::SCR_HEIGHT, 0.1f, 100.0f);
+    Common::currentProjMatrix = glm::perspective(glm::radians(45.0f), (float)Common::SCR_WIDTH / (float)Common::SCR_HEIGHT, 0.1f, 100.0f);
     Common::currentCamPos = m_transform.position;
 }

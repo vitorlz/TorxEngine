@@ -128,15 +128,11 @@ void scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
 
 	EditorCamera& editorCamera = EditorCamera::getInstance();
 
-	static float fov = 45.0f;
+	float EditorCameraZOffset = 0.0f;
 	
-	fov -= (float)yoffset;
-	if (fov < 1.0f)
-		fov = 1.0f;
-	if (fov > 90.0f)
-		fov = 90.0f;
-
-	editorCamera.SetFov(fov);
+	EditorCameraZOffset += (float)yoffset;
+	
+	editorCamera.SetZOffset(EditorCameraZOffset);
 
 }
 
