@@ -69,7 +69,7 @@ bool Common::ssaoOn{ true };
 bool Common::showAO{ false };
 
 // -------------- TEMPORARY TEXT STUFF ---------------------------
-glm::vec3 Common::textColor{ 0.5f, 0.2f, 0.2f };
+glm::vec3 Common::textColor{ 0.7f };
 
 
 // -------------- CURRENT MATRICES --------------------------------

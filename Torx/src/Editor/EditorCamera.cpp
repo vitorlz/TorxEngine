@@ -82,7 +82,10 @@ void EditorCamera::SetUp(glm::vec3 up)
 
 void EditorCamera::SetZOffset(float zOffset)
 {
-     m_zOffset = zOffset;
+    if (!UI::hovering)
+    {
+        m_zOffset = zOffset;
+    }
 }
 
 EditorCamera& EditorCamera::getInstance()
@@ -133,9 +136,14 @@ void EditorCamera::Update(float dt)
     }
 
     // Scroll to move in z axis
-    float speed = 0.5f;
-    m_transform.position += cameraFront * speed * m_zOffset;
-    m_zOffset = 0;
+
+    if (!UI::hovering)
+    {
+        float speed = 0.5f;
+        m_transform.position += cameraFront * speed * m_zOffset;
+        m_zOffset = 0;
+    }
+    
 
     model = glm::mat4(1.0f);
     model = glm::translate(model, m_transform.position);

@@ -10,4 +10,5 @@ public:
 	void Terminate();
 	static bool isOpen;
 	static bool firstMouseUpdateAfterMenu;
+	static bool hovering;
 };

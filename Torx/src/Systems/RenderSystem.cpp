@@ -767,9 +767,6 @@ void RenderSystem::postProcessingPass()
     glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT);
 
-
-    
-    
     Shader& postProcessingShader = ShaderManager::GetShaderProgram("postProcessingShader");
     postProcessingShader.use();
     postProcessingShader.setBool("showNormals", Common::normalsDebug);
@@ -811,7 +808,7 @@ void RenderSystem::postProcessingPass()
 
 
     if (Common::bloomOn) {
-        glActiveTexture(GL_TEXTURE6);
+        glActiveTexture(GL_TEXTURE7);
         glBindTexture(GL_TEXTURE_2D, RenderingUtil::mPingPongBuffers[(Common::bloomKernelSize * 2) % 2 ? !Bloom::g_horizontal : Bloom::g_horizontal]);
     }
 
@@ -833,10 +830,7 @@ void RenderSystem::forwardRenderingPass()
     glBlitFramebuffer(0, 0, Common::SCR_WIDTH, Common::SCR_HEIGHT, 0, 0, Common::SCR_WIDTH, Common::SCR_HEIGHT, GL_DEPTH_BUFFER_BIT, GL_NEAREST);
 
     glEnable(GL_DEPTH_TEST);
-
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
-
-  
 
     if (Common::lightPosDebug)
     {
@@ -883,11 +877,8 @@ void RenderSystem::forwardRenderingPass()
     TextRendering texGyreCursor = AssetManager::GetTextFont("texGyreCursor");
     TextRendering arial = AssetManager::GetTextFont("arial");
 
-    texGyreCursor.RenderText(textShader, "Test text",
+    texGyreCursor.RenderText(textShader, Torx::Engine::MODE == Torx::EDITOR ? "Editor Mode" : "Play Mode",
         20.0f, 830.0f, 32.0f, 1.5f, Common::textColor);
-
-    arial.RenderText(textShader, "More test text",
-        20.0f, 750.0f, 32.0f, 1.5f, Common::textColor);
     
     glDepthMask(GL_TRUE);
 

@@ -29,6 +29,7 @@
 
 bool UI::isOpen{ true };
 bool UI::firstMouseUpdateAfterMenu{ false };
+bool UI::hovering{ false };
 
 void showComponents(Entity entity);
 void showEntityOptions(Entity entity, bool addingNewEntity);
@@ -58,7 +59,14 @@ void UI::NewFrame()
 
 void UI::Update() 
 {
+
+    bool menuWindowHovered =  false;
+    bool editorWindowHovered = false;
+
     ImGui::Begin("Menu");
+    menuWindowHovered = ImGui::IsWindowHovered();
+
+    std::cout << "hovering: " << hovering << "\n";
     ImGui::Shortcut(ImGuiKey_Tab, ImGuiInputFlags_None);
     
     
@@ -315,6 +323,7 @@ void UI::Update()
     if (Torx::Engine::MODE == Torx::EDITOR)
     {
         ImGui::Begin("Editor");
+        editorWindowHovered = ImGui::IsWindowHovered();
 
         static int selectedEntity{ -1 };
         static bool addingNewEntity{ false };
@@ -377,6 +386,15 @@ void UI::Update()
         ImGui::End();
     }
 
+    if (menuWindowHovered || editorWindowHovered)
+    {
+        hovering = true;
+    }
+    else 
+    {
+        hovering = false;
+    }
+
     if (ImGui::BeginMainMenuBar())
     {
 
@@ -406,14 +424,17 @@ void UI::Update()
             if (ImGui::MenuItem("Save as...")) 
             {
                 std::string filePath = FileDialogs::SaveFile("Json files (*.json)\0*.json\0");
-                Scene::SaveSceneToJson(filePath);
+
+                if (!filePath.empty())
+                {
+                    Scene::SaveSceneToJson(filePath);
+                }
             }
             ImGui::EndMenu();
         }
 
         ImGui::EndMainMenuBar();
     }
-
 
     ImGui::Render();
     ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
