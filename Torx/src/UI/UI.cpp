@@ -327,16 +327,11 @@ void UI::Update()
         static int selectedEntity{ -1 };
         static bool addingNewEntity{ false };
         static Entity newEntity;
-        static bool rayFired{ false };
-
-        if (!ImGuizmo::IsOver() && !ImGui::IsWindowHovered(ImGuiHoveredFlags_AnyWindow) && !ImGui::IsAnyItemHovered() && !addingNewEntity && inputSing.pressedKeys[MOUSE_RIGHT] && !rayFired)
+        
+        if (!ImGuizmo::IsOver() && !ImGui::IsWindowHovered(ImGuiHoveredFlags_AnyWindow) && !ImGui::IsAnyItemHovered() && !addingNewEntity && inputSing.rightMousePressed)
         {
             selectedEntity = Raycast::mouseRaycast();
-            rayFired = true;
-        }
-        else if (!inputSing.pressedKeys[MOUSE_RIGHT])
-        {
-            rayFired = false;
+      
         }
         
         if (selectedEntity >= 0 && ecs.isAlive(selectedEntity))
@@ -805,16 +800,13 @@ void showComponents(Entity entity)
                 }
             }
             static bool spectate = false;
-            bool spectateClicked = false;
             if (ImGui::Checkbox("Spectate", &spectate))
             {
-                spectateClicked = true;
+                Torx::Engine::MODE = spectate ? Torx::SPECTATE : Torx::EDITOR;
             }
 
-            if (spectateClicked && spectate && ecs.HasComponent<CTransform>(entity))
-            {
-                Torx::Engine::MODE = Torx::SPECTATE;
-
+            if (Torx::Engine::MODE == Torx::SPECTATE && ecs.HasComponent<CTransform>(entity))
+            {   
                 CTransform& transform = ecs.GetComponent<CTransform>(entity);
                 Common::currentProjMatrix = cameraComp.projection;
 
@@ -823,16 +815,7 @@ void showComponents(Entity entity)
 
                 Common::currentViewMatrix = inverse(model);
                 Common::currentCamPos = transform.position;
-
-                spectateClicked = false;
             }
-            else if (spectateClicked)
-            {
-                Torx::Engine::MODE = Torx::EDITOR;
-
-                spectateClicked = false;
-            }
-            
         }
         ImGui::SameLine();
         if (ImGui::Button("Delete##xx4"))

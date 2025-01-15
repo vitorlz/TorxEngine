@@ -16,7 +16,6 @@
 void PlayerInputSystem::Init() {}
 extern Coordinator ecs;
 static CSingleton_Input& inputSing = CSingleton_Input::getInstance();
-void flashlightLogic(CPlayer& player, CLight& light);
 
 void PlayerInputSystem::Update(float deltaTime)
 {
@@ -56,25 +55,25 @@ void PlayerInputSystem::Update(float deltaTime)
         glm::vec3 cameraUp = glm::normalize(glm::vec3(model[1]));
         glm::vec3 cameraFront = -glm::normalize(glm::vec3(model[2]));
 
-        if (inputSing.pressedKeys[W])
+        if (inputSing.keyDown[TORX_KEY_W])
             transform.position += cameraFront * velocity;
-        if (inputSing.pressedKeys[S])
+        if (inputSing.keyDown[TORX_KEY_S])
             transform.position -= cameraFront * velocity;
-        if (inputSing.pressedKeys[A])
+        if (inputSing.keyDown[TORX_KEY_A])
             transform.position -= cameraRight * velocity;
-        if (inputSing.pressedKeys[D])
+        if (inputSing.keyDown[TORX_KEY_D])
             transform.position += cameraRight * velocity;
-        if (inputSing.pressedKeys[SPACE])
+        if (inputSing.keyDown[TORX_KEY_SPACE])
             transform.position += glm::vec3(0, 1, 0) * velocity;
-        if (inputSing.pressedKeys[LEFT_CONTROL])
+        if (inputSing.keyDown[TORX_KEY_LEFT_CONTROL])
             transform.position -= glm::vec3(0, 1, 0) * velocity;
-        if (inputSing.pressedKeys[SHIFT_W])
+        if (inputSing.keyDown[TORX_KEY_LEFT_SHIFT] && inputSing.keyDown[TORX_KEY_W])
             transform.position += cameraFront * velocity * 2.0f;
-        if (inputSing.pressedKeys[SHIFT_S])
+        if (inputSing.keyDown[TORX_KEY_LEFT_SHIFT] && inputSing.keyDown[TORX_KEY_S])
             transform.position -= cameraFront * velocity * 2.0f;
-        if (inputSing.pressedKeys[SHIFT_A])
+        if (inputSing.keyDown[TORX_KEY_LEFT_SHIFT] && inputSing.keyDown[TORX_KEY_A])
             transform.position -= cameraRight * velocity * 2.0f;
-        if (inputSing.pressedKeys[SHIFT_D])
+        if (inputSing.keyDown[TORX_KEY_LEFT_SHIFT] && inputSing.keyDown[TORX_KEY_D])
             transform.position += cameraRight * velocity * 2.0f;
 
         model = glm::mat4(1.0f);
@@ -91,51 +90,9 @@ void PlayerInputSystem::Update(float deltaTime)
         player.right = cameraRight;
         player.up = cameraUp;
 
-        if (ecs.HasComponent<CLight>(entity))
-        {
-            auto& light = ecs.GetComponent<CLight>(entity);
-            flashlightLogic(player, light);    
-        }
-
         Common::currentViewMatrix = player.viewMatrix;
         Common::currentProjMatrix = cameraComp.projection;
         Common::currentCamPos = transform.position;
     }
 }
 
-float previousRadius;
-void flashlightLogic(CPlayer& player, CLight& light)
-{
-    static bool flashlightSwitch = player.flashlightOn ? false : true;
-
-    if (light.type == SPOT)
-    {
-        light.direction = player.front;
-    }
-    if (player.flashlightOn)
-    {
-        light.isDirty = true;
-    }
-    if (inputSing.pressedKeys[F])
-    {
-        if (!flashlightSwitch)
-        {
-            if (!player.flashlightOn)
-            {
-                light.radius = previousRadius;
-                player.flashlightOn = true;
-            }
-            else if (player.flashlightOn)
-            {
-                previousRadius = light.radius;
-                light.radius = 0.0f;
-                player.flashlightOn = false;
-            }
-            flashlightSwitch = true;
-        }
-    }
-    if (!inputSing.pressedKeys[F])
-    {
-        flashlightSwitch = false;
-    }
-}

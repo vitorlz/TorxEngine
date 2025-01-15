@@ -98,7 +98,7 @@ void EditorCamera::Update(float dt)
     }   
 
     // middle mouse button to pan the camera
-    if (inputSing.pressedKeys[MOUSE_MIDDLE] && !inputSing.pressedKeys[MOUSE_MIDDLE_SHIFT])
+    if (inputSing.middleMouseDown && !inputSing.keyDown[TORX_KEY_LEFT_SHIFT])
     {
         float pitchDelta = glm::radians(inputSing.mouseOffsetY * 0.1f);
         float yawDelta = glm::radians(inputSing.mouseOffsetX * 0.1f);
@@ -122,7 +122,7 @@ void EditorCamera::Update(float dt)
     m_front = cameraFront;
 
     // middle mouse button + shift to move in the x and y axis
-    if (inputSing.pressedKeys[MOUSE_MIDDLE_SHIFT])
+    if (inputSing.middleMouseDown && inputSing.keyDown[TORX_KEY_LEFT_SHIFT])
     {
         float sensitivity = 7.0f;
 

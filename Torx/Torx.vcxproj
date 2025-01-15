@@ -179,6 +179,7 @@
     <ClInclude Include="src\Core\System.hpp" />
     <ClInclude Include="src\Core\SystemManager.hpp" />
     <ClInclude Include="src\Core\Types.hpp" />
+    <ClInclude Include="src\Util\Keys.h" />
     <ClInclude Include="src\Util\ShaderManager.h" />
     <ClInclude Include="src\Util\TextureLoader.h" />
     <ClInclude Include="src\Util\Util.h" />

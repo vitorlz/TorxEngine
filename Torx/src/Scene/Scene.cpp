@@ -261,7 +261,6 @@ namespace Scene
 		SetEnvironmentMap(jsonData["config"]["environmentMap"].get<std::string>());
 		RenderingUtil::LoadNewEnvironmentMap(jsonData["config"]["environmentMap"].get<std::string>().c_str());
 		
-
 		// VXGI
 		if (jsonData["config"].contains("vxgi"))
 		{

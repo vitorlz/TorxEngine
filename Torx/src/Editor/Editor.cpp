@@ -99,11 +99,11 @@ namespace Editor
         model *= rotMatrix;
         model = glm::scale(model, transform.scale);
 
-        if (inputSing.pressedKeys[NUMBER_1])
+        if (inputSing.keyDown[TORX_KEY_G])
             currentGizmoOperation = ImGuizmo::TRANSLATE;
-        if (inputSing.pressedKeys[NUMBER_2])
+        if (inputSing.keyDown[TORX_KEY_R])
             currentGizmoOperation = ImGuizmo::ROTATE;
-        if (inputSing.pressedKeys[NUMBER_3]) 
+        if (inputSing.keyDown[TORX_KEY_S])
             currentGizmoOperation = ImGuizmo::SCALE;
 
         ImGuizmo::Manipulate(glm::value_ptr(Common::currentViewMatrix), glm::value_ptr(Common::currentProjMatrix), currentGizmoOperation, ImGuizmo::LOCAL, glm::value_ptr(model), NULL, useSnap ? snap.data() : NULL, boundSizing ? bounds : NULL, boundSizingSnap ? boundsSnap : NULL);
