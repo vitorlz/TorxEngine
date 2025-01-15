@@ -384,8 +384,6 @@ void RenderSystem::geometryPass()
     Shader& gBufferShader = ShaderManager::GetShaderProgram("gBufferShader");
     gBufferShader.use();
 
-    
-
     gBufferShader.setMat4("view", Common::currentViewMatrix);
     gBufferShader.setMat4("projection", Common::currentProjMatrix);
     gBufferShader.setMat4("dirLightSpaceMatrix", DirectionalShadows::g_lightSpaceMatrix);
@@ -877,7 +875,24 @@ void RenderSystem::forwardRenderingPass()
     TextRendering texGyreCursor = AssetManager::GetTextFont("texGyreCursor");
     TextRendering arial = AssetManager::GetTextFont("arial");
 
-    texGyreCursor.RenderText(textShader, Torx::Engine::MODE == Torx::EDITOR ? "Editor Mode" : "Play Mode",
+    std::string modeText;
+
+    if (Torx::Engine::MODE == Torx::EDITOR)
+    {
+        modeText = "Editor Mode";
+    }
+    else if (Torx::Engine::MODE == Torx::PLAY)
+    {
+        modeText = "Player Mode";
+    }
+    else if (Torx::Engine::MODE == Torx::SPECTATE)
+    {
+        modeText = "Spectator Mode";
+    }
+
+
+
+    texGyreCursor.RenderText(textShader, modeText,
         20.0f, 830.0f, 32.0f, 1.5f, Common::textColor);
     
     glDepthMask(GL_TRUE);

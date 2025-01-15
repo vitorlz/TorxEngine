@@ -14,6 +14,7 @@ namespace Torx
 	{
 		EDITOR,
 		PLAY,
+		SPECTATE,
 	};   
 
 	class Engine

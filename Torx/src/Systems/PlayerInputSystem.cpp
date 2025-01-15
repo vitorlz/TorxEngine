@@ -4,6 +4,7 @@
 #include "../Components/CTransform.h"
 #include "../Components/CPlayer.h"
 #include "../Components/CLight.h"
+#include "../Components/CCamera.h"
 #include "../Core/Coordinator.hpp"
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
@@ -30,9 +31,11 @@ void PlayerInputSystem::Update(float deltaTime)
 
     for (auto& entity : mEntities)
     {
+        
         auto& transform = ecs.GetComponent<CTransform>(entity);
         auto& player = ecs.GetComponent<CPlayer>(entity);
-
+        auto& cameraComp = ecs.GetComponent<CCamera>(entity);
+        
         float velocity = player.movementSpeed * deltaTime;
 
         // change this later so that this whole function only updated if the engine is in play mode
@@ -79,6 +82,8 @@ void PlayerInputSystem::Update(float deltaTime)
         rotMatrix = glm::mat4_cast(transform.rotation);
         model *= rotMatrix;
 
+        // maybe just do this before rendering? the view matrix is simply the inverse of the model matrix, we dont have to do it here.
+        // then we could just manipulate the model matrix of the player and get the view matrix "for free" by getting its inverse.
         glm::mat4 viewMatrix = glm::inverse(model);
 
         player.viewMatrix = viewMatrix;
@@ -93,7 +98,7 @@ void PlayerInputSystem::Update(float deltaTime)
         }
 
         Common::currentViewMatrix = player.viewMatrix;
-        Common::currentProjMatrix = player.projectionMatrix;
+        Common::currentProjMatrix = cameraComp.projection;
         Common::currentCamPos = transform.position;
     }
 }

@@ -63,15 +63,12 @@ void RenderingUtil::Init()
 
     RenderingUtil::CreateCubeVAO();
     RenderingUtil::CreateLightingFBO();
-    //RenderingUtil::CreateBlittingFBO();
     RenderingUtil::CreateDirLightShadowMapFBO(DirectionalShadows::g_resolution, DirectionalShadows::g_resolution);
     RenderingUtil::CreatePointLightShadowMapFBO(OmniShadows::g_resolution, OmniShadows::g_resolution);
     RenderingUtil::CreateScreenQuadVAO();
     RenderingUtil::CreatePingPongFBOs();
-
     RenderingUtil::CreateSSRFBO();
     RenderingUtil::CreateSSRBoxBlurFBO();
-
     RenderingUtil::CreateSSAOKernel(Common::ssaoKernelSize);
     RenderingUtil::CreateSSAONoise();
     RenderingUtil::CreateSSAONoiseTexture();

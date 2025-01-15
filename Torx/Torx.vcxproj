@@ -145,6 +145,7 @@
     <ClInclude Include="src\AssetLoading\AssetManager.h" />
     <ClInclude Include="src\AssetLoading\AssimpGLMHelpers.hpp" />
     <ClInclude Include="src\AssetLoading\Bone.h" />
+    <ClInclude Include="src\Components\CCamera.h" />
     <ClInclude Include="src\Components\CLight.h" />
     <ClInclude Include="src\AssetLoading\mesh.h" />
     <ClInclude Include="src\AssetLoading\model.h" />

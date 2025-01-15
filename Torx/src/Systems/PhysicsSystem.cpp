@@ -521,10 +521,10 @@ void PhysicsSystem::Update(float deltaTime)
 			{
 				btVector3 offset = Raycast::getMouseHitPointWorld() - entityHitRb->getCenterOfMassPosition() ;
 
-				std::cout << "entity hit: " << entityHit << "\n";
+				/*std::cout << "entity hit: " << entityHit << "\n";
 				std::cout << "Hitpoint World: " << Raycast::getMouseHitPointWorld().x() << ", " << Raycast::getMouseHitPointWorld().y() << ", " << Raycast::getMouseHitPointWorld().z() << "\n";
 				std::cout << "Center of mass position: " << entityHitRb->getCenterOfMassPosition().x() << ", " << entityHitRb->getCenterOfMassPosition().y() << ", " << entityHitRb->getCenterOfMassPosition().z() << "\n";
-				std::cout << "Offset: " << offset.x() << ", " << offset.y() << ", " << offset.z() << "\n";
+				std::cout << "Offset: " << offset.x() << ", " << offset.y() << ", " << offset.z() << "\n";*/
 
 			
 				entityHitRb->activate();

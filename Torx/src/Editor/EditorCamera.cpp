@@ -6,11 +6,7 @@
 #include "../Util/Window.h"
 #include "../Util/Util.h"
 
-
-//#include <glm/gtc/quaternion.hpp>
-
 static CSingleton_Input& inputSing = CSingleton_Input::getInstance();
-
 
 EditorCamera::EditorCamera()
     : m_viewMatrix(glm::mat4(1.0f)),
@@ -38,7 +34,6 @@ void EditorCamera::SetTransform(EditorCameraTransform transform)
 {
     m_transform = transform;
 }
-
 
 glm::vec3 EditorCamera::GetCamPos()
 {

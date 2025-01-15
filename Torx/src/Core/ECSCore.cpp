@@ -10,6 +10,7 @@
 #include "../Components/CRigidBody.h"
 #include "../Components/CMesh.h"
 #include "../Components/CAnimator.h"
+#include "../Components/CCamera.h"
           
 #include "../Systems/RenderSystem.h"
 #include "../Rendering/RenderingUtil.h"
@@ -35,6 +36,7 @@ void ECSCore::RegisterCoreComponentsAndSystems()
     ecs.RegisterComponent<CRigidBody>();
     ecs.RegisterComponent<CMesh>();
     ecs.RegisterComponent<CAnimator>();
+    ecs.RegisterComponent<CCamera>();
 
     auto renderSystem = ecs.RegisterSystem<RenderSystem>();
     {
@@ -70,6 +72,7 @@ void ECSCore::RegisterCoreComponentsAndSystems()
         Signature signature;
         signature.set(ecs.GetComponentType<CPlayer>());
         signature.set(ecs.GetComponentType<CTransform>());
+        signature.set(ecs.GetComponentType<CCamera>());
         ecs.SetSystemSignature<PlayerInputSystem>(signature);
     }
 

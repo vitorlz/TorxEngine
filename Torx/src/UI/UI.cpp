@@ -15,6 +15,7 @@
 #include "../Components/CRigidBody.h"
 #include "../Components/CMesh.h"
 #include "../Components/CAnimator.h"
+#include "../Components/CCamera.h"
 #include "../Physics/Raycast.h"
 #include "../Editor/Editor.h"
 #include "../Scene/Scene.h"
@@ -64,11 +65,9 @@ void UI::Update()
     bool editorWindowHovered = false;
 
     ImGui::Begin("Menu");
-    menuWindowHovered = ImGui::IsWindowHovered();
+    menuWindowHovered = ImGui::IsWindowHovered(ImGuiHoveredFlags_AllowWhenBlockedByPopup);
 
-    std::cout << "hovering: " << hovering << "\n";
     ImGui::Shortcut(ImGuiKey_Tab, ImGuiInputFlags_None);
-    
     
     static bool editorMode{ true };
     ImGui::Checkbox("Editor Mode", &editorMode);
@@ -323,7 +322,7 @@ void UI::Update()
     if (Torx::Engine::MODE == Torx::EDITOR)
     {
         ImGui::Begin("Editor");
-        editorWindowHovered = ImGui::IsWindowHovered();
+        editorWindowHovered = ImGui::IsWindowHovered(ImGuiHoveredFlags_RectOnly);
 
         static int selectedEntity{ -1 };
         static bool addingNewEntity{ false };
@@ -386,7 +385,7 @@ void UI::Update()
         ImGui::End();
     }
 
-    if (menuWindowHovered || editorWindowHovered)
+    if (menuWindowHovered || editorWindowHovered || ImGui::IsAnyItemHovered())
     {
         hovering = true;
     }
@@ -707,13 +706,148 @@ void showComponents(Entity entity)
         }
     }
 
+    if (ecs.HasComponent<CCamera>(entity))
+    {
+        if (ImGui::CollapsingHeader("Camera Component", ImGuiTreeNodeFlags_AllowItemOverlap))
+        {
+            static float fov = 45.0f;
+            static float near = 0.1f;
+            static float far = 100.0f;
+            static float left = -20;
+            static float right = 20;
+            static float bottom = -20;
+            static float top = 20;
+
+            bool justChanged = false;
+
+            CCamera& cameraComp = ecs.GetComponent<CCamera>(entity);
+
+            const char* items[] = { "Perspective", "Orthographic" };
+            static int item_selected_idx = 0;
+            const char* combo_preview_value = items[item_selected_idx];
+
+            if (ImGui::BeginCombo("Projection", combo_preview_value))
+            {
+                for (int n = 0; n < IM_ARRAYSIZE(items); n++)
+                {
+                    ImGui::PushID(n);
+                    const bool is_selected = (item_selected_idx == n);
+                    if (ImGui::Selectable(items[n], is_selected))
+                    {
+                        item_selected_idx = n;
+
+                        if (items[n] == "Perspective")
+                        {
+                            cameraComp.projType = PERSPECTIVE;
+                            justChanged = true;
+                        }
+                        if (items[n] == "Orthographic")
+                        {
+                            
+                            std::cout << "orthographic" << "\n";
+                            cameraComp.projType = ORTHO;
+                            justChanged = true;
+                        }
+                    }
+                    if (is_selected)
+                        ImGui::SetItemDefaultFocus();
+
+                    ImGui::PopID();
+                }
+                ImGui::EndCombo();
+            }
+
+            // ability to change the values here
+
+            if (cameraComp.projType == PERSPECTIVE)
+            {
+                if (justChanged)
+                {
+                   fov = 45.0f;
+                   near = 0.1f;
+                   far = 100.0f;
+                   cameraComp.projection = glm::perspective(glm::radians(fov), (float)Common::SCR_WIDTH / (float)Common::SCR_HEIGHT, near, far);
+                }
+                bool userInput = ImGui::InputFloat("Fov", &fov, 0.01f, 90.0f, "%.2f", ImGuiInputTextFlags_EnterReturnsTrue) ||
+                    ImGui::InputFloat("Near", &near, 0.01f, 5.0f, "%.2f", ImGuiInputTextFlags_EnterReturnsTrue) ||
+                    ImGui::InputFloat("Far", &far, 1.0f, 1000.0f, "%.2f", ImGuiInputTextFlags_EnterReturnsTrue);
+
+                if (userInput)
+                {
+                    std::cout << "fov: " << fov << "\n";
+                    cameraComp.projection = glm::perspective(glm::radians(fov), (float)Common::SCR_WIDTH / (float)Common::SCR_HEIGHT, near, far);
+                }
+            }
+            else if (cameraComp.projType == ORTHO)
+            {
+
+                if (justChanged)
+                {
+                    near = 0.1f;
+                    far = 100.0f;
+                    left = -20;
+                    right = 20;
+                    bottom = -20;
+                    top = 20;
+                    cameraComp.projection = glm::ortho(left, right, bottom, top, near, far);
+                }
+
+                bool userInput = ImGui::InputFloat("Left", &left, 0.01f, 90.0f, "%.2f", ImGuiInputTextFlags_EnterReturnsTrue) ||
+                    ImGui::InputFloat("Right", &right, 0.01f, 90.0f, "%.2f", ImGuiInputTextFlags_EnterReturnsTrue) ||
+                    ImGui::InputFloat("Bottom", &bottom, 0.01f, 90.0f, "%.2f", ImGuiInputTextFlags_EnterReturnsTrue) ||
+                    ImGui::InputFloat("Top", &top, 0.01f, 90.0f, "%.2f", ImGuiInputTextFlags_EnterReturnsTrue) ||
+                    ImGui::InputFloat("Near", &near, 0.01f, 5.0f, "%.2f", ImGuiInputTextFlags_EnterReturnsTrue) ||
+                    ImGui::InputFloat("Far", &far, 1.0f, 1000.0f, "%.2f", ImGuiInputTextFlags_EnterReturnsTrue);
+
+                if (userInput)
+                {
+                    cameraComp.projection = glm::ortho(left, right, bottom, top, near, far);
+                }
+            }
+            static bool spectate = false;
+            bool spectateClicked = false;
+            if (ImGui::Checkbox("Spectate", &spectate))
+            {
+                spectateClicked = true;
+            }
+
+            if (spectateClicked && spectate && ecs.HasComponent<CTransform>(entity))
+            {
+                Torx::Engine::MODE = Torx::SPECTATE;
+
+                CTransform& transform = ecs.GetComponent<CTransform>(entity);
+                Common::currentProjMatrix = cameraComp.projection;
+
+                glm::mat4 model = glm::translate(glm::mat4(1.0f), transform.position);
+                model = model * glm::mat4_cast(transform.rotation);
+
+                Common::currentViewMatrix = inverse(model);
+                Common::currentCamPos = transform.position;
+
+                spectateClicked = false;
+            }
+            else if (spectateClicked)
+            {
+                Torx::Engine::MODE = Torx::EDITOR;
+
+                spectateClicked = false;
+            }
+            
+        }
+        ImGui::SameLine();
+        if (ImGui::Button("Delete##xx4"))
+        {
+            ecs.RemoveComponent<CCamera>(entity);
+        }
+    }
+
 }
 
 void showEntityOptions(Entity entity, bool addingNewEntity)
 {
 
     static int selectedComponent = -1;
-    const char* singleChoiceComponents[] = { "Transform", "Player"};
+    const char* singleChoiceComponents[] = { "Transform", "Player", "Camera"};
     const char* multipleChoiceComponents[] = { "Mesh", "Model", "Rigid body", "Light"};
 
     if (ImGui::Button("Add Component"))
@@ -873,6 +1007,25 @@ void showEntityOptions(Entity entity, bool addingNewEntity)
   
         selectedComponent = -1;
     }
+    else if (singleChoiceComponents[selectedComponent] == "Camera" && !ecs.HasComponent<CCamera>(entity))
+    {
+
+        std::cout << "camera selected";
+
+        // add camera with some default values here.
+
+        ecs.AddComponent<CCamera>(
+            entity,
+            CCamera{
+               .projType = PERSPECTIVE,
+               .projection = glm::perspective(glm::radians(45.0f), (float)Common::SCR_WIDTH / (float)Common::SCR_HEIGHT, 0.01f,  100.0f)
+            });
+
+      
+
+        selectedComponent = -1;
+    }
+
 
 
     if (!addingNewEntity)

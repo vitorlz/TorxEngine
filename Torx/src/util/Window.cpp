@@ -84,16 +84,19 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 	if (key == GLFW_KEY_TAB && action == GLFW_PRESS) 
 	{
 
-		if (Torx::Engine::MODE == Torx::EDITOR)
+		if (Torx::Engine::MODE != Torx::SPECTATE)
 		{
-			Torx::Engine::MODE = Torx::PLAY;
-		}
-		else
-		{
-			Torx::Engine::MODE = Torx::EDITOR;
+			if (Torx::Engine::MODE == Torx::EDITOR)
+			{
+				Torx::Engine::MODE = Torx::PLAY;
+			}
+			else
+			{
+				Torx::Engine::MODE = Torx::EDITOR;
 
+			}
 		}
-		
+
 		UI::firstMouseUpdateAfterMenu = true;
 		if (Torx::Engine::MODE == Torx::PLAY)
 		{
