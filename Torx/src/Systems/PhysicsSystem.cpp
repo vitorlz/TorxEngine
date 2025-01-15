@@ -234,9 +234,14 @@ void PhysicsSystem::Update(float deltaTime)
 	{
 		return;
 	}
+	
 
-	dynamicsWorld->stepSimulation(deltaTime, 20, 1.0f / 165.0f);
-
+	if (Torx::Engine::MODE == Torx::PLAY)
+	{
+		dynamicsWorld->stepSimulation(deltaTime, 20, 1.0f / 165.0f);
+	}
+	
+	// Check for deleted rigidbodies
 	if (mEntities.size() < dynamicsWorld->getNumCollisionObjects())
 	{
 		for (int i = dynamicsWorld->getNumCollisionObjects() - 1; i >= 0; i--)
@@ -259,6 +264,8 @@ void PhysicsSystem::Update(float deltaTime)
 		}
 	}
 
+
+	// Check for new rigidbodies
 	if (mEntities.size() > dynamicsWorld->getNumCollisionObjects())
 	{
 		
@@ -335,8 +342,6 @@ void PhysicsSystem::Update(float deltaTime)
 						auto& meshComponent = ecs.GetComponent<CMesh>(newEntity);
 
 						btConvexHullShape* convexHullShape = new btConvexHullShape();
-
-
 
 						for (const Vertex& vertex : meshComponent.mesh.vertices) {
 							convexHullShape->addPoint(btVector3(vertex.Position.x, vertex.Position.y, vertex.Position.z), false);
@@ -454,6 +459,7 @@ void PhysicsSystem::Update(float deltaTime)
 		}
 	}
 
+	// update physics position based if we change the entity's position using the guizmo
 	for (const auto& entity : mEntities)
 	{
 		auto& rigidBody = ecs.GetComponent<CRigidBody>(entity);
@@ -480,6 +486,7 @@ void PhysicsSystem::Update(float deltaTime)
 
 			rigidBody.body->getMotionState()->setWorldTransform(physicsTransform);
 			rigidBody.body->setWorldTransform(physicsTransform);
+			rigidBody.body->activate();
 
 			dynamicsWorld->updateSingleAabb(rigidBody.body);
 
@@ -504,39 +511,42 @@ void PhysicsSystem::Update(float deltaTime)
 	}
 
 	CSingleton_Input& inputSing = CSingleton_Input::getInstance();
+	
+	// Useful for firing bullets later
 
-	static bool shotFired{ false };
-	if (Torx::Engine::MODE == Torx::EDITOR)
-	{
-		if (inputSing.pressedKeys[MOUSE_LEFT] && !shotFired)
-		{
-			int entityHit = Raycast::mouseRaycast();
+	//static bool shotFired{ false };
+	//if (Torx::Engine::MODE == Torx::EDITOR)
+	//{
+	//	if (inputSing.pressedKeys[MOUSE_LEFT] && Common::usingGuizmo)
+	//	{
+	//		int entityHit = Raycast::mouseRaycast();
 
-			glm::vec3 mouseRayDir = glm::normalize(Raycast::getMouseRayDir());
-			shotFired = true;
-			//std::cout << Util::vec3ToString(mouseRayDir);
-			btRigidBody* entityHitRb = ecs.GetComponent<CRigidBody>(entityHit).body;
 
-			if (entityHitRb)
-			{
-				btVector3 offset = Raycast::getMouseHitPointWorld() - entityHitRb->getCenterOfMassPosition() ;
+	//		glm::vec3 mouseRayDir = glm::normalize(Raycast::getMouseRayDir());
+	//		shotFired = true;
+	//		//std::cout << Util::vec3ToString(mouseRayDir);
+	//		btRigidBody* entityHitRb = ecs.GetComponent<CRigidBody>(entityHit).body;
 
-				/*std::cout << "entity hit: " << entityHit << "\n";
-				std::cout << "Hitpoint World: " << Raycast::getMouseHitPointWorld().x() << ", " << Raycast::getMouseHitPointWorld().y() << ", " << Raycast::getMouseHitPointWorld().z() << "\n";
-				std::cout << "Center of mass position: " << entityHitRb->getCenterOfMassPosition().x() << ", " << entityHitRb->getCenterOfMassPosition().y() << ", " << entityHitRb->getCenterOfMassPosition().z() << "\n";
-				std::cout << "Offset: " << offset.x() << ", " << offset.y() << ", " << offset.z() << "\n";*/
+	//		if (entityHitRb)
+	//		{
+	//			btVector3 offset = Raycast::getMouseHitPointWorld() - entityHitRb->getCenterOfMassPosition() ;
 
-			
-				entityHitRb->activate();
-				entityHitRb->applyImpulse(btVector3(mouseRayDir.x, mouseRayDir.y, mouseRayDir.z) * 2, offset);
-			}
-			
-		}
-		else if (!inputSing.pressedKeys[MOUSE_RIGHT])
-		{
-			shotFired = false;
-		}
-	}
+	//			std::cout << "entity hit: " << entityHit << "\n";
+	//			std::cout << "Hitpoint World: " << Raycast::getMouseHitPointWorld().x() << ", " << Raycast::getMouseHitPointWorld().y() << ", " << Raycast::getMouseHitPointWorld().z() << "\n";
+	//			std::cout << "Center of mass position: " << entityHitRb->getCenterOfMassPosition().x() << ", " << entityHitRb->getCenterOfMassPosition().y() << ", " << entityHitRb->getCenterOfMassPosition().z() << "\n";
+	//			std::cout << "Offset: " << offset.x() << ", " << offset.y() << ", " << offset.z() << "\n";
+
+	//		
+	//			entityHitRb->activate();
+	//			entityHitRb->applyImpulse(btVector3(mouseRayDir.x, mouseRayDir.y, mouseRayDir.z) * 2, offset);
+	//		}
+	//		
+	//	}
+	//	else if (!inputSing.pressedKeys[MOUSE_RIGHT])
+	//	{
+	//		shotFired = false;
+	//	}
+	//}
 
 	if (Common::bulletLinesDebug)
 	{
