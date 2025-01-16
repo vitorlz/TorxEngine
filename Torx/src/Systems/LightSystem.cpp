@@ -104,7 +104,7 @@ void LightSystem::Update(float deltaTime)
 			if (!mEntities.contains(pair.first))
 			{
 				entitiesDeleted.push_back(pair.first);
-				std::cout << "Light deleted :" << pair.first << "\n";
+				//std::cout << "Light deleted :" << pair.first << "\n";
 			}
 		}
 
@@ -116,6 +116,13 @@ void LightSystem::Update(float deltaTime)
 			glNamedBufferSubData(mSsbo, indexOfDeletedLight * sizeof(Light), sizeof(Light), (const void*)&emptyLight);
 
 			// shift lights that had an index greater than the deleted light backwards.
+
+			std::cout << "Entity to light index map before shift and deletion: " << "\n";
+			for (auto& pair : EntityToLightIndexMap)
+			{
+				std::cout << "Entity: " << pair.first << " index: " << pair.second << "\n";
+			}
+
 			for (Entity e : mEntities)
 			{
 				if (EntityToLightIndexMap[e] > indexOfDeletedLight)
@@ -127,6 +134,12 @@ void LightSystem::Update(float deltaTime)
 			EntityToLightIndexMap.erase(EntityToLightIndexMap.find(deletedEntity));
 			EntityToLightMap.erase(EntityToLightMap.find(deletedEntity));
 			mLightIndex--;
+
+			std::cout << "Entity to light index map after shift and deletion: " << "\n";
+			for (auto& pair : EntityToLightIndexMap)
+			{
+				std::cout << "Entity: " << pair.first << " index: " << pair.second << "\n";
+			}
 
 			for (Entity entity : mEntities)
 			{
@@ -198,8 +211,6 @@ void LightSystem::Update(float deltaTime)
 
 		if (light.isDirty) 
 		{	
-
-			
 			auto& transform = ecs.GetComponent<CTransform>(entity);
 
 			if (light.type == SPOT)

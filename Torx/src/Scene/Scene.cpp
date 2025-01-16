@@ -177,7 +177,6 @@ namespace Scene
 		}
 	}
 
-
 	void LoadSceneFromJson(const std::string& path)
 	{
 		std::cout << "Loading scene..." << "\n";
@@ -405,7 +404,6 @@ namespace Scene
 		}
 		return jsonMat;
 	}
-
 }
 
 

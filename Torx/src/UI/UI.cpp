@@ -36,7 +36,6 @@ bool UI::hovering{ false };
 
 void showComponents(Entity entity);
 void showEntityOptions(Entity entity, bool addingNewEntity);
-
 extern Coordinator ecs;
 
 Entity playerEntity;
@@ -60,6 +59,7 @@ void UI::NewFrame()
     ImGuizmo::BeginFrame();
 }
 
+Entity addingFromEntityList;
 void UI::Update() 
 {
 
@@ -84,7 +84,6 @@ void UI::Update()
         editorMode = false;
     }
    
-
     CSingleton_Input& inputSing = CSingleton_Input::getInstance();
 
     if (ImGui::TreeNode("Stats"))
@@ -172,9 +171,7 @@ void UI::Update()
     }
 
     if (ImGui::TreeNode("Environment Maps"))
-    {
-   
-       
+    { 
         if (ImGui::BeginCombo("##xx", "Select an environment map"))
         {
             std::vector<std::string> envMaps;
@@ -328,7 +325,6 @@ void UI::Update()
         if (!ImGuizmo::IsOver() && !ImGui::IsWindowHovered(ImGuiHoveredFlags_AnyWindow) && !ImGui::IsAnyItemHovered() && !addingNewEntity && inputSing.rightMousePressed)
         {
             selectedEntity = Raycast::mouseRaycast();
-      
         }
         
         if (selectedEntity >= 0 && ecs.isAlive(selectedEntity))
@@ -630,7 +626,7 @@ void showComponents(Entity entity)
 
         ImGui::SameLine();
         static bool dont_ask_me_next_time = false;
-        if (ImGui::Button("Delete##xx2"))
+        if (ImGui::Button("Delete##xx5"))
         {
 
             if (ecs.HasComponent<CRigidBody>(entity))
@@ -692,7 +688,7 @@ void showComponents(Entity entity)
             ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
         }
         ImGui::SameLine();
-        if (ImGui::Button("Delete##xx3"))
+        if (ImGui::Button("Delete##xx6"))
         {
             ecs.RemoveComponent<CAnimator>(entity);
         }
@@ -764,7 +760,6 @@ void showComponents(Entity entity)
             }
             else if (cameraComp.projType == ORTHO)
             {
-
                 if (justChanged)
                 {
                     cameraComp.near = 0.1f;
@@ -807,7 +802,7 @@ void showComponents(Entity entity)
             }
         }
         ImGui::SameLine();
-        if (ImGui::Button("Delete##xx4"))
+        if (ImGui::Button("Delete##xx7"))
         {
             ecs.RemoveComponent<CCamera>(entity);
         }
@@ -817,7 +812,6 @@ void showComponents(Entity entity)
 
 void showEntityOptions(Entity entity, bool addingNewEntity)
 {
-
     static int selectedComponent = -1;
     const char* singleChoiceComponents[] = { "Transform", "Player", "Camera"};
     const char* multipleChoiceComponents[] = { "Mesh", "Model", "Rigid body", "Light"};
@@ -828,14 +822,7 @@ void showEntityOptions(Entity entity, bool addingNewEntity)
     if (ImGui::BeginPopup("my_select_popup"))
     {
         ImGui::SeparatorText("Select a component");
-        for (int i = 0; i < IM_ARRAYSIZE(singleChoiceComponents); i++)
-        {
-            if (ImGui::Selectable(singleChoiceComponents[i]))
-            {
-                selectedComponent = i;
-            }       
-        }
-
+ 
         for (int i = 0; i < IM_ARRAYSIZE(multipleChoiceComponents); i++)
         {
             if (ImGui::BeginMenu(multipleChoiceComponents[i]))
@@ -949,61 +936,62 @@ void showEntityOptions(Entity entity, bool addingNewEntity)
             }
         }
 
+        for (int i = 0; i < IM_ARRAYSIZE(singleChoiceComponents); i++)
+        {
+            if (ImGui::Selectable(singleChoiceComponents[i]))
+            {
+                if (singleChoiceComponents[i] == "Transform" && !ecs.HasComponent<CTransform>(entity))
+                {
+
+                    EditorCamera& editorCamera = EditorCamera::getInstance();
+
+                    ecs.AddComponent<CTransform>(
+                        entity,
+                        CTransform{
+                            .position = editorCamera.GetTransform().position + editorCamera.GetFront() * 2.0f,
+                            .scale = glm::vec3(1.0f),
+                            .rotation = glm::quat(1.0f, 0.0f, 0.0f, 0.0f),
+                        });
+
+                    selectedComponent = -1;
+                }
+                else if (singleChoiceComponents[i] == "Player" && !ecs.HasComponent<CPlayer>(entity))
+                {
+
+                    ecs.AddComponent<CPlayer>(
+                        entity,
+                        CPlayer{
+                            .flashlightOn = false,
+                            .movementSpeed = 3.0f,
+                        });
+
+                }
+                else if (singleChoiceComponents[i] == "Camera" && !ecs.HasComponent<CCamera>(entity))
+                {
+
+                    std::cout << "adding camera to entity " << entity << "\n";
+                    std::cout << "camera selected";
+
+                    // add camera with some default values here.
+                    ecs.AddComponent<CCamera>(
+                        entity,
+                        CCamera{
+                           .projType = PERSPECTIVE,
+                           .projection = glm::perspective(glm::radians(45.0f), (float)Common::SCR_WIDTH / (float)Common::SCR_HEIGHT, 0.01f,  100.0f),
+                           .fov = 45.0f,
+                           .near = 0.1f,
+                           .far = 100.0f,
+                           .left = -20,
+                           .right = 20,
+                           .bottom = -20,
+                           .top = 20,
+                        });
+                }
+            }
+        }
+
         ImGui::EndPopup();
     }
-    else if (singleChoiceComponents[selectedComponent] == "Transform" && !ecs.HasComponent<CTransform>(entity))
-    {
-
-        EditorCamera& editorCamera = EditorCamera::getInstance();
-      
-        ecs.AddComponent<CTransform>(
-            entity,
-            CTransform{
-                .position = editorCamera.GetTransform().position + editorCamera.GetFront() * 2.0f,
-                .scale = glm::vec3(1.0f),
-                .rotation = glm::quat(),
-            });
-
-        selectedComponent = -1;
-    }
-    
-    else if (singleChoiceComponents[selectedComponent] == "Player" && !ecs.HasComponent<CPlayer>(entity))
-    {
-
-         ecs.AddComponent<CPlayer>(
-                entity,
-                CPlayer{
-                    .flashlightOn = false,
-                    .movementSpeed = 3.0f,
-                });
-  
-        selectedComponent = -1;
-    }
-    else if (singleChoiceComponents[selectedComponent] == "Camera" && !ecs.HasComponent<CCamera>(entity))
-    {
-
-        std::cout << "camera selected";
-
-        // add camera with some default values here.
-
-        ecs.AddComponent<CCamera>(
-            entity,
-            CCamera{
-               .projType = PERSPECTIVE,
-               .projection = glm::perspective(glm::radians(45.0f), (float)Common::SCR_WIDTH / (float)Common::SCR_HEIGHT, 0.01f,  100.0f),
-               .fov = 45.0f,
-               .near = 0.1f,
-               .far = 100.0f,
-               .left = -20,
-               .right = 20,
-               .bottom = -20,
-               .top = 20,
-            });
-
-        selectedComponent = -1;
-    }
-
-
 
     if (!addingNewEntity)
     {
