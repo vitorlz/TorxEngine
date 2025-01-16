@@ -115,18 +115,16 @@ void LightSystem::Update(float deltaTime)
 			int indexOfDeletedLight = EntityToLightIndexMap[deletedEntity];
 			glNamedBufferSubData(mSsbo, indexOfDeletedLight * sizeof(Light), sizeof(Light), (const void*)&emptyLight);
 
-			// shift lights that had an index greater than the deleted light backwards.
-
-			std::cout << "Entity to light index map before shift and deletion: " << "\n";
-			for (auto& pair : EntityToLightIndexMap)
-			{
-				std::cout << "Entity: " << pair.first << " index: " << pair.second << "\n";
-			}
-
+			// shift lights that have an index greater than the deleted light backwards both in the ssbo and the 
+			// EntityToLightIndexMap. We do that so when the lights are updated they are written to the correct
+			// position in the buffer.
 			for (Entity e : mEntities)
 			{
+				auto& light = ecs.GetComponent<CLight>(e);
+				light.isDirty = true;
 				if (EntityToLightIndexMap[e] > indexOfDeletedLight)
 				{
+					glNamedBufferSubData(mSsbo, EntityToLightIndexMap[e] * sizeof(Light), sizeof(Light), (const void*)&emptyLight);
 					EntityToLightIndexMap[e] -= 1;
 				}
 			}
@@ -134,18 +132,6 @@ void LightSystem::Update(float deltaTime)
 			EntityToLightIndexMap.erase(EntityToLightIndexMap.find(deletedEntity));
 			EntityToLightMap.erase(EntityToLightMap.find(deletedEntity));
 			mLightIndex--;
-
-			std::cout << "Entity to light index map after shift and deletion: " << "\n";
-			for (auto& pair : EntityToLightIndexMap)
-			{
-				std::cout << "Entity: " << pair.first << " index: " << pair.second << "\n";
-			}
-
-			for (Entity entity : mEntities)
-			{
-				auto& light = ecs.GetComponent<CLight>(entity);
-				light.isDirty = true;
-			}
 		}
 	}
 
