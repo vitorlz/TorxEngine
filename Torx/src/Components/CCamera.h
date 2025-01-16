@@ -11,9 +11,11 @@ struct CCamera
 {
 	ProjType projType;
 	glm::mat4 projection;
-	//float fov;
-	//float far;
-	//float near;
-	//float width;
-	//float height;
+	float fov;
+	float near;
+	float far;
+	float left;
+	float right;
+	float bottom;
+	float top;
 };

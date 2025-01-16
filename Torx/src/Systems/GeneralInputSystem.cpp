@@ -13,7 +13,6 @@ extern Coordinator ecs;
 
 static GLFWwindow* window{};
 
-
 void GeneralInputSystem::Init() 
 {
 	CSingleton_Input& inputSing = CSingleton_Input::getInstance();

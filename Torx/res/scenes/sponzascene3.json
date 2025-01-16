@@ -1,0 +1,238 @@
+{
+    "config": {
+        "environmentMap": "rogland_clear_night_2k.hdr",
+        "ssao": {
+            "ssaoKernelSize": 64,
+            "ssaoOn": true,
+            "ssaoPower": 1.0,
+            "ssaoRadius": 0.5
+        },
+        "ssr": {
+            "ssrMaxBlurDistance": 10.90999984741211,
+            "ssrMaxDistance": 15.0,
+            "ssrResolution": 0.3240000009536743,
+            "ssrSpecularBias": 1.0,
+            "ssrSteps": 8,
+            "ssrThickness": 0.6359999775886536
+        },
+        "vxgi": {
+            "diffuseConeSpread": 5.0,
+            "specularConeMaxDistance": 1.0,
+            "specularConeOriginOffset": 0.800000011920929,
+            "specularStepSizeMultiplier": 1.0,
+            "voxelGridDimensions": 64,
+            "voxelizationAreaSize": 12.0,
+            "vxSpecularBias": 1.0,
+            "vxgi": true
+        }
+    },
+    "editor": {
+        "editorCamera": {
+            "transform": {
+                "position": [
+                    -0.1064860001206398,
+                    2.3324079513549805,
+                    -6.127353668212891
+                ],
+                "rotation": [
+                    -0.0033413018099963665,
+                    0.0010118989739567041,
+                    -0.957061767578125,
+                    -0.2898654639720917
+                ]
+            }
+        }
+    },
+    "entities": [
+        {
+            "components": {
+                "camera": {
+                    "bottom": -20.0,
+                    "far": 100.0,
+                    "fov": 90.0,
+                    "left": -20.0,
+                    "near": 1.0,
+                    "projType": "perspective",
+                    "projection": [
+                        0.5625,
+                        0.0,
+                        0.0,
+                        0.0,
+                        0.0,
+                        1.0,
+                        0.0,
+                        0.0,
+                        0.0,
+                        0.0,
+                        -1.0202020406723022,
+                        -1.0,
+                        0.0,
+                        0.0,
+                        -2.0202019214630127,
+                        0.0
+                    ],
+                    "right": 20.0,
+                    "top": 20.0
+                },
+                "light": {
+                    "color": [
+                        1.0,
+                        1.0,
+                        1.0
+                    ],
+                    "direction": [
+                        -0.05803370475769043,
+                        0.38187751173973083,
+                        0.9223890900611877
+                    ],
+                    "innerCutoff": 12.5,
+                    "isDirty": true,
+                    "offset": [
+                        0.0,
+                        0.0,
+                        0.0
+                    ],
+                    "outerCutoff": 17.5,
+                    "radius": 0.0,
+                    "shadowCaster": false,
+                    "strength": 1.0,
+                    "type": 2
+                },
+                "player": {
+                    "flashlightOn": false,
+                    "movementSpeed": 3.0
+                },
+                "transform": {
+                    "position": [
+                        0.2926011383533478,
+                        1.862095832824707,
+                        -2.4744656085968018
+                    ],
+                    "rotation": [
+                        0.010905859991908073,
+                        -0.00017132496577687562,
+                        -0.9998154640197754,
+                        -0.015706323087215424
+                    ],
+                    "scale": [
+                        0.0,
+                        0.0,
+                        0.0
+                    ]
+                }
+            },
+            "id": 0
+        },
+        {
+            "components": {
+                "model": {
+                    "hasAOTexture": true,
+                    "modelName": "sponza"
+                },
+                "rigidbody": {
+                    "mass": 0.0
+                },
+                "transform": {
+                    "position": [
+                        0.0,
+                        0.0,
+                        0.0
+                    ],
+                    "rotation": [
+                        -0.7071068286895752,
+                        -6.181724643283815e-08,
+                        0.7071068286895752,
+                        -6.181724643283815e-08
+                    ],
+                    "scale": [
+                        1.0,
+                        1.0,
+                        1.0
+                    ]
+                }
+            },
+            "id": 1
+        },
+        {
+            "components": {
+                "light": {
+                    "color": [
+                        1.0,
+                        1.0,
+                        1.0
+                    ],
+                    "direction": [
+                        0.0,
+                        0.0,
+                        0.0
+                    ],
+                    "innerCutoff": 0.0,
+                    "isDirty": false,
+                    "offset": [
+                        0.0,
+                        0.0,
+                        0.0
+                    ],
+                    "outerCutoff": 0.0,
+                    "radius": 0.0,
+                    "shadowCaster": true,
+                    "strength": 14.039999961853027,
+                    "type": 0
+                },
+                "transform": {
+                    "position": [
+                        0.22389206290245056,
+                        13.868185043334961,
+                        -2.7295424938201904
+                    ],
+                    "rotation": [
+                        1.0,
+                        0.0,
+                        0.0,
+                        0.0
+                    ],
+                    "scale": [
+                        1.0,
+                        1.0,
+                        1.0
+                    ]
+                }
+            },
+            "id": 2
+        },
+        {
+            "components": {
+                "mesh": {
+                    "meshType": "cube",
+                    "texture": "older-wood-flooring",
+                    "textureScaling": [
+                        13.182999610900879,
+                        13.182999610900879
+                    ]
+                },
+                "rigidbody": {
+                    "mass": 0.0
+                },
+                "transform": {
+                    "position": [
+                        0.8007745742797852,
+                        -0.802629828453064,
+                        -5.978413105010986
+                    ],
+                    "rotation": [
+                        1.0,
+                        0.0,
+                        0.0,
+                        0.0
+                    ],
+                    "scale": [
+                        21.897449493408203,
+                        1.6332709789276123,
+                        43.329471588134766
+                    ]
+                }
+            },
+            "id": 3
+        }
+    ]
+}

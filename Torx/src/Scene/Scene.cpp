@@ -11,6 +11,7 @@
 #include "../Components/CPlayer.h"
 #include "../Components/CRigidBody.h"
 #include "../Components/CMesh.h"
+#include "../Components/CCamera.h"
 #include "../Util/Util.h"
 #include "../AssetLoading/AssetManager.h"
 #include "../Rendering/RenderingUtil.h"
@@ -20,10 +21,11 @@ extern Coordinator ecs;
 
 namespace Scene
 {
-
 	glm::vec2 jsonToVec2(nlohmann::json json);
 	glm::vec3 jsonToVec3(nlohmann::json json);
 	glm::quat jsonToQuat(nlohmann::json json);
+	glm::mat4 jsonToMat4(const nlohmann::json& jsonMat);
+	nlohmann::json mat4ToJson(const glm::mat4& mat);
 
 	std::string environmentMap;
 
@@ -101,6 +103,29 @@ namespace Scene
 				e["components"]["player"]["flashlightOn"] = player.flashlightOn;
 				e["components"]["player"]["movementSpeed"] = player.movementSpeed;
 			}
+			
+			if (ecs.HasComponent<CCamera>(entity))
+			{
+				const auto& camera = ecs.GetComponent<CCamera>(entity);
+
+				if (camera.projType == PERSPECTIVE)
+				{
+					e["components"]["camera"]["projType"] = "perspective";
+				}
+				else if (camera.projType == ORTHO)
+				{
+					e["components"]["camera"]["projType"] = "orthographic";
+				}
+
+				e["components"]["camera"]["projection"] = mat4ToJson(camera.projection);
+				e["components"]["camera"]["fov"] = camera.fov;
+				e["components"]["camera"]["near"] = camera.near;
+				e["components"]["camera"]["far"] = camera.far;
+				e["components"]["camera"]["left"] = camera.left;
+				e["components"]["camera"]["right"] = camera.right;
+				e["components"]["camera"]["bottom"] = camera.bottom;
+				e["components"]["camera"]["top"] = camera.top;
+			}
 
 			json["entities"].push_back(e);
 		}
@@ -148,6 +173,7 @@ namespace Scene
 		{
 			o << json.dump(4);
 			o.close();
+			g_currentScenePath = path;
 		}
 	}
 
@@ -255,6 +281,33 @@ namespace Scene
 						.movementSpeed = e["components"]["player"]["movementSpeed"].get<float>(),
 					});
 			}
+
+			if (e["components"].contains("camera"))
+			{
+				ProjType cameraProjType;
+				if (e["components"]["camera"]["projType"] == "perspective")
+				{
+					cameraProjType = PERSPECTIVE;
+				}
+				else if (e["components"]["camera"]["projType"] == "orthographic")
+				{
+					cameraProjType = ORTHO;
+				}
+
+				ecs.AddComponent<CCamera>(
+					newEntity,
+					CCamera{
+						.projType = cameraProjType,
+						.projection = jsonToMat4(e["components"]["camera"]["projection"]),
+						.fov = e["components"]["camera"]["fov"],
+						.near = e["components"]["camera"]["near"],
+						.far = e["components"]["camera"]["far"],
+						.left = e["components"]["camera"]["left"],
+						.right = e["components"]["camera"]["right"],
+						.bottom = e["components"]["camera"]["bottom"],
+						.top = e["components"]["camera"]["top"],
+					});
+			}
 		}
 
 		std::string envMapPath = "res/textures/hdr/" + jsonData["config"]["environmentMap"].get<std::string>();
@@ -336,6 +389,23 @@ namespace Scene
 
 		return glm::vec2(pos[0], pos[1]);
 	}
+
+	glm::mat4 jsonToMat4(const nlohmann::json& jsonMat) {
+		glm::mat4 mat(1.0f); // Default to identity
+		for (int i = 0; i < 16; ++i) {
+			glm::value_ptr(mat)[i] = jsonMat[i];
+		}
+		return mat;
+	}
+
+	nlohmann::json mat4ToJson(const glm::mat4& mat) {
+		nlohmann::json jsonMat;
+		for (int i = 0; i < 16; ++i) {
+			jsonMat.push_back(glm::value_ptr(mat)[i]);
+		}
+		return jsonMat;
+	}
+
 }
 
 

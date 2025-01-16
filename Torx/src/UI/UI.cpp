@@ -27,6 +27,8 @@
 #include "../Editor/EditorCamera.h"
 #include "../Scene/Scene.h"
 #include "../Util/WindowsPlatform/WindowsUtil.h"
+#define GLM_ENABLE_EXPERIMENTAL
+#include <glm/gtx/string_cast.hpp>
 
 bool UI::isOpen{ true };
 bool UI::firstMouseUpdateAfterMenu{ false };
@@ -308,11 +310,6 @@ void UI::Update()
         ImGui::ColorEdit3("Text Color", &Common::textColor.x);
 
         ImGui::TreePop();
-    }
-
-    if (ImGui::Button("Save scene"))
-    {
-        Scene::SaveSceneToJson("testscene3.json");
     }
 
     ImGui::End();
@@ -705,14 +702,6 @@ void showComponents(Entity entity)
     {
         if (ImGui::CollapsingHeader("Camera Component", ImGuiTreeNodeFlags_AllowItemOverlap))
         {
-            static float fov = 45.0f;
-            static float near = 0.1f;
-            static float far = 100.0f;
-            static float left = -20;
-            static float right = 20;
-            static float bottom = -20;
-            static float top = 20;
-
             bool justChanged = false;
 
             CCamera& cameraComp = ecs.GetComponent<CCamera>(entity);
@@ -758,19 +747,19 @@ void showComponents(Entity entity)
             {
                 if (justChanged)
                 {
-                   fov = 45.0f;
-                   near = 0.1f;
-                   far = 100.0f;
-                   cameraComp.projection = glm::perspective(glm::radians(fov), (float)Common::SCR_WIDTH / (float)Common::SCR_HEIGHT, near, far);
+                   cameraComp.fov = 45.0f;
+                   cameraComp.near = 0.1f;
+                   cameraComp.far = 100.0f;
+                   cameraComp.projection = glm::perspective(glm::radians(cameraComp.fov), (float)Common::SCR_WIDTH / (float)Common::SCR_HEIGHT, cameraComp.near, cameraComp.far);
                 }
-                bool userInput = ImGui::InputFloat("Fov", &fov, 0.01f, 90.0f, "%.2f", ImGuiInputTextFlags_EnterReturnsTrue) ||
-                    ImGui::InputFloat("Near", &near, 0.01f, 5.0f, "%.2f", ImGuiInputTextFlags_EnterReturnsTrue) ||
-                    ImGui::InputFloat("Far", &far, 1.0f, 1000.0f, "%.2f", ImGuiInputTextFlags_EnterReturnsTrue);
+                bool userInput = ImGui::InputFloat("Fov", &cameraComp.fov, 0.01f, 90.0f, "%.2f", ImGuiInputTextFlags_EnterReturnsTrue) ||
+                    ImGui::InputFloat("Near", &cameraComp.near, 0.01f, 5.0f, "%.2f", ImGuiInputTextFlags_EnterReturnsTrue) ||
+                    ImGui::InputFloat("Far", &cameraComp.far, 1.0f, 1000.0f, "%.2f", ImGuiInputTextFlags_EnterReturnsTrue);
 
                 if (userInput)
                 {
-                    std::cout << "fov: " << fov << "\n";
-                    cameraComp.projection = glm::perspective(glm::radians(fov), (float)Common::SCR_WIDTH / (float)Common::SCR_HEIGHT, near, far);
+                    std::cout << "fov: " << cameraComp.fov << "\n";
+                    cameraComp.projection = glm::perspective(glm::radians(cameraComp.fov), (float)Common::SCR_WIDTH / (float)Common::SCR_HEIGHT, cameraComp.near, cameraComp.far);
                 }
             }
             else if (cameraComp.projType == ORTHO)
@@ -778,25 +767,25 @@ void showComponents(Entity entity)
 
                 if (justChanged)
                 {
-                    near = 0.1f;
-                    far = 100.0f;
-                    left = -20;
-                    right = 20;
-                    bottom = -20;
-                    top = 20;
-                    cameraComp.projection = glm::ortho(left, right, bottom, top, near, far);
+                    cameraComp.near = 0.1f;
+                    cameraComp.far = 100.0f;
+                    cameraComp.left = -20;
+                    cameraComp.right = 20;
+                    cameraComp.bottom = -20;
+                    cameraComp.top = 20;
+                    cameraComp.projection = glm::ortho(cameraComp.left, cameraComp.right, cameraComp.bottom, cameraComp.top, cameraComp.near, cameraComp.far);
                 }
 
-                bool userInput = ImGui::InputFloat("Left", &left, 0.01f, 90.0f, "%.2f", ImGuiInputTextFlags_EnterReturnsTrue) ||
-                    ImGui::InputFloat("Right", &right, 0.01f, 90.0f, "%.2f", ImGuiInputTextFlags_EnterReturnsTrue) ||
-                    ImGui::InputFloat("Bottom", &bottom, 0.01f, 90.0f, "%.2f", ImGuiInputTextFlags_EnterReturnsTrue) ||
-                    ImGui::InputFloat("Top", &top, 0.01f, 90.0f, "%.2f", ImGuiInputTextFlags_EnterReturnsTrue) ||
-                    ImGui::InputFloat("Near", &near, 0.01f, 5.0f, "%.2f", ImGuiInputTextFlags_EnterReturnsTrue) ||
-                    ImGui::InputFloat("Far", &far, 1.0f, 1000.0f, "%.2f", ImGuiInputTextFlags_EnterReturnsTrue);
+                bool userInput = ImGui::InputFloat("Left", &cameraComp.left, 0.01f, 90.0f, "%.2f", ImGuiInputTextFlags_EnterReturnsTrue) ||
+                    ImGui::InputFloat("Right", &cameraComp.right, 0.01f, 90.0f, "%.2f", ImGuiInputTextFlags_EnterReturnsTrue) ||
+                    ImGui::InputFloat("Bottom", &cameraComp.bottom, 0.01f, 90.0f, "%.2f", ImGuiInputTextFlags_EnterReturnsTrue) ||
+                    ImGui::InputFloat("Top", &cameraComp.top, 0.01f, 90.0f, "%.2f", ImGuiInputTextFlags_EnterReturnsTrue) ||
+                    ImGui::InputFloat("Near", &cameraComp.near, 0.01f, 5.0f, "%.2f", ImGuiInputTextFlags_EnterReturnsTrue) ||
+                    ImGui::InputFloat("Far", &cameraComp.far, 1.0f, 1000.0f, "%.2f", ImGuiInputTextFlags_EnterReturnsTrue);
 
                 if (userInput)
                 {
-                    cameraComp.projection = glm::ortho(left, right, bottom, top, near, far);
+                    cameraComp.projection = glm::ortho(cameraComp.left, cameraComp.right, cameraComp.bottom, cameraComp.top, cameraComp.near, cameraComp.far);
                 }
             }
             static bool spectate = false;
@@ -1001,10 +990,15 @@ void showEntityOptions(Entity entity, bool addingNewEntity)
             entity,
             CCamera{
                .projType = PERSPECTIVE,
-               .projection = glm::perspective(glm::radians(45.0f), (float)Common::SCR_WIDTH / (float)Common::SCR_HEIGHT, 0.01f,  100.0f)
+               .projection = glm::perspective(glm::radians(45.0f), (float)Common::SCR_WIDTH / (float)Common::SCR_HEIGHT, 0.01f,  100.0f),
+               .fov = 45.0f,
+               .near = 0.1f,
+               .far = 100.0f,
+               .left = -20,
+               .right = 20,
+               .bottom = -20,
+               .top = 20,
             });
-
-      
 
         selectedComponent = -1;
     }
