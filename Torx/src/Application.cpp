@@ -13,14 +13,21 @@
 #include "../include/Engine.h"
 #include <filesystem>
 #include "Editor/EditorCamera.h"
+#include "Components/CNativeScript.h"
+#include "Components/CTransform.h"
+#include "Game/PlayerInputScript.hpp"
+#include "Game/TestController.hpp"
 
 #include <iostream>
 
 #include <ft2build.h>
 
+
 int main()
 {
-  
+    ScriptFactory::Register("PlayerController", []() { return new PlayerController(); });
+    ScriptFactory::Register("TestController", []() { return new TestController(); });
+
     float deltaTime{};
     float lastFrame{};
 

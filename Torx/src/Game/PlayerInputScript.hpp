@@ -1,4 +1,5 @@
-#include "PlayerInputSystem.h"
+#pragma once
+
 
 #include "../Components/CSingleton_Input.h" 
 #include "../Components/CTransform.h"
@@ -12,30 +13,26 @@
 #include "../UI/UI.h"
 #include "../include/Engine.h"
 #include "../Util/Util.h"
+#include "../Components/CNativeScript.h"
 
-void PlayerInputSystem::Init() {}
 extern Coordinator ecs;
 static CSingleton_Input& inputSing = CSingleton_Input::getInstance();
 
-void PlayerInputSystem::Update(float deltaTime)
+class PlayerController : public ScriptableEntity
 {
-    // maybe make this change settings in the player component that has like playerForward, playerPrimaryFire.
-
-
-    if (Torx::Engine::MODE != Torx::PLAY)
+    void onUpdate(float dt)
     {
-        return;
-    }
-   // static glm::vec3 rotationEuler;
 
-    for (auto& entity : mEntities)
-    {
-        
-        auto& transform = ecs.GetComponent<CTransform>(entity);
-        auto& player = ecs.GetComponent<CPlayer>(entity);
-        auto& cameraComp = ecs.GetComponent<CCamera>(entity);
-        
-        float velocity = player.movementSpeed * deltaTime;
+        if (!ecs.HasComponent<CTransform>(m_entity) || !ecs.HasComponent<CPlayer>(m_entity) || !ecs.HasComponent<CCamera>(m_entity))
+        {
+            return;
+        }
+
+        auto& transform = ecs.GetComponent<CTransform>(m_entity);
+        auto& player = ecs.GetComponent<CPlayer>(m_entity);
+        auto& cameraComp = ecs.GetComponent<CCamera>(m_entity);
+
+        float velocity = player.movementSpeed * dt;
 
         // change this later so that this whole function only updated if the engine is in play mode
 
@@ -50,7 +47,7 @@ void PlayerInputSystem::Update(float deltaTime)
         glm::mat4 model = glm::translate(glm::mat4(1.0f), transform.position);
         glm::mat4 rotMatrix = glm::mat4_cast(transform.rotation);
         model *= rotMatrix;
-         
+
         glm::vec3 cameraRight = glm::normalize(glm::vec3(model[0]));
         glm::vec3 cameraUp = glm::normalize(glm::vec3(model[1]));
         glm::vec3 cameraFront = -glm::normalize(glm::vec3(model[2]));
@@ -90,9 +87,11 @@ void PlayerInputSystem::Update(float deltaTime)
         player.right = cameraRight;
         player.up = cameraUp;
 
+        // this should be handled elsewhere I think.
         Common::currentViewMatrix = player.viewMatrix;
         Common::currentProjMatrix = cameraComp.projection;
         Common::currentCamPos = transform.position;
     }
-}
+};
+
 

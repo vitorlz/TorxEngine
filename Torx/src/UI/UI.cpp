@@ -16,6 +16,7 @@
 #include "../Components/CMesh.h"
 #include "../Components/CAnimator.h"
 #include "../Components/CCamera.h"
+#include "../Components/CNativeScript.h"
 #include "../Physics/Raycast.h"
 #include "../Editor/Editor.h"
 #include "../Scene/Scene.h"
@@ -808,13 +809,30 @@ void showComponents(Entity entity)
         }
     }
 
+
+    if (ecs.HasComponent<CNativeScript>(entity))
+    {
+
+        auto& scriptComponent = ecs.GetComponent<CNativeScript>(entity);
+        if (ImGui::CollapsingHeader("Script Component", ImGuiTreeNodeFlags_AllowItemOverlap))
+        {
+            ImGui::TextColored(ImVec4(1.0f, 1.0f, 0.0f, 1.0f), scriptComponent.name.c_str());
+        }
+        ImGui::SameLine();
+        if (ImGui::Button("Delete##xx8"))
+        {
+            delete scriptComponent.script;
+            ecs.RemoveComponent<CNativeScript>(entity);
+        }
+    }
+
 }
 
 void showEntityOptions(Entity entity, bool addingNewEntity)
 {
     static int selectedComponent = -1;
-    const char* singleChoiceComponents[] = { "Transform", "Player", "Camera"};
-    const char* multipleChoiceComponents[] = { "Mesh", "Model", "Rigid body", "Light"};
+    const char* singleChoiceComponents[] = { "Transform", "Player", "Camera" };
+    const char* multipleChoiceComponents[] = { "Mesh", "Model", "Rigid body", "Light", "Script" };
 
     if (ImGui::Button("Add Component"))
         ImGui::OpenPopup("my_select_popup");
@@ -929,6 +947,23 @@ void showEntityOptions(Entity entity, bool addingNewEntity)
                                 });
                         }
 
+                    }
+                }
+
+                if (multipleChoiceComponents[i] == "Script" && !ecs.HasComponent<CNativeScript>(entity))
+                {
+                    std::vector<std::string> scriptNames = ScriptFactory::GetNames();
+
+                    for (int i = 0; i < scriptNames.size(); i++)
+                    {
+                        if (ImGui::MenuItem(scriptNames[i].c_str()))
+                        {
+                            ecs.AddComponent<CNativeScript>(
+                                entity,
+                                CNativeScript{
+                                    .name = scriptNames[i],
+                                });
+                        }
                     }
                 }
 

@@ -12,6 +12,7 @@
 #include "../Components/CRigidBody.h"
 #include "../Components/CMesh.h"
 #include "../Components/CCamera.h"
+#include "../Components/CNativeScript.h"
 #include "../Util/Util.h"
 #include "../AssetLoading/AssetManager.h"
 #include "../Rendering/RenderingUtil.h"
@@ -125,6 +126,13 @@ namespace Scene
 				e["components"]["camera"]["right"] = camera.right;
 				e["components"]["camera"]["bottom"] = camera.bottom;
 				e["components"]["camera"]["top"] = camera.top;
+			}
+
+			if (ecs.HasComponent<CNativeScript>(entity))
+			{
+				const auto& scriptComponent = ecs.GetComponent<CNativeScript>(entity);
+
+				e["components"]["script"]["name"] = scriptComponent.name;
 			}
 
 			json["entities"].push_back(e);
@@ -305,6 +313,15 @@ namespace Scene
 						.right = e["components"]["camera"]["right"],
 						.bottom = e["components"]["camera"]["bottom"],
 						.top = e["components"]["camera"]["top"],
+					});
+			}
+
+			if (e["components"].contains("script"))
+			{
+				ecs.AddComponent<CNativeScript>(
+					newEntity,
+					CNativeScript{
+						.name = e["components"]["script"]["name"].get<std::string>(),
 					});
 			}
 		}

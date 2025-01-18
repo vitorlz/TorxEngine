@@ -103,6 +103,7 @@
     <ClCompile Include="src\Editor\Editor.cpp" />
     <ClCompile Include="src\Editor\EditorCamera.cpp" />
     <ClCompile Include="src\Engine.cpp" />
+    <ClCompile Include="src\Game\PlayerInputScript.hpp" />
     <ClCompile Include="src\Physics\BulletDebugDrawer.cpp" />
     <ClCompile Include="src\Physics\Raycast.cpp" />
     <ClCompile Include="src\Rendering\Bloom.cpp" />
@@ -112,8 +113,8 @@
     <ClCompile Include="src\Systems\AnimationSystem.cpp" />
     <ClCompile Include="src\Systems\GeneralInputSystem.cpp" />
     <ClCompile Include="src\Systems\LightSystem.cpp" />
+    <ClCompile Include="src\Systems\NativeScriptSystem.cpp" />
     <ClCompile Include="src\Systems\PhysicsSystem.cpp" />
-    <ClCompile Include="src\Systems\PlayerInputSystem.cpp" />
     <ClCompile Include="src\Systems\RenderSystem.cpp" />
     <ClCompile Include="src\UI\UI.cpp" />
     <ClCompile Include="src\Application.cpp" />
@@ -151,12 +152,14 @@
     <ClInclude Include="src\AssetLoading\model.h" />
     <ClInclude Include="src\Components\CMesh.h" />
     <ClInclude Include="src\Components\CModel.h" />
+    <ClInclude Include="src\Components\CNativeScript.h" />
     <ClInclude Include="src\Components\CPlayer.h" />
     <ClInclude Include="src\Components\CRigidBody.h" />
     <ClInclude Include="src\Core\Common.h" />
     <ClInclude Include="src\Core\ECSCore.h" />
     <ClInclude Include="src\Editor\Editor.h" />
     <ClInclude Include="src\Editor\EditorCamera.h" />
+    <ClInclude Include="src\Game\TestController.hpp" />
     <ClInclude Include="src\Physics\BulletDebugDrawer.h" />
     <ClInclude Include="src\Physics\Raycast.h" />
     <ClInclude Include="src\Rendering\Bloom.h" />
@@ -167,8 +170,8 @@
     <ClInclude Include="src\Systems\AnimationSystem.h" />
     <ClInclude Include="src\Systems\GeneralInputSystem.h" />
     <ClInclude Include="src\Systems\LightSystem.h" />
+    <ClInclude Include="src\Systems\NativeScriptSystem.h" />
     <ClInclude Include="src\Systems\PhysicsSystem.h" />
-    <ClInclude Include="src\Systems\PlayerInputSystem.h" />
     <ClInclude Include="src\Systems\RenderSystem.h" />
     <ClInclude Include="src\UI\UI.h" />
     <ClInclude Include="src\Components\CTransform.h" />

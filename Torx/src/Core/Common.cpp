@@ -71,9 +71,7 @@ bool Common::showAO{ false };
 // -------------- TEMPORARY TEXT STUFF ---------------------------
 glm::vec3 Common::textColor{ 0.7f };
 
-
 // -------------- CURRENT MATRICES --------------------------------
-
 static EditorCamera& editorCamera = EditorCamera::getInstance();
 glm::mat4 Common::currentViewMatrix{ editorCamera.GetViewMatrix() };
 glm::mat4 Common::currentProjMatrix{ editorCamera.GetProjMatrix() };

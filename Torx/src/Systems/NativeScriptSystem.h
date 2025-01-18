@@ -3,7 +3,7 @@
 #include "../Core/System.hpp"
 
 
-class PlayerInputSystem : public System
+class NativeScriptSystem : public System
 {
 public:
 	void Init() override;
