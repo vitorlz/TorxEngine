@@ -17,6 +17,7 @@
 #include "Components/CTransform.h"
 #include "Game/PlayerInputScript.hpp"
 #include "Game/TestController.hpp"
+#include "Editor/Editor.h"
 
 #include <iostream>
 
@@ -52,6 +53,7 @@ int main()
         gui.NewFrame();
 
         engine.Run(deltaTime);
+        Editor::Update(deltaTime);
         editorCamera.Update(deltaTime);
 
         gui.Update();

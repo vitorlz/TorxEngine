@@ -11,4 +11,5 @@ namespace Editor
 	void SetCurrentGizmoOperation(int gizmoOperation);
 	bool isOn();
 	void setStatus(bool status);
+	void Update(float dt);
 }

@@ -1,4 +1,3 @@
-#include <nlohmann/json.hpp>
 #include "Scene.h"
 #include "../Core/Coordinator.hpp"
 #include "../Core/Types.hpp"
@@ -30,11 +29,11 @@ namespace Scene
 
 	std::string environmentMap;
 
-	void SaveSceneToJson(const std::string& path)
+	nlohmann::json SerializeScene()
 	{
-		std::vector<Entity> livingEntities = ecs.GetLivingEntities();
 		nlohmann::json json;
 
+		std::vector<Entity> livingEntities = ecs.GetLivingEntities();
 		for (Entity entity : livingEntities)
 		{
 			nlohmann::json e;
@@ -104,7 +103,7 @@ namespace Scene
 				e["components"]["player"]["flashlightOn"] = player.flashlightOn;
 				e["components"]["player"]["movementSpeed"] = player.movementSpeed;
 			}
-			
+
 			if (ecs.HasComponent<CCamera>(entity))
 			{
 				const auto& camera = ecs.GetComponent<CCamera>(entity);
@@ -141,7 +140,6 @@ namespace Scene
 		json["config"]["environmentMap"] = environmentMap;
 
 		// VXGI
-		
 		json["config"]["vxgi"]["vxgi"] = Common::vxgi;
 		json["config"]["vxgi"]["voxelGridDimensions"] = Common::voxelGridDimensions;
 		json["config"]["vxgi"]["diffuseConeSpread"] = Common::diffuseConeSpread;
@@ -152,7 +150,6 @@ namespace Scene
 		json["config"]["vxgi"]["specularConeMaxDistance"] = Common::specularConeMaxDistance;
 
 		// SSR
-
 		json["config"]["ssr"]["ssrMaxDistance"] = Common::ssrMaxDistance;
 		json["config"]["ssr"]["ssrResolution"] = Common::ssrResolution;
 		json["config"]["ssr"]["ssrSteps"] = Common::ssrSteps;
@@ -161,7 +158,6 @@ namespace Scene
 		json["config"]["ssr"]["ssrMaxBlurDistance"] = Common::ssrMaxBlurDistance;
 
 		// SSAO
-
 		json["config"]["ssao"]["ssaoRadius"] = Common::ssaoRadius;
 		json["config"]["ssao"]["ssaoPower"] = Common::ssaoPower;
 		json["config"]["ssao"]["ssaoKernelSize"] = Common::ssaoKernelSize;
@@ -169,37 +165,14 @@ namespace Scene
 
 		// EDITOR INFO
 		EditorCamera& editorCamera = EditorCamera::getInstance();
-		json["editor"]["editorCamera"]["transform"]["position"] = { editorCamera.GetTransform().position.x, editorCamera.GetTransform().position.y, editorCamera.GetTransform().position.z};
+		json["editor"]["editorCamera"]["transform"]["position"] = { editorCamera.GetTransform().position.x, editorCamera.GetTransform().position.y, editorCamera.GetTransform().position.z };
 		json["editor"]["editorCamera"]["transform"]["rotation"] = { editorCamera.GetTransform().rotation.w, editorCamera.GetTransform().rotation.x, editorCamera.GetTransform().rotation.y, editorCamera.GetTransform().rotation.z };
-		
-		std::ofstream o(path);
-		if (!o.is_open())
-		{
-			std::cout << "Failed to open json file.\n";
-		}
-		else
-		{
-			o << json.dump(4);
-			o.close();
-			g_currentScenePath = path;
-		}
+
+		return json;
 	}
 
-	void LoadSceneFromJson(const std::string& path)
+	void DeserializeScene(nlohmann::json& jsonData)
 	{
-		std::cout << "Loading scene..." << "\n";
-
-		std::ifstream f(path);
-		if (!f.is_open())
-		{
-			std::cout << "Failed to open json file. \n";
-
-			return;
-		}
-		nlohmann::json jsonData;
-		f >> jsonData;
-		f.close();
-
 		for (const auto& e : jsonData["entities"])
 		{
 			Entity newEntity = ecs.CreateEntity();
@@ -329,7 +302,7 @@ namespace Scene
 		std::string envMapPath = "res/textures/hdr/" + jsonData["config"]["environmentMap"].get<std::string>();
 		SetEnvironmentMap(jsonData["config"]["environmentMap"].get<std::string>());
 		RenderingUtil::LoadNewEnvironmentMap(jsonData["config"]["environmentMap"].get<std::string>().c_str());
-		
+
 		// VXGI
 		if (jsonData["config"].contains("vxgi"))
 		{
@@ -364,16 +337,52 @@ namespace Scene
 		}
 
 		// EDITOR INFO
-		
+
 		if (jsonData["editor"].contains("editorCamera"))
-		{			
+		{
 			EditorCamera& editorCamera = EditorCamera::getInstance();
 			editorCamera.SetTransform(
 				EditorCameraTransform{
 					.position = jsonToVec3(jsonData["editor"]["editorCamera"]["transform"]["position"]),
-					.rotation = jsonToQuat(jsonData["editor"]["editorCamera"]["transform"]["rotation"])				
+					.rotation = jsonToQuat(jsonData["editor"]["editorCamera"]["transform"]["rotation"])
 				});
 		}
+	}
+
+	void SaveSceneToJson(const std::string& path)
+	{
+		
+		nlohmann::json serializedScene = SerializeScene();
+
+		std::ofstream o(path);
+		if (!o.is_open())
+		{
+			std::cout << "Failed to open json file.\n";
+		}
+		else
+		{
+			o << serializedScene.dump(4);
+			o.close();
+			g_currentScenePath = path;
+		}
+	}
+
+	void LoadSceneFromJson(const std::string& path)
+	{
+		std::cout << "Loading scene..." << "\n";
+
+		std::ifstream f(path);
+		if (!f.is_open())
+		{
+			std::cout << "Failed to open json file. \n";
+
+			return;
+		}
+		nlohmann::json jsonData;
+		f >> jsonData;
+		f.close();
+
+		DeserializeScene(jsonData);
 
 		g_currentScenePath = path;
 

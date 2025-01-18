@@ -16,6 +16,8 @@ struct Window
 	void Terminate() const;
 	static void SetScrollOffset(double offset);
 	static double GetScrollOffset();
+	static void HideCursor();
+	static void ShowCursor();
 	static int screenWidth;
 	static int screenHeight;
 

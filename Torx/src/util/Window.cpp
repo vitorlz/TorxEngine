@@ -5,6 +5,8 @@
 #include "../Core/Common.h"
 #include "../include/Engine.h"
 #include "../Editor/EditorCamera.h"
+#include "../Scene/Scene.h"
+#include "../Core/Coordinator.hpp"
 
 #include <glad/glad.h>
 
@@ -15,6 +17,8 @@ double Window::m_scrollOffset{ 0 };
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods);
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
+
+extern Coordinator ecs;
 
 void Window::Init(int width, int height, const char* windowTitle)
 {
@@ -78,36 +82,18 @@ void Window::Terminate() const {
 	glfwTerminate();
 }
 
+void Window::HideCursor()
+{
+	glfwSetInputMode(Torx::Engine::GetWindow().GetPointer(), GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+}
+
+void Window::ShowCursor()
+{
+	glfwSetInputMode(Torx::Engine::GetWindow().GetPointer(), GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+}
+
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods)
 {
-
-	if (key == GLFW_KEY_TAB && action == GLFW_PRESS) 
-	{
-
-		if (Torx::Engine::MODE != Torx::SPECTATE)
-		{
-			if (Torx::Engine::MODE == Torx::EDITOR)
-			{
-				Torx::Engine::MODE = Torx::PLAY;
-			}
-			else
-			{
-				Torx::Engine::MODE = Torx::EDITOR;
-
-			}
-		}
-
-		UI::firstMouseUpdateAfterMenu = true;
-		if (Torx::Engine::MODE == Torx::PLAY)
-		{
-			glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
-		}
-		else
-		{
-			glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
-		}
-	}
-
 	if (glfwGetKey(window, GLFW_KEY_K) == GLFW_PRESS)
 	{
 		ShaderManager::ReloadShaders();

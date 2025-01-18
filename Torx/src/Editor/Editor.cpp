@@ -12,6 +12,10 @@
 #include "../Util/Util.h"
 #define GLM_ENABLE_EXPERIMENTAL 
 #include <glm/gtx/string_cast.hpp>
+#include "EditorCamera.h"
+#include "../include/Engine.h"
+#include "../Scene/Scene.h"
+#include "../UI/UI.h"
 
 
 extern Coordinator ecs;
@@ -194,5 +198,43 @@ namespace Editor
     void setStatus(bool status) 
     {
         editorOn = status;
+    }
+
+    void Update(float dt)
+    {
+        if (inputSing.keyPressed[TORX_KEY_TAB])
+        {
+            if (Torx::Engine::MODE != Torx::SPECTATE)
+            {
+                if (Torx::Engine::MODE == Torx::EDITOR)
+                {
+                    Scene::g_editorScene = Scene::SerializeScene();
+                    Torx::Engine::MODE = Torx::PLAY;
+                }
+                else
+                {
+
+                    for (Entity e : ecs.GetLivingEntities())
+                    {
+                        ecs.DestroyEntity(e);
+                    }
+                    ecs.ResetEntityIDs();
+                    ECSCore::UpdateSystems(0.0f);
+
+                    Torx::Engine::MODE = Torx::EDITOR;
+                    Scene::DeserializeScene(Scene::g_editorScene);
+                }
+            }
+
+            UI::firstMouseUpdateAfterMenu = true;
+            if (Torx::Engine::MODE == Torx::PLAY)
+            {
+                Window::HideCursor();
+            }
+            else
+            {
+                Window::ShowCursor();
+            }
+        }
     }
 }

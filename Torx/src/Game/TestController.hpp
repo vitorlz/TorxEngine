@@ -22,7 +22,6 @@ class TestController : public ScriptableEntity
     CSingleton_Input& inputSing = CSingleton_Input::getInstance();
     void onUpdate(float dt)
     {
-
         if (!ecs.HasComponent<CTransform>(m_entity))
         {
             return;
@@ -53,8 +52,7 @@ class TestController : public ScriptableEntity
         {
             auto& light = ecs.GetComponent<CLight>(m_entity);
 
-            light.isDirty = true;
-                
+            light.isDirty = true;  
         }
     }
 };
