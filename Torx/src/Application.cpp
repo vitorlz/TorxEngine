@@ -35,14 +35,10 @@ int main()
     Torx::Engine& engine = Torx::Engine::getInstance();
 
     engine.ConfigWindow(Common::SCR_WIDTH, Common::SCR_HEIGHT, "Torx");
-
     engine.Init();
 
-    UI gui;
-
-    gui.Init(engine.GetWindow().GetPointer());
-
-    EditorCamera& editorCamera = EditorCamera::getInstance();
+    Editor& editor = Editor::getInstance();
+    editor.InitUI();
      
     while (!glfwWindowShouldClose(engine.GetWindow().GetPointer()))
     {
@@ -50,18 +46,17 @@ int main()
         deltaTime = currentFrame - lastFrame;
         lastFrame = currentFrame;
 
-        gui.NewFrame();
+      
 
         engine.Run(deltaTime);
-        Editor::Update(deltaTime);
-        editorCamera.Update(deltaTime);
 
-        gui.Update();
+        editor.Update(deltaTime);
 
+       
         engine.GetWindow().Update();
     }
 
-    gui.Terminate();
+    editor.GetUI().Terminate();
     FT_Done_FreeType(TextRendering::m_ft);
     engine.GetWindow().Terminate();
     return 0;

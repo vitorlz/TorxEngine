@@ -11,9 +11,7 @@ struct EditorCameraTransform
 class EditorCamera
 {
 public:
-	EditorCamera(EditorCamera const&) = delete;
-	void operator = (EditorCamera const&) = delete;
-	static EditorCamera& getInstance();
+	EditorCamera();
 
 	glm::mat4& GetViewMatrix();
 	glm::mat4& GetProjMatrix();
@@ -32,7 +30,7 @@ public:
 
 	void Update(float dt);
 private:
-	EditorCamera();
+	
 	EditorCameraTransform m_transform;
 	float m_zOffset;
 	glm::mat4 m_viewMatrix;

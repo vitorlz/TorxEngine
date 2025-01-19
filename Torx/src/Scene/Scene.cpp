@@ -16,6 +16,7 @@
 #include "../AssetLoading/AssetManager.h"
 #include "../Rendering/RenderingUtil.h"
 #include "../Editor/EditorCamera.h"
+#include "../Editor/Editor.h"
 
 extern Coordinator ecs;
 
@@ -26,8 +27,6 @@ namespace Scene
 	glm::quat jsonToQuat(nlohmann::json json);
 	glm::mat4 jsonToMat4(const nlohmann::json& jsonMat);
 	nlohmann::json mat4ToJson(const glm::mat4& mat);
-
-	std::string environmentMap;
 
 	nlohmann::json SerializeScene()
 	{
@@ -164,7 +163,7 @@ namespace Scene
 		json["config"]["ssao"]["ssaoOn"] = Common::ssaoOn;
 
 		// EDITOR INFO
-		EditorCamera& editorCamera = EditorCamera::getInstance();
+		EditorCamera& editorCamera = Editor::getInstance().GetEditorCamera();
 		json["editor"]["editorCamera"]["transform"]["position"] = { editorCamera.GetTransform().position.x, editorCamera.GetTransform().position.y, editorCamera.GetTransform().position.z };
 		json["editor"]["editorCamera"]["transform"]["rotation"] = { editorCamera.GetTransform().rotation.w, editorCamera.GetTransform().rotation.x, editorCamera.GetTransform().rotation.y, editorCamera.GetTransform().rotation.z };
 
@@ -299,7 +298,7 @@ namespace Scene
 			}
 		}
 
-		std::string envMapPath = "res/textures/hdr/" + jsonData["config"]["environmentMap"].get<std::string>();
+		//std::string envMapPath = "res/textures/hdr/" + jsonData["config"]["environmentMap"].get<std::string>();
 		SetEnvironmentMap(jsonData["config"]["environmentMap"].get<std::string>());
 		RenderingUtil::LoadNewEnvironmentMap(jsonData["config"]["environmentMap"].get<std::string>().c_str());
 
@@ -340,7 +339,7 @@ namespace Scene
 
 		if (jsonData["editor"].contains("editorCamera"))
 		{
-			EditorCamera& editorCamera = EditorCamera::getInstance();
+			EditorCamera& editorCamera = Editor::getInstance().GetEditorCamera();
 			editorCamera.SetTransform(
 				EditorCameraTransform{
 					.position = jsonToVec3(jsonData["editor"]["editorCamera"]["transform"]["position"]),

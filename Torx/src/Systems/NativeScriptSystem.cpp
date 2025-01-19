@@ -9,8 +9,6 @@ void NativeScriptSystem::Init() {}
 
 void NativeScriptSystem::Update(float dt)
 {
-	// maybe only run this function when the engine is in play mode? like onCreate() should be called when the entity with this component is first created in the game's
-	// runtime not in the editor.
 	if (Torx::Engine::MODE != Torx::PLAY)
 	{
 		return;

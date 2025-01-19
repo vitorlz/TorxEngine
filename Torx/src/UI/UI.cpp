@@ -332,7 +332,7 @@ void UI::Update()
         {
             if (!addingNewEntity)
             {
-                Editor::RenderGizmo(selectedEntity);
+                Editor::getInstance().RenderGizmo(selectedEntity);
 
                 std::stringstream ss;
                 ss << "Selected Entity: " << selectedEntity;
@@ -978,7 +978,7 @@ void showEntityOptions(Entity entity, bool addingNewEntity)
                 if (singleChoiceComponents[i] == "Transform" && !ecs.HasComponent<CTransform>(entity))
                 {
 
-                    EditorCamera& editorCamera = EditorCamera::getInstance();
+                    EditorCamera& editorCamera = Editor::getInstance().GetEditorCamera();
 
                     ecs.AddComponent<CTransform>(
                         entity,

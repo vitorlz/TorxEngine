@@ -83,13 +83,6 @@ void EditorCamera::SetZOffset(float zOffset)
     }
 }
 
-EditorCamera& EditorCamera::getInstance()
-{
-    static EditorCamera instance;
-
-    return instance;
-}
-
 void EditorCamera::Update(float dt)
 {
     if (Torx::Engine::MODE != Torx::EDITOR) 
@@ -106,6 +99,7 @@ void EditorCamera::Update(float dt)
         glm::quat pitchQuat = glm::angleAxis(pitchDelta, glm::vec3(1.0f, 0.0f, 0.0f)); 
         glm::quat yawQuat = glm::angleAxis(yawDelta, glm::vec3(0.0f, 1.0f, 0.0f));     
        
+        // initialize the rotation to the identity quaternion otherwise we can only pan the camera when we load a scene
         m_transform.rotation = yawQuat * m_transform.rotation * pitchQuat;
     }
 

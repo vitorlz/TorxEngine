@@ -5,6 +5,7 @@
 #include "../Core/Common.h"
 #include "../include/Engine.h"
 #include "../Editor/EditorCamera.h"
+#include "../Editor/Editor.h"
 #include "../Scene/Scene.h"
 #include "../Core/Coordinator.hpp"
 
@@ -115,7 +116,7 @@ void scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
 {
 	Window::SetScrollOffset(yoffset);
 
-	EditorCamera& editorCamera = EditorCamera::getInstance();
+	EditorCamera& editorCamera = Editor::getInstance().GetEditorCamera();
 
 	float EditorCameraZOffset = 0.0f;
 	

@@ -311,6 +311,8 @@ void RenderingUtil::CreatePingPongFBOs()
 
 void RenderingUtil::EquirectangularToCubemap(const char* path)
 {
+
+    static unsigned int hdrTexture = 0;
     unsigned int captureFBO, captureRBO;
     glGenFramebuffers(1, &captureFBO);
     glGenRenderbuffers(1, &captureRBO);
@@ -351,7 +353,9 @@ void RenderingUtil::EquirectangularToCubemap(const char* path)
     equiToCubemapShader.setInt("equirectangularMap", 0);
     equiToCubemapShader.setMat4("projection", captureProjection);
    
-    unsigned int hdrTexture = TextureLoader::LoadTextureHDR(path);
+    glDeleteTextures(1, &hdrTexture);
+   
+    hdrTexture = TextureLoader::LoadTextureHDR(path);
 
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, hdrTexture);
@@ -359,7 +363,7 @@ void RenderingUtil::EquirectangularToCubemap(const char* path)
     glViewport(0, 0, 1024, 1024); // don't forget to configure the viewport to the capture dimensions.
     glBindFramebuffer(GL_FRAMEBUFFER, captureFBO);
 
-   glDisable(GL_CULL_FACE);
+    glDisable(GL_CULL_FACE);
     for (unsigned int i = 0; i < 6; ++i)
     {
         equiToCubemapShader.setMat4("view", captureViews[i]);
@@ -601,21 +605,11 @@ void RenderingUtil::CreateBulletDebugBuffers()
 
 void RenderingUtil::LoadNewEnvironmentMap(const char* filename)
 {
+    glDeleteTextures(1, &mEnvironmentCubemap);
 
-    if (mEnvironmentCubemap) 
-    {
-        glDeleteTextures(1, &mEnvironmentCubemap);
-        glDeleteTextures(1, &mIrradianceCubemap);
-        glDeleteTextures(1, &mPrefilteredEnvMap);
-        glDeleteTextures(1, &mBrdfLUT);
-    }
-  
     std::string path = "res/textures/hdr/" + std::string(filename);
 
     EquirectangularToCubemap(path.c_str());
-    CreateIrradianceCubemap();
-    CreatePrefilteredEnvMap();
-    CreateBRDFIntegrationMap();
 }
 
 void RenderingUtil::CreateVoxelTexture(int voxelTextureSize)
