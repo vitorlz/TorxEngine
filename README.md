@@ -1,5 +1,5 @@
 # TorxEngine
-C++ OpenGL Engine
+Custom game engine built from scratch using C++ and OpenGL.
 
 https://github.com/user-attachments/assets/c94439a4-017c-409b-bb2d-52b3e5a0c8bd
 
