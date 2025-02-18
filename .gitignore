@@ -397,3 +397,9 @@ FodyWeavers.xsd
 
 # JetBrains Rider
 *.sln.iml
+
+build/
+
+Torx/vendor/bulletphysics/lib/*
+!Torx/vendor/bulletphysics/lib/
+!Torx/vendor/bulletphysics/lib/**/*
