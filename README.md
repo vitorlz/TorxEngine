@@ -23,3 +23,32 @@ https://github.com/user-attachments/assets/bd16ce13-ceeb-48e2-b0ed-964f2b4c2a72
 <li>Point, directional, and spot lights</li> 
  <br/>
 
+## Project Build Instructions
+
+**Make sure you have CMake installed.** <br/>
+**The program only supports Windows for now.**
+
+Clone the repository
+```
+git clone git@github.com:vitorlz/TorxEngine.git
+```
+From the directory containing CMakeLists.txt:
+```
+mkdir build
+```
+```
+cd build
+```
+```
+cmake ..
+```
+```
+cmake --build . --config Release
+```
+To run:
+```
+cd bin
+```
+```
+./TorxEngine.exe
+```
