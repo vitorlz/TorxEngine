@@ -83,81 +83,87 @@ void RenderSystem::voxelizationPass()
     {
         return;
     }
-    glPushDebugGroup(GL_DEBUG_SOURCE_APPLICATION, 0, -1, "Voxelization");
 
-    float clearColor[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
-    glClearTexImage(RenderingUtil::mVoxelTexture, 0, GL_RGBA, GL_HALF_FLOAT, clearColor);
-
-    Shader& voxelizationShader = ShaderManager::GetShaderProgram("voxelizationShader");
-
-    voxelizationShader.use();
-
-    voxelizationShader.setFloat("voxelizationAreaSize", Common::voxelizationAreaSize);
-
-    glActiveTexture(GL_TEXTURE5);
-    glBindTexture(GL_TEXTURE_CUBE_MAP_ARRAY, RenderingUtil::mPointLightShadowMap);
-    voxelizationShader.setInt("pointShadowMap", 5);
-    glActiveTexture(GL_TEXTURE6);
-    glBindTexture(GL_TEXTURE_2D, RenderingUtil::mDirLightShadowMap);
-    voxelizationShader.setInt("dirShadowMap", 6);
-
-    voxelizationShader.setMat4("dirLightSpaceMatrix", DirectionalShadows::g_lightSpaceMatrix);
-
-    glViewport(0, 0, Common::voxelGridDimensions, Common::voxelGridDimensions);
-    glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE);
-    glDisable(GL_CULL_FACE);
-    glDisable(GL_DEPTH_TEST);
-    glDisable(GL_BLEND);
-
-    glBindImageTexture(0, RenderingUtil::mVoxelTexture, 0, GL_TRUE, 0, GL_WRITE_ONLY, GL_RGBA16F);
-        
-    for (const auto& entity : mEntities)
+    if (Common::voxelize)
     {
-        auto& transform = ecs.GetComponent<CTransform>(entity);
+        glPushDebugGroup(GL_DEBUG_SOURCE_APPLICATION, 0, -1, "Voxelization");
 
-        if (!ecs.HasComponent<CModel>(entity) && !ecs.HasComponent<CMesh>(entity))
+        float clearColor[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
+        glClearTexImage(RenderingUtil::mVoxelTexture, 0, GL_RGBA, GL_HALF_FLOAT, clearColor);
+
+        Shader& voxelizationShader = ShaderManager::GetShaderProgram("voxelizationShader");
+
+        voxelizationShader.use();
+
+        voxelizationShader.setFloat("voxelizationAreaSize", Common::voxelizationAreaSize);
+
+        glActiveTexture(GL_TEXTURE5);
+        glBindTexture(GL_TEXTURE_CUBE_MAP_ARRAY, RenderingUtil::mPointLightShadowMap);
+        voxelizationShader.setInt("pointShadowMap", 5);
+        glActiveTexture(GL_TEXTURE6);
+        glBindTexture(GL_TEXTURE_2D, RenderingUtil::mDirLightShadowMap);
+        voxelizationShader.setInt("dirShadowMap", 6);
+
+        voxelizationShader.setMat4("dirLightSpaceMatrix", DirectionalShadows::g_lightSpaceMatrix);
+
+        glViewport(0, 0, Common::voxelGridDimensions, Common::voxelGridDimensions);
+        glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE);
+        glDisable(GL_CULL_FACE);
+        glDisable(GL_DEPTH_TEST);
+        glDisable(GL_BLEND);
+
+        glBindImageTexture(0, RenderingUtil::mVoxelTexture, 0, GL_TRUE, 0, GL_WRITE_ONLY, GL_RGBA16F);
+
+        for (const auto& entity : mEntities)
         {
-            continue;
+            auto& transform = ecs.GetComponent<CTransform>(entity);
+
+            if (!ecs.HasComponent<CModel>(entity) && !ecs.HasComponent<CMesh>(entity))
+            {
+                continue;
+            }
+
+            glm::mat4 model = glm::mat4(1.0f);
+            model = glm::translate(model, transform.position);
+
+            glm::mat4 rotMatrix = glm::mat4_cast(transform.rotation);
+
+            model *= rotMatrix;
+
+            model = glm::scale(model, transform.scale);
+
+            glm::mat3 normalMatrix = glm::transpose(glm::inverse(model));
+
+            voxelizationShader.setMat4("model", model);
+            voxelizationShader.setMat3("normalMatrix", normalMatrix);
+            voxelizationShader.setVec3("camPos", Common::currentCamPos);
+
+            if (ecs.HasComponent<CModel>(entity))
+            {
+                auto& model3d = ecs.GetComponent<CModel>(entity);
+                voxelizationShader.setVec2("textureScaling", glm::vec2(1.0f));
+                voxelizationShader.setBool("hasAOTexture", model3d.hasAOTexture);
+                model3d.model.Draw(voxelizationShader);
+            }
+            else
+            {
+                auto& meshComponent = ecs.GetComponent<CMesh>(entity);
+                voxelizationShader.setVec2("textureScaling", meshComponent.textureScaling);
+                meshComponent.mesh.Draw(voxelizationShader);
+            }
         }
 
-        glm::mat4 model = glm::mat4(1.0f);
-        model = glm::translate(model, transform.position);
+        std::cout << "voxelized scene" << "\n";
 
-        glm::mat4 rotMatrix = glm::mat4_cast(transform.rotation);
+        glBindTexture(GL_TEXTURE_3D, RenderingUtil::mVoxelTexture);
+        glGenerateMipmap(GL_TEXTURE_3D);
 
-        model *= rotMatrix;
+        Common::voxelize = false;
 
-        model = glm::scale(model, transform.scale);
+        glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
 
-        glm::mat3 normalMatrix = glm::transpose(glm::inverse(model));
-
-        voxelizationShader.setMat4("model", model);
-        voxelizationShader.setMat3("normalMatrix", normalMatrix);
-        voxelizationShader.setVec3("camPos", Common::currentCamPos);
-
-        if (ecs.HasComponent<CModel>(entity))
-        {
-            auto& model3d = ecs.GetComponent<CModel>(entity);
-            voxelizationShader.setVec2("textureScaling", glm::vec2(1.0f));
-            voxelizationShader.setBool("hasAOTexture", model3d.hasAOTexture);
-            model3d.model.Draw(voxelizationShader);
-        }
-        else
-        {
-            auto& meshComponent = ecs.GetComponent<CMesh>(entity);
-            voxelizationShader.setVec2("textureScaling", meshComponent.textureScaling);
-            meshComponent.mesh.Draw(voxelizationShader);
-        }
+        glPopDebugGroup();
     }
-
-    glBindTexture(GL_TEXTURE_3D, RenderingUtil::mVoxelTexture);
-    glGenerateMipmap(GL_TEXTURE_3D);
-
-    Common::voxelize = false;
-
-    glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
-        
-    glPopDebugGroup();
 }
 
 void RenderSystem::directionalShadowMapPass()
@@ -701,8 +707,6 @@ void RenderSystem::skyboxPass()
 
     skyBoxShader.use();
 
-   
-
     skyBoxShader.setMat4("projection", Common::currentProjMatrix);
     skyBoxShader.setMat4("view", glm::mat4(glm::mat3(Common::currentViewMatrix)));
     glBindVertexArray(RenderingUtil::mUnitCubeVAO);
@@ -889,8 +893,6 @@ void RenderSystem::forwardRenderingPass()
     {
         modeText = "Spectator Mode";
     }
-
-
 
     texGyreCursor.RenderText(textShader, modeText,
         20.0f, 830.0f, 32.0f, 1.5f, Common::textColor);

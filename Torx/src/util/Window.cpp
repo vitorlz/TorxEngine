@@ -1,3 +1,5 @@
+#define GLFW_INCLUDE_NONE
+
 #include "Window.h"
 
 #include "../Util/ShaderManager.h"

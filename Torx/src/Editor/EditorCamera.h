@@ -5,7 +5,7 @@
 struct EditorCameraTransform
 {
 	glm::vec3 position;
-	glm::quat rotation;
+	glm::quat rotation = glm::quat(1.0f, 0.0f, 0.0f, 0.0f);
 };
 
 class EditorCamera

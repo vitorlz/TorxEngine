@@ -138,7 +138,7 @@ void LightSystem::Update(float deltaTime)
 	// add new lights
 	if (mEntities.size() > mLightIndex)
 	{
-		mLightIndex++;
+		
 
 		for (Entity e : mEntities)
 		{
@@ -152,13 +152,13 @@ void LightSystem::Update(float deltaTime)
 			{
 				entitiesAdded.push_back(entity);
 				std::cout << "new light entity: " << entity << "\n";
-
-				break;
 			}
 		}
 
 		for (Entity addedEntity : entitiesAdded)
 		{
+			mLightIndex++;
+
 			const auto& transform = ecs.GetComponent<CTransform>(addedEntity);
 			const auto& light = ecs.GetComponent<CLight>(addedEntity);
 

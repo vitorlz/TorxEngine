@@ -1,4 +1,4 @@
-
+#define GLFW_INCLUDE_NONE
 #include "UI/UI.h"
 
 #include <glm/glm.hpp>
@@ -46,13 +46,9 @@ int main()
         deltaTime = currentFrame - lastFrame;
         lastFrame = currentFrame;
 
-      
-
         engine.Run(deltaTime);
-
         editor.Update(deltaTime);
 
-       
         engine.GetWindow().Update();
     }
 

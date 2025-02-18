@@ -132,7 +132,6 @@ void EditorCamera::Update(float dt)
         m_transform.position += cameraFront * speed * m_zOffset;
         m_zOffset = 0;
     }
-    
 
     model = glm::mat4(1.0f);
     model = glm::translate(model, m_transform.position);

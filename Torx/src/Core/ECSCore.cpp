@@ -84,9 +84,9 @@ void ECSCore::RegisterCoreComponentsAndSystems()
 
     m_systems.push_back(generalInputSystem);
     m_systems.push_back(animationSystem);
+    m_systems.push_back(lightSystem);
     m_systems.push_back(renderSystem);
     m_systems.push_back(physicsSystem);
-    m_systems.push_back(lightSystem);
     m_systems.push_back(nativeScriptSystem);
 }
 

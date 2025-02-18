@@ -385,7 +385,6 @@ void UI::Update()
 
     if (ImGui::BeginMainMenuBar())
     {
-
         if (ImGui::BeginMenu("File"))
         {
             if (ImGui::MenuItem("Open...")) 
@@ -400,6 +399,7 @@ void UI::Update()
                     ecs.ResetEntityIDs();
                     ECSCore::UpdateSystems(0.0f);
                     Scene::LoadSceneFromJson(filePath);
+                    Common::voxelize = true;
                 }
             } 
             if (ImGui::MenuItem("Save"))
@@ -420,7 +420,6 @@ void UI::Update()
             }
             ImGui::EndMenu();
         }
-
         ImGui::EndMainMenuBar();
     }
 

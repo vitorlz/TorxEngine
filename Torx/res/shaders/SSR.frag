@@ -74,12 +74,14 @@ void main()
 
   float i = 0;
 
+    if(delta > max(texSize.x, texSize.y))
+    {
+        return;
+    }
+
   for (i = 0; i < int(delta); ++i) {
     
-    if(i > max(texSize.x, texSize.y))
-    {
-        break;
-    }
+   
 
     frag      += increment;
     uv.xy      = frag / texSize;
@@ -137,13 +139,14 @@ void main()
     }
   }
 
-    if(positionTo == vec4(0.0))
-    {
-        hit1 = 1;
-    }
+    //if(positionTo == vec4(0.0))
+    //{
+      //  hit1 = 1;
+    //}
 
   float visibility =
-      hit1
+    
+     hit1
     * ( 1
       - max
          ( dot(-unitPositionFrom, pivot)

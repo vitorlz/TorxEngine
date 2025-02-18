@@ -20,6 +20,12 @@ extern Coordinator ecs;
 class TestController : public ScriptableEntity
 {
     CSingleton_Input& inputSing = CSingleton_Input::getInstance();
+
+    void onCreate()
+    {
+        std::cout << "script created" << "\n";
+    }
+
     void onUpdate(float dt)
     {
         if (!ecs.HasComponent<CTransform>(m_entity))

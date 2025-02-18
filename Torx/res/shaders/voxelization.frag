@@ -1,7 +1,7 @@
 #version 460 core
 
-#extension GL_NV_gpu_shader5 : require
-#extension GL_NV_shader_atomic_fp16_vector : require
+//#extension GL_NV_gpu_shader5 : require
+//#extension GL_NV_shader_atomic_fp16_vector : require
 
 struct Material 
 {
@@ -132,9 +132,15 @@ void main(){
 	vec3 voxel = scaleAndBias(FragPos);
 	ivec3 dim = imageSize(texture3D);	
 	ivec3 voxelCoord = ivec3(dim * voxel);
-	f16vec4 res = f16vec4(Lo, 1.0);
+	
+	// was previously voxelizing the scene in real time, but because I cannot do atomic operations with floats without making the app only compatible with NVIDIA
+	// by using #extension GL_NV_gpu_shader5 : require and #extension GL_NV_shader_atomic_fp16_vector : require, I decided to not do it in real time for now.
+	// I would be able to perform atomic operations if I could use integers for the 3d voxel texture, however, openGL would not be able to automatically generate mipmaps
+	// if that were the case, which would defeat the point of "voxel cone tracing" as it relies on mip maps.
+	 vec4 res = vec4(Lo, 1.0);
+	//imageAtomicMax(texture3D, voxelCoord, res);
 
-	imageAtomicMax(texture3D, voxelCoord, res);
+	 imageStore(texture3D, voxelCoord, res);
 }
 
 vec3 fresnelSchlick(float cosTheta, vec3 F0)

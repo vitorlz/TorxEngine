@@ -41,9 +41,7 @@ void Engine::Init(const std::string scenePath)
 	ShaderManager::LoadShaders();
 	RenderingUtil::Init();
 	ECSCore::RegisterCoreComponentsAndSystems();
-
 	Scene::LoadSceneFromJson(scenePath);
-
 	ECSCore::InitSystems();
 }
 
@@ -54,7 +52,6 @@ void Engine::Init()
 	ShaderManager::LoadShaders();
 	RenderingUtil::Init();
 	ECSCore::RegisterCoreComponentsAndSystems();
-
 	ECSCore::InitSystems();
 }
 

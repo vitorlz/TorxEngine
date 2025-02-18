@@ -260,6 +260,9 @@
     <Library Include="vendor\assimp\lib\assimp-vc143-mt.lib" />
     <Library Include="vendor\assimp\lib\assimp-vc143-mtd.lib" />
   </ItemGroup>
+  <ItemGroup>
+    <Text Include="CMakeLists.txt" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>
