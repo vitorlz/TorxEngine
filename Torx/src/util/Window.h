@@ -20,6 +20,7 @@ struct Window
 	static void ShowCursor();
 	static int screenWidth;
 	static int screenHeight;
+	static bool cursorHidden;
 
 private:
 	static double m_scrollOffset;

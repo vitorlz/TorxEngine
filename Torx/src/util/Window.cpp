@@ -16,6 +16,7 @@
 int Window::screenWidth;
 int Window::screenHeight;
 double Window::m_scrollOffset{ 0 };
+bool Window::cursorHidden = false;
 
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods);
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
@@ -54,11 +55,9 @@ void Window::Init(int width, int height, const char* windowTitle)
 	glfwMakeContextCurrent(mWindow);
 	gladLoadGLLoader((GLADloadproc)glfwGetProcAddress);
 	Window::DisableVsync();
-	glfwSetInputMode(mWindow, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 	glfwSetFramebufferSizeCallback(mWindow, framebuffer_size_callback);
 	glfwSetKeyCallback(mWindow, key_callback);
 	glfwSetScrollCallback(mWindow, scroll_callback);
-	
 }
 
 GLFWwindow* Window::GetPointer() const{
@@ -66,11 +65,9 @@ GLFWwindow* Window::GetPointer() const{
 }
 
 void Window::Update() const {
-	glfwSwapBuffers(mWindow);
+	
 	glfwPollEvents();
-	if (glfwGetKey(mWindow, GLFW_KEY_ESCAPE) == GLFW_PRESS) {
-		glfwSetWindowShouldClose(mWindow, true);
-	}
+	glfwSwapBuffers(mWindow);
 }
 
 void Window::EnableVsync() const {
@@ -88,11 +85,13 @@ void Window::Terminate() const {
 void Window::HideCursor()
 {
 	glfwSetInputMode(Torx::Engine::GetWindow().GetPointer(), GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+	cursorHidden = true;
 }
 
 void Window::ShowCursor()
 {
 	glfwSetInputMode(Torx::Engine::GetWindow().GetPointer(), GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+	cursorHidden = false;
 }
 
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods)
@@ -125,6 +124,8 @@ void scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
 	EditorCameraZOffset += (float)yoffset;
 	
 	editorCamera.SetZOffset(EditorCameraZOffset);
+
+	std::cout << "scroll callback called " << "\n";
 
 }
 

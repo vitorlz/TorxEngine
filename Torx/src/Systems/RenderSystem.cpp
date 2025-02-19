@@ -380,6 +380,7 @@ void RenderSystem::geometryPass()
     glDrawBuffers(8, attachments);
 
     glViewport(0, 0, Common::SCR_WIDTH, Common::SCR_HEIGHT);
+
     glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT);
     glClear(GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
@@ -539,10 +540,7 @@ void RenderSystem::lightingPass()
  
     if (!Common::showVoxelDebug)
     {
-        if (Torx::Engine::MODE == Torx::EDITOR)
-        {
-            Raycast::calculateMouseRaycast(Common::currentProjMatrix * Common::currentViewMatrix);
-        }
+        
 
         Shader& lightingShader = ShaderManager::GetShaderProgram("lightingShader");
         lightingShader.use();
@@ -889,10 +887,7 @@ void RenderSystem::forwardRenderingPass()
     {
         modeText = "Player Mode";
     }
-    else if (Torx::Engine::MODE == Torx::SPECTATE)
-    {
-        modeText = "Spectator Mode";
-    }
+  
 
     texGyreCursor.RenderText(textShader, modeText,
         20.0f, 830.0f, 32.0f, 1.5f, Common::textColor);

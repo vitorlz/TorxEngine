@@ -47,7 +47,8 @@ void GeneralInputSystem::Update(float deltaTime)
 	// mouse input
 	double x, y;
 	glfwGetCursorPos(window, &x, &y);
-	if (inputSing.firstMouse || UI::firstMouseUpdateAfterMenu) {
+	// if this is the first mouse movement, make mouseX and mouseY equal to the position of the mouse in the window so that the offset starts at 0 and we don't get a big jump.
+	if (inputSing.firstMouse) {
 		inputSing.mouseX = x;
 		inputSing.mouseY = y;
 		inputSing.firstMouse = false;

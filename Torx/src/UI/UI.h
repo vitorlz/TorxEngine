@@ -1,6 +1,7 @@
 #pragma once
 #include <GLFW/glfw3.h>
 #include <glm/glm.hpp>
+#include "../Core/Types.hpp"
 
 class UI 
 {
@@ -12,8 +13,11 @@ public:
 	static bool isOpen;
 	static bool firstMouseUpdateAfterMenu;
 	static bool hovering;
+	static bool spectatingCamera;
 
 	void RenderGameWindow();
+
+	void showComponents(Entity entity);
 
 	static glm::vec2 gameWindowMousePos;
 	static glm::vec2 gameWindowSize;

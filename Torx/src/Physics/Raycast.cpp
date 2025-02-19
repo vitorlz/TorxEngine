@@ -12,38 +12,20 @@ CSingleton_Input& Raycast::m_inputSing{ CSingleton_Input::getInstance() };
 btDiscreteDynamicsWorld* Raycast::m_dynamicsWorld{};
 int Raycast::m_SelectedEntity;
 
-void Raycast::calculateMouseRaycast(glm::mat4 projView)
+unsigned int Raycast::mouseRaycast(glm::mat4 projView, glm::vec4 ndcStart, glm::vec4 ndcEnd, float worldDistance)
 {
-	glm::vec4 rayStartNDC(
-		(UI::gameWindowMousePos.x/ (double)UI::gameWindowSize.x - 0.5f) * 2.0f,
-		(((double)UI::gameWindowSize.y - UI::gameWindowMousePos.y) / (double)UI::gameWindowSize.y - 0.5f) * 2.0f,
-		-1.0f,
-		1.0f
-		);
-
-
-	glm::vec4 rayEndNDC(
-		(UI::gameWindowMousePos.x / (double)UI::gameWindowSize.x - 0.5f) * 2.0f,
-		(((double)UI::gameWindowSize.y - UI::gameWindowMousePos.y) / (double)UI::gameWindowSize.y - 0.5f) * 2.0f,
-		0.0f,
-		1.0f
-	);
-
 	glm::mat4 inverseProjView = glm::inverse(projView);
 
-	glm::vec4 rayStartWorld = inverseProjView * rayStartNDC;
-	glm::vec4 rayEndWorld = inverseProjView * rayEndNDC;
+	glm::vec4 rayStartWorld = inverseProjView * ndcStart;
+	glm::vec4 rayEndWorld = inverseProjView * ndcEnd;
 
 	m_MouseRayStartWorld = rayStartWorld / rayStartWorld.w;
 	m_MouseRayEndWorld = rayEndWorld / rayEndWorld.w;
 
 	m_MouseRayDirWorld = normalize(m_MouseRayEndWorld - m_MouseRayStartWorld);
-}
-
-unsigned int Raycast::mouseRaycast()
-{
+	
 	glm::vec3 rayOrigin = m_MouseRayStartWorld;
-	glm::vec3 rayEnd = rayOrigin + m_MouseRayDirWorld * 1000.0f;
+	glm::vec3 rayEnd = rayOrigin + m_MouseRayDirWorld * worldDistance;
 
 	btCollisionWorld::ClosestRayResultCallback RayCallback(
 		btVector3(rayOrigin.x, rayOrigin.y, rayOrigin.z),

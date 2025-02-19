@@ -13,8 +13,7 @@ namespace Torx
 	enum EngineMode
 	{
 		EDITOR,
-		PLAY,
-		SPECTATE,
+		PLAY
 	};   
 
 	class Engine

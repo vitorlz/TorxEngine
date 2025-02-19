@@ -42,11 +42,6 @@ void Editor::RenderGizmo(int selectedEntity)
     if (ImGui::RadioButton("Scale", Editor::GetCurrentGizmoOperation() == ImGuizmo::SCALE))
         Editor::SetCurrentGizmoOperation(ImGuizmo::SCALE);
 
-    if (ImGuizmo::IsOver())
-    {
-        ImGui::SetNextFrameWantCaptureMouse(false);
-    }
-
     ImGui::Separator();
 
     ImGui::Checkbox("##xx1", &useSnap);
@@ -107,9 +102,6 @@ void Editor::RenderGizmo(int selectedEntity)
         currentGizmoOperation = ImGuizmo::SCALE;
 
     ImGuizmo::Manipulate(glm::value_ptr(Common::currentViewMatrix), glm::value_ptr(Common::currentProjMatrix), currentGizmoOperation, ImGuizmo::LOCAL, glm::value_ptr(model), NULL, useSnap ? snap.data() : NULL, boundSizing ? bounds : NULL, boundSizingSnap ? boundsSnap : NULL);
-    
-    std::cout << "ImGuizmo::IsOver(): " << ImGuizmo::IsOver() << "\n";
-    std::cout << "ImGuizmo::IsUsing(): " << ImGuizmo::IsUsing() << "\n";
 
     if (ImGuizmo::IsUsing())
     {
@@ -217,42 +209,26 @@ EditorCamera& Editor::GetEditorCamera()
 void Editor::Update(float dt)
 {
     ui.NewFrame();
+   
+    editorCamera.Update(dt);
     ui.Update();
 
-    editorCamera.Update(dt);
-
-    if (inputSing.keyPressed[TORX_KEY_TAB])
+    if (Torx::Engine::MODE == Torx::EDITOR && Window::cursorHidden)
     {
-        if (Torx::Engine::MODE != Torx::SPECTATE)
-        {
-            if (Torx::Engine::MODE == Torx::EDITOR)
-            {
-                Scene::g_editorScene = Scene::SerializeScene();
-                Torx::Engine::MODE = Torx::PLAY;
-            }
-            else
-            {
-
-                for (Entity e : ecs.GetLivingEntities())
-                {
-                    ecs.DestroyEntity(e);
-                }
-                ecs.ResetEntityIDs();
-                ECSCore::UpdateSystems(0.0f);
-
-                Torx::Engine::MODE = Torx::EDITOR;
-                Scene::DeserializeScene(Scene::g_editorScene);
-            }
-        }
-
-        UI::firstMouseUpdateAfterMenu = true;
-        if (Torx::Engine::MODE == Torx::PLAY)
+        Window::ShowCursor();
+    }
+    
+    if (inputSing.keyPressed[TORX_KEY_ESCAPE] && Torx::Engine::MODE == Torx::PLAY)
+    {
+        if (!Window::cursorHidden)
         {
             Window::HideCursor();
         }
         else
         {
+            inputSing.firstMouse = true;
             Window::ShowCursor();
         }
     }
+    
 }

@@ -103,16 +103,14 @@ void main()
 
 	vec3 kS = F;
 
-	vec3 ssrOriginal = texture(ssrTexture, TexCoords).rgb;
-
-	vec3 ssrBlurred = texture(ssrTextureBlur, TexCoords).rgb;
-	
-	vec3 ssr = mix(ssrOriginal, ssrBlurred, clamp(sqrt(roughness * 1.1) , 0,1)) * max(0, (1 - roughness * 2)) * ssrSpecularBias;
-	
-	color += kS * mix(ssr, vec3(0.0),  smoothstep(0.0, 1.0, dot(V,reflect(-V, N))));
-
 	if (!showNormals && !worldPosDebug && !albedoDebug && !roughnessDebug && !metallicDebug) {
-		
+
+		vec3 ssrOriginal = texture(ssrTexture, TexCoords).rgb;
+		vec3 ssrBlurred = texture(ssrTextureBlur, TexCoords).rgb;
+		vec3 ssr = mix(ssrOriginal, ssrBlurred, clamp(sqrt(roughness * 1.1) , 0,1)) * max(0, (1 - roughness * 2)) * ssrSpecularBias;
+	
+		color += kS * mix(ssr, vec3(0.0),  smoothstep(0.0, 1.0, dot(V,reflect(-V, N))));
+
 		if(reinhard)
 		{
 			color = mix(color, reinhardSimple(color), 1);

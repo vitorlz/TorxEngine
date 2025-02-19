@@ -9,11 +9,10 @@ class Raycast
 {
 public:
 	static void calculateMouseRaycast(glm::mat4 projView);
-	static unsigned int mouseRaycast();
+	static unsigned int mouseRaycast(glm::mat4 projView, glm::vec4 ndcStart, glm::vec4 ndcEnd, float worldDistance);
 	static glm::vec3 getMouseRayDir();
 	static glm::vec3 getMouseRayStart();
 	static btVector3 getMouseHitPointWorld();
-	static int getSelectedEntity();
 	static void setSelectedEntity(int entity);
 	static void setDynamicsWorld(btDiscreteDynamicsWorld* dynamicsWorld);
 private: 

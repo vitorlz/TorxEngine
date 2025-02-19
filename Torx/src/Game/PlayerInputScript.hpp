@@ -22,7 +22,6 @@ class PlayerController : public ScriptableEntity
 {
     void onUpdate(float dt)
     {
-
         if (!ecs.HasComponent<CTransform>(m_entity) || !ecs.HasComponent<CPlayer>(m_entity) || !ecs.HasComponent<CCamera>(m_entity))
         {
             return;
