@@ -1,5 +1,7 @@
+
 #include "UI.h"
 #include "imgui.h"
+#include "imgui_internal.h"
 #include "imgui_impl_glfw.h"
 #include "imgui_impl_opengl3.h"
 #include "ImGuizmo.h"
@@ -30,6 +32,13 @@
 #include "../Util/WindowsPlatform/WindowsUtil.h"
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtx/string_cast.hpp>
+#include <glad/glad.h>
+#include <IconsFontAwesome4.h>
+
+
+glm::vec2 UI::gameWindowMousePos;
+glm::vec2 UI::gameWindowSize;
+glm::vec2 UI::gameWindowPos;
 
 bool UI::isOpen{ true };
 bool UI::firstMouseUpdateAfterMenu{ false };
@@ -43,13 +52,27 @@ Entity playerEntity;
 
 void UI::Init(GLFWwindow* window) 
 {
-   
     IMGUI_CHECKVERSION();
     ImGui::CreateContext();
     ImGuiIO& io = ImGui::GetIO(); (void)io;
+    io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
+   
     ImGui::StyleColorsDark();
     ImGui_ImplGlfw_InitForOpenGL(window, true);
     ImGui_ImplOpenGL3_Init("#version 460");
+
+    io.Fonts->AddFontDefault();
+    float baseFontSize = 21.0f;
+    float iconFontSize = baseFontSize * 2.0f / 3.0f;
+
+    static const ImWchar icons_ranges[] = { ICON_MIN_FA, ICON_MAX_16_FA, 0 };
+    ImFontConfig icons_config;
+    icons_config.MergeMode = true;
+    icons_config.PixelSnapH = true;
+    icons_config.GlyphMinAdvanceX = iconFontSize;
+    std::cout << "icon fontsize: " << iconFontSize << "\n";
+    icons_config.GlyphOffset.y = 2;
+    io.Fonts->AddFontFromFileTTF(FONT_ICON_FILE_NAME_FA, iconFontSize, &icons_config, icons_ranges);
 }
 
 void UI::NewFrame() 
@@ -63,27 +86,65 @@ void UI::NewFrame()
 Entity addingFromEntityList;
 void UI::Update() 
 {
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
+    glClear(GL_COLOR_BUFFER_BIT);
+
+
+    ImGuiID dockspace_id = ImGui::GetID("MainDockspace");
+    ImGui::DockSpaceOverViewport(
+        dockspace_id,
+        ImGui::GetMainViewport(),
+        ImGuiDockNodeFlags_PassthruCentralNode,
+        nullptr 
+    );
+
+    // dock inspector, settings, and game windows to their starting positions
+
+    static bool firstTime = true;
+    if (firstTime)
+    {
+        firstTime = false;
+
+        ImGui::DockBuilderRemoveNode(dockspace_id);
+      
+        ImGui::DockBuilderAddNode(dockspace_id, ImGuiDockNodeFlags_DockSpace);
+        ImGui::DockBuilderSetNodeSize(dockspace_id, ImGui::GetMainViewport()->Size);
+
+        ImGuiID left_dock_id = ImGui::DockBuilderSplitNode(
+            dockspace_id,          
+            ImGuiDir_Left,         
+            0.25f,                 
+            nullptr,               
+            &dockspace_id          
+        );
+
+        ImGuiID left_bottom_id;
+        ImGuiID left_top_id = ImGui::DockBuilderSplitNode(
+            left_dock_id,
+            ImGuiDir_Up,
+            0.5f,
+            nullptr,           
+            &left_bottom_id    
+        );
+
+       
+        ImGui::DockBuilderDockWindow("Settings", left_top_id);
+        ImGui::DockBuilderDockWindow("Inspector", left_bottom_id);
+        ImGui::DockBuilderDockWindow("Game", dockspace_id);
+      
+        ImGui::DockBuilderFinish(dockspace_id);
+    }
+
+    RenderGameWindow();
 
     bool menuWindowHovered =  false;
     bool editorWindowHovered = false;
 
-    ImGui::Begin("Menu");
+    ImGui::Begin("Settings");
     menuWindowHovered = ImGui::IsWindowHovered(ImGuiHoveredFlags_AllowWhenBlockedByPopup);
 
     ImGui::Shortcut(ImGuiKey_Tab, ImGuiInputFlags_None);
-    
-    static bool editorMode{ true };
-    ImGui::Checkbox("Editor Mode", &editorMode);
-
-    
-    if (Torx::Engine::MODE == Torx::EDITOR)
-    {
-        editorMode = true;
-    }
-    else
-    {
-        editorMode = false;
-    }
    
     CSingleton_Input& inputSing = CSingleton_Input::getInstance();
 
@@ -109,9 +170,6 @@ void UI::Update()
 
         for (int i = 0; i < livingEntities.size(); i++)
         {
-            // Here we use PushID() to generate a unique base ID, and then the "" used as TreeNode id won't conflict.
-            // An alternative to using 'PushID() + TreeNode("", ...)' to generate a unique ID is to use 'TreeNode((void*)(intptr_t)i, ...)',
-            // aka generate a dummy pointer-sized value to be hashed. The demo below uses that technique. Both are fine.
             ImGui::PushID(i);
             if (ImGui::TreeNode("", "Entity %d", livingEntities[i]))
             {  
@@ -313,66 +371,69 @@ void UI::Update()
     ImGui::End();
 
     // Gizmos
-    
+    ImGui::Begin("Inspector");
+    editorWindowHovered = ImGui::IsWindowHovered(ImGuiHoveredFlags_AllowWhenBlockedByPopup | ImGuiHoveredFlags_AllowWhenBlockedByActiveItem);
+
+    static int selectedEntity{ -1 };
+    static bool addingNewEntity{ false };
+    static Entity newEntity;
+
     if (Torx::Engine::MODE == Torx::EDITOR)
     {
-        ImGui::Begin("Editor");
-        editorWindowHovered = ImGui::IsWindowHovered(ImGuiHoveredFlags_RectOnly);
-
-        static int selectedEntity{ -1 };
-        static bool addingNewEntity{ false };
-        static Entity newEntity;
-        
-        if (!ImGuizmo::IsOver() && !ImGui::IsWindowHovered(ImGuiHoveredFlags_AnyWindow) && !ImGui::IsAnyItemHovered() && !addingNewEntity && inputSing.rightMousePressed)
+       
+        if (!addingNewEntity && inputSing.rightMousePressed)
         {
             selectedEntity = Raycast::mouseRaycast();
         }
-        
+
         if (selectedEntity >= 0 && ecs.isAlive(selectedEntity))
         {
-            if (!addingNewEntity)
-            {
-                Editor::getInstance().RenderGizmo(selectedEntity);
-
-                std::stringstream ss;
-                ss << "Selected Entity: " << selectedEntity;
-                std::string selectedEntityText = ss.str();
-                ImGui::TextColored(ImVec4(1.0f, 1.0f, 0.0f, 1.0f), selectedEntityText.c_str());
-                showComponents(selectedEntity);
-                showEntityOptions(selectedEntity, addingNewEntity);
-            }
+            Editor::getInstance().RenderGizmo(selectedEntity);
         }
-
-        ImGui::Separator();
-
-        if (!addingNewEntity)
-        {
-            if (ImGui::Button("Add Entity"))
-            {
-                addingNewEntity = true;
-                newEntity = ecs.CreateEntity();
-            }
-        }
-
-        if (addingNewEntity)
-        {
-            std::stringstream ss;
-            ss << "Adding Entity: " << newEntity;
-            std::string addingEntityText = ss.str();
-
-            ImGui::TextColored(ImVec4(1.0f, 1.0f, 0.0f, 1.0f), addingEntityText.c_str());
-
-            showComponents(newEntity);
-            showEntityOptions(newEntity, addingNewEntity);
-
-            if (ImGui::Button("Done"))
-            {
-                addingNewEntity = false;
-            }
-        }
-
-        ImGui::End();
     }
+
+    if (!addingNewEntity && selectedEntity >= 0 && ecs.isAlive(selectedEntity))
+    {
+                
+        std::stringstream ss;
+        ss << "Selected Entity: " << selectedEntity;
+        std::string selectedEntityText = ss.str();
+        ImGui::TextColored(ImVec4(1.0f, 1.0f, 0.0f, 1.0f), selectedEntityText.c_str());
+        showComponents(selectedEntity);
+        showEntityOptions(selectedEntity, addingNewEntity);
+    }
+        
+   
+
+    ImGui::Separator();
+
+    if (!addingNewEntity)
+    {
+        if (ImGui::Button("Add Entity"))
+        {
+            addingNewEntity = true;
+            newEntity = ecs.CreateEntity();
+        }
+    }
+
+    if (addingNewEntity)
+    {
+        std::stringstream ss;
+        ss << "Adding Entity: " << newEntity;
+        std::string addingEntityText = ss.str();
+
+        ImGui::TextColored(ImVec4(1.0f, 1.0f, 0.0f, 1.0f), addingEntityText.c_str());
+
+        showComponents(newEntity);
+        showEntityOptions(newEntity, addingNewEntity);
+
+        if (ImGui::Button("Done"))
+        {
+            addingNewEntity = false;
+        }
+    }
+
+    ImGui::End();
 
     if (menuWindowHovered || editorWindowHovered || ImGui::IsAnyItemHovered())
     {
@@ -423,8 +484,121 @@ void UI::Update()
         ImGui::EndMainMenuBar();
     }
 
+
+    
+
     ImGui::Render();
     ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+}
+
+void UI::RenderGameWindow()
+{
+    ImGui::Begin("Game");
+
+    
+
+    // Draw game texture (camera feed)
+    //ImGui::SetCursorPos(ImVec2(0, 0));  // Reset cursor to prevent layout shift
+  
+    ImVec2 gameSize = ImGui::GetContentRegionAvail();
+    ImGui::Image(RenderingUtil::gGameWindowTexture, gameSize, ImVec2(0, 1), ImVec2(1, 0));
+
+
+
+    ImGui::SetNextItemAllowOverlap();
+
+    
+
+    //ImGui::SetCursorPosX((ImGui::GetWindowSize().x - ImGui::CalcTextSize(ICON_FA_PLAY).x) * 0.5f);
+    ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.93f, 0.93f, 0.93f, 0.3f));  // Change button color
+    ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.6f, 0.6f, 0.6f, 1.0f));  // Hover color
+    ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(0.1803921569f, 0.262745098f, 0.4549019608f, 1.0f));  // Click color
+    ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, 6.0f);  // Rounded corners
+    ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, 0.0f); // Border thickness
+    ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(12, 7)); // Padding
+
+  /*  rgb(46, 67, 116)*/
+
+    // Get window size and position
+    ImVec2 windowSize = ImGui::GetWindowSize();
+    ImVec2 windowPos = ImGui::GetWindowPos();
+
+    float iconsize = 14.2f;
+
+    float offset = 30 + iconsize;
+
+    // Calculate button position (centered on top of texture)
+   // ImVec2 buttonSize = ImVec2(100, 20); // Adjust button size
+    ImVec2 buttonPos = ImVec2((windowSize.x - offset * 2) * 0.5f, 40.0f); // Top center
+
+    // Manually set cursor to draw button OVER the texture
+    ImGui::SetCursorPos(buttonPos);
+
+    if (ImGui::Button(ICON_FA_PAUSE))
+    {
+        // Play button clicked
+    }
+
+    buttonPos = ImVec2((windowSize.x ) * 0.5f, 40.0f); // Top center
+
+    // Manually set cursor to draw button OVER the texture
+    ImGui::SetCursorPos(buttonPos);
+
+    if (ImGui::Button(ICON_FA_PLAY))
+    {
+        // Play button clicked
+    }
+
+   
+
+    buttonPos = ImVec2((windowSize.x + offset * 2) * 0.5f, 40.0f); // Top center
+
+    // Manually set cursor to draw button OVER the texture
+    ImGui::SetCursorPos(buttonPos);
+
+    if (ImGui::Button(ICON_FA_STOP))
+    {
+        // Play button clicked
+    }
+
+
+    ImGui::PopStyleColor(3);
+    ImGui::PopStyleVar(3);
+
+
+
+
+    ImVec2 game_window_pos = ImGui::GetWindowPos();
+    ImVec2 game_window_size = ImGui::GetWindowSize();
+    gameWindowPos = { game_window_pos.x, game_window_pos.y };
+    gameWindowSize = { game_window_size.x, game_window_size.y };
+    ImGuizmo::SetDrawlist(ImGui::GetCurrentWindow()->DrawList);
+    
+    if (ImGuizmo::IsOver() || Common::usingGuizmo)
+    {
+        ImGui::SetNextFrameWantCaptureMouse(false);
+    }
+   
+
+    // Check if the mouse is hovering the "Game" window
+    if (ImGui::IsWindowHovered(ImGuiHoveredFlags_RootAndChildWindows))
+    {
+        // Get mouse position relative to the game window
+        ImVec2 mouse_pos = ImGui::GetMousePos();
+        gameWindowMousePos = { mouse_pos.x - game_window_pos.x, mouse_pos.y - game_window_pos.y };
+
+
+
+
+        // Convert mouse coordinates to normalized device coordinates (-1 to 1)
+       // float ndc_x = (mouse_x / game_window_size.x) * 2.0f - 1.0f;
+        //float ndc_y = 1.0f - (mouse_y / game_window_size.y) * 2.0f; // Flip Y-axis
+
+        // Perform raycasting using the converted coordinates
+
+    }
+
+    ImGui::End();
 }
 
 void UI::Terminate() 

@@ -46,6 +46,8 @@ public:
 	static unsigned int gEmission;
 	static unsigned int gViewPosition;
 	static unsigned int gViewNormal;
+	static unsigned int gGameWindowTexture;
+	static unsigned int gGameWindowFBO;
 
 	// diffuse indirect lighting
 	static unsigned int mEnvironmentCubemap;
@@ -85,5 +87,6 @@ private:
 	static void CreateSSAOFBO();
 	static void CreateSSAOBlurFBO();
 	static void CreateGeometryPassFBO();
+	static void CreateGameWindowFBO();
 	static std::vector<glm::vec3> mSSAONoise;
 };

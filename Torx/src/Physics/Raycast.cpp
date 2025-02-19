@@ -15,16 +15,16 @@ int Raycast::m_SelectedEntity;
 void Raycast::calculateMouseRaycast(glm::mat4 projView)
 {
 	glm::vec4 rayStartNDC(
-		(m_inputSing.mouseX / (double)Common::SCR_WIDTH - 0.5f) * 2.0f,
-		(((double)Common::SCR_HEIGHT - m_inputSing.mouseY) / (double)Common::SCR_HEIGHT - 0.5f) * 2.0f,
+		(UI::gameWindowMousePos.x/ (double)UI::gameWindowSize.x - 0.5f) * 2.0f,
+		(((double)UI::gameWindowSize.y - UI::gameWindowMousePos.y) / (double)UI::gameWindowSize.y - 0.5f) * 2.0f,
 		-1.0f,
 		1.0f
 		);
 
 
 	glm::vec4 rayEndNDC(
-		(m_inputSing.mouseX / (double)Common::SCR_WIDTH - 0.5f) * 2.0f,
-		(((double)Common::SCR_HEIGHT - m_inputSing.mouseY) / (double)Common::SCR_HEIGHT - 0.5f) * 2.0f,
+		(UI::gameWindowMousePos.x / (double)UI::gameWindowSize.x - 0.5f) * 2.0f,
+		(((double)UI::gameWindowSize.y - UI::gameWindowMousePos.y) / (double)UI::gameWindowSize.y - 0.5f) * 2.0f,
 		0.0f,
 		1.0f
 	);

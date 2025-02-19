@@ -56,6 +56,8 @@ unsigned int RenderingUtil::gEmission;
 unsigned int RenderingUtil::mLightingTexture;
 unsigned int RenderingUtil::gViewPosition;
 unsigned int RenderingUtil::gViewNormal;
+unsigned int RenderingUtil::gGameWindowFBO;
+unsigned int RenderingUtil::gGameWindowTexture;
 
 void RenderingUtil::Init()
 {
@@ -63,6 +65,7 @@ void RenderingUtil::Init()
 
     RenderingUtil::CreateCubeVAO();
     RenderingUtil::CreateLightingFBO();
+    RenderingUtil::CreateGameWindowFBO();
     RenderingUtil::CreateDirLightShadowMapFBO(DirectionalShadows::g_resolution, DirectionalShadows::g_resolution);
     RenderingUtil::CreatePointLightShadowMapFBO(OmniShadows::g_resolution, OmniShadows::g_resolution);
     RenderingUtil::CreateScreenQuadVAO();
@@ -75,6 +78,7 @@ void RenderingUtil::Init()
     RenderingUtil::CreateSSAOFBO();
     RenderingUtil::CreateSSAOBlurFBO();
     RenderingUtil::CreateGeometryPassFBO();
+  
 }
 
 float cubeVertices[] = 
@@ -901,4 +905,38 @@ void RenderingUtil::CreateGeometryPassFBO()
 void RenderingUtil::DeleteTexture(unsigned int textureId) 
 {
     glDeleteTextures(1, &textureId);
+}
+
+void RenderingUtil::CreateGameWindowFBO()
+{
+    glGenFramebuffers(1, &gGameWindowFBO);
+    glBindFramebuffer(GL_FRAMEBUFFER, gGameWindowFBO);
+
+    glGenTextures(1, &gGameWindowTexture);
+    glBindTexture(GL_TEXTURE_2D, gGameWindowTexture);
+
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, Common::SCR_WIDTH, Common::SCR_HEIGHT, 0, GL_RGBA, GL_FLOAT, NULL);
+
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, gGameWindowTexture, 0);
+
+    glBindTexture(GL_TEXTURE_2D, 0);
+
+    unsigned int gameWindowRBO;
+    glGenRenderbuffers(1, &gameWindowRBO);
+    glBindRenderbuffer(GL_RENDERBUFFER, gameWindowRBO);
+    glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, Common::SCR_WIDTH, Common::SCR_HEIGHT);
+    glBindRenderbuffer(GL_RENDERBUFFER, 0);
+
+    glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, gameWindowRBO);
+
+    if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
+        std::cout << "ERROR::FRAMEBUFFER:: Framebuffer is not complete!" << std::endl;
+    }
+
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }

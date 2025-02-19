@@ -42,6 +42,11 @@ void Editor::RenderGizmo(int selectedEntity)
     if (ImGui::RadioButton("Scale", Editor::GetCurrentGizmoOperation() == ImGuizmo::SCALE))
         Editor::SetCurrentGizmoOperation(ImGuizmo::SCALE);
 
+    if (ImGuizmo::IsOver())
+    {
+        ImGui::SetNextFrameWantCaptureMouse(false);
+    }
+
     ImGui::Separator();
 
     ImGui::Checkbox("##xx1", &useSnap);
@@ -80,7 +85,7 @@ void Editor::RenderGizmo(int selectedEntity)
 
 	ImGuizmo::SetOrthographic(false);
 
-	ImGuizmo::SetRect(0, 0, Common::SCR_WIDTH, Common::SCR_HEIGHT);
+    ImGuizmo::SetRect(UI::gameWindowPos.x, UI::gameWindowPos.y , UI::gameWindowSize.x, UI::gameWindowSize.y);
 
 	auto& transform = ecs.GetComponent<CTransform>(selectedEntity);
 
@@ -102,7 +107,10 @@ void Editor::RenderGizmo(int selectedEntity)
         currentGizmoOperation = ImGuizmo::SCALE;
 
     ImGuizmo::Manipulate(glm::value_ptr(Common::currentViewMatrix), glm::value_ptr(Common::currentProjMatrix), currentGizmoOperation, ImGuizmo::LOCAL, glm::value_ptr(model), NULL, useSnap ? snap.data() : NULL, boundSizing ? bounds : NULL, boundSizingSnap ? boundsSnap : NULL);
-        
+    
+    std::cout << "ImGuizmo::IsOver(): " << ImGuizmo::IsOver() << "\n";
+    std::cout << "ImGuizmo::IsUsing(): " << ImGuizmo::IsUsing() << "\n";
+
     if (ImGuizmo::IsUsing())
     {
         Common::usingGuizmo = true;
