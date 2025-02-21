@@ -1,4 +1,4 @@
-
+#include <glad/glad.h>
 #include "UI.h"
 #include "imgui.h"
 #include "imgui_internal.h"
@@ -26,13 +26,14 @@
 #include <iomanip>
 #include <sstream>
 #include "../Util/Util.h"
-#include "../include/Engine.h"
+#include "../Engine.h"
 #include "../Editor/EditorCamera.h"
 #include "../Scene/Scene.h"
 #include "../Util/WindowsPlatform/WindowsUtil.h"
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtx/string_cast.hpp>
-#include <glad/glad.h>
+#include <filesystem>
+
 #include <IconsFontAwesome4.h>
 
 glm::vec2 UI::gameWindowMousePos;
@@ -46,6 +47,7 @@ bool UI::spectatingCamera{ false };
 
 void showComponents(Entity entity);
 void showEntityOptions(Entity entity, bool addingNewEntity);
+std::string findGameCMakeDir();
 extern Coordinator ecs;
 
 Entity playerEntity;
@@ -89,7 +91,6 @@ void UI::Update()
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
     glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT);
-
 
     ImGuiID dockspace_id = ImGui::GetID("MainDockspace");
     ImGui::DockSpaceOverViewport(
@@ -495,6 +496,19 @@ void UI::Update()
                     Scene::SaveSceneToJson(filePath);
                 }
             }
+            ImGui::EndMenu();
+        }
+        if (ImGui::BeginMenu("Build"))
+        {
+            if (ImGui::MenuItem("Build game"))
+            {
+
+                
+
+                std::system("cmake C:/dev/Torx/Games/Sandbox -B C:/dev/Torx/out/build/game -DGAME_BUILD=ON");
+                std::system("cmake --build C:/dev/Torx/out/build/game --config Release");
+            }
+
             ImGui::EndMenu();
         }
         ImGui::EndMainMenuBar();

@@ -11,7 +11,7 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/quaternion.hpp>
 #include "../UI/UI.h"
-#include "../include/Engine.h"
+#include "../Engine.h"
 #include "../Util/Util.h"
 #include "../Components/CNativeScript.h"
 
@@ -20,6 +20,11 @@ static CSingleton_Input& inputSing = CSingleton_Input::getInstance();
 
 class PlayerController : public ScriptableEntity
 {
+    void onCreate()
+    {
+        Window::HideCursor();
+    }
+
     void onUpdate(float dt)
     {
         if (!ecs.HasComponent<CTransform>(m_entity) || !ecs.HasComponent<CPlayer>(m_entity) || !ecs.HasComponent<CCamera>(m_entity))

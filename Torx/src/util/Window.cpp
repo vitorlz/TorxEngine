@@ -1,11 +1,11 @@
 #define GLFW_INCLUDE_NONE
 
-#include "Window.h"
+#include "Util/Window.h"
 
 #include "../Util/ShaderManager.h"
 #include "../UI/UI.h"
 #include "../Core/Common.h"
-#include "../include/Engine.h"
+#include "Engine.h"
 #include "../Editor/EditorCamera.h"
 #include "../Editor/Editor.h"
 #include "../Scene/Scene.h"
@@ -28,6 +28,9 @@ void Window::Init(int width, int height, const char* windowTitle)
 {
 	Window::screenWidth = width;
 	Window::screenHeight = height;
+
+	Common::SCR_WIDTH = width;
+	Common::SCR_HEIGHT = height;
 
 	glfwInit();
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
@@ -54,7 +57,8 @@ void Window::Init(int width, int height, const char* windowTitle)
 
 	glfwMakeContextCurrent(mWindow);
 	gladLoadGLLoader((GLADloadproc)glfwGetProcAddress);
-	Window::DisableVsync();
+	// disabling vsync causes tearing when moving mouse.
+	Window::EnableVsync();
 	glfwSetFramebufferSizeCallback(mWindow, framebuffer_size_callback);
 	glfwSetKeyCallback(mWindow, key_callback);
 	glfwSetScrollCallback(mWindow, scroll_callback);

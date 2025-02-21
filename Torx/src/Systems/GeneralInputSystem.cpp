@@ -6,7 +6,7 @@
 #include "../Core/Common.h"
 #include "../UI/UI.h"
 #include <iostream>
-#include "../include/Engine.h"
+#include "../Engine.h"
 #include "../Util/Keys.h"
 
 extern Coordinator ecs;

@@ -26,7 +26,7 @@
 #include "../Rendering/Bloom.h"
 #include "../Components/CAnimator.h"
 #include "../Rendering/TextRendering.h"
-#include "../include/Engine.h"
+#include "../Engine.h"
 
 
 extern Coordinator ecs;
@@ -763,7 +763,15 @@ void RenderSystem::bloomPass()
 
 void RenderSystem::postProcessingPass()
 {
+
+// render game texture to default framebuffer if building game runtime.
+
+#ifdef ENGINE_MODE_EDITOR
     glBindFramebuffer(GL_FRAMEBUFFER, RenderingUtil::gGameWindowFBO);
+#else
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+#endif 
+    
     glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT);
 
@@ -826,11 +834,26 @@ void RenderSystem::postProcessingPass()
 void RenderSystem::forwardRenderingPass()
 {
     glBindFramebuffer(GL_READ_FRAMEBUFFER, RenderingUtil::gBufferFBO);
+ 
+// render to default framebuffer if building game runtime.
+    
+#ifdef ENGINE_MODE_EDITOR
     glBindFramebuffer(GL_DRAW_FRAMEBUFFER, RenderingUtil::gGameWindowFBO);
-    glBlitFramebuffer(0, 0, Common::SCR_WIDTH, Common::SCR_HEIGHT, 0, 0, Common::SCR_WIDTH, Common::SCR_HEIGHT, GL_DEPTH_BUFFER_BIT, GL_NEAREST);
+#else
+    glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
+#endif 
 
+    glBlitFramebuffer(0, 0, Common::SCR_WIDTH, Common::SCR_HEIGHT, 0, 0, Common::SCR_WIDTH, Common::SCR_HEIGHT, GL_DEPTH_BUFFER_BIT, GL_NEAREST);
     glEnable(GL_DEPTH_TEST);
+
+
+
+#ifdef ENGINE_MODE_EDITOR
     glBindFramebuffer(GL_FRAMEBUFFER, RenderingUtil::gGameWindowFBO);
+#else
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+#endif 
+   
 
     if (Common::lightPosDebug)
     {

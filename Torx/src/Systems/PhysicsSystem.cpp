@@ -14,7 +14,7 @@
 #include "../Physics/Raycast.h"
 #include "../UI/UI.h"
 #include "../Editor/Editor.h"
-#include "../include/Engine.h"
+#include "../Engine.h"
 
 #include "btBulletDynamicsCommon.h"
 #include <BulletCollision/CollisionShapes/btShapeHull.h>

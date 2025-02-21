@@ -1,7 +1,7 @@
 #include "../Components/CNativeScript.h"
 #include "../Core/Coordinator.hpp"
 #include "NativeScriptSystem.h"
-#include "../include/Engine.h"
+#include "../Engine.h"
 
 extern Coordinator ecs;
 

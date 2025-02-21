@@ -399,6 +399,7 @@ FodyWeavers.xsd
 *.sln.iml
 
 build/
+out/
 
 Torx/vendor/bulletphysics/lib/*
 !Torx/vendor/bulletphysics/lib/

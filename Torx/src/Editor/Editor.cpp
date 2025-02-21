@@ -11,11 +11,9 @@
 #define GLM_ENABLE_EXPERIMENTAL 
 #include <glm/gtx/string_cast.hpp>
 #include "EditorCamera.h"
-#include "../include/Engine.h"
 #include "../Scene/Scene.h"
 #include "../UI/UI.h"
-#include "../include/Engine.h"
-
+#include "../Engine.h"
 
 extern Coordinator ecs;
 
@@ -229,6 +227,5 @@ void Editor::Update(float dt)
             inputSing.firstMouse = true;
             Window::ShowCursor();
         }
-    }
-    
+    } 
 }
