@@ -15,8 +15,7 @@
 #include "../Util/Util.h"
 #include "../AssetLoading/AssetManager.h"
 #include "../Rendering/RenderingUtil.h"
-#include "../Editor/EditorCamera.h"
-#include "../Editor/Editor.h"
+#include <algorithm>
 
 extern Coordinator ecs;
 
@@ -59,6 +58,7 @@ namespace Scene
 			{
 				const auto& model = ecs.GetComponent<CModel>(entity);
 				e["components"]["model"]["modelName"] = model.modelName;
+				e["components"]["model"]["path"] = model.path;
 				e["components"]["model"]["hasAOTexture"] = model.hasAOTexture;
 				e["id"] = entity;
 			}
@@ -162,11 +162,6 @@ namespace Scene
 		json["config"]["ssao"]["ssaoKernelSize"] = Common::ssaoKernelSize;
 		json["config"]["ssao"]["ssaoOn"] = Common::ssaoOn;
 
-		// EDITOR INFO
-		EditorCamera& editorCamera = Editor::getInstance().GetEditorCamera();
-		json["editor"]["editorCamera"]["transform"]["position"] = { editorCamera.GetTransform().position.x, editorCamera.GetTransform().position.y, editorCamera.GetTransform().position.z };
-		json["editor"]["editorCamera"]["transform"]["rotation"] = { editorCamera.GetTransform().rotation.w, editorCamera.GetTransform().rotation.x, editorCamera.GetTransform().rotation.y, editorCamera.GetTransform().rotation.z };
-
 		return json;
 	}
 
@@ -178,7 +173,6 @@ namespace Scene
 
 			if (e["components"].contains("transform"))
 			{
-
 				ecs.AddComponent<CTransform>(
 					newEntity,
 					CTransform{
@@ -202,13 +196,18 @@ namespace Scene
 			if (e["components"].contains("model"))
 			{
 
-				std::cout << "model name: " << e["components"]["model"]["modelName"].get<std::string>() << "\n";;
-
+				std::string name = e["components"]["model"]["modelName"].get<std::string>();
+				std::string path = e["components"]["model"]["path"].get<std::string>();
+				
+				std::cout << "model path: " << path << "\n";
+				AssetManager::LoadModel(path, name);	
+					
 				ecs.AddComponent<CModel>(
 					newEntity,
 					CModel{
-						.model = AssetManager::GetModel(e["components"]["model"]["modelName"].get<std::string>()),
-						.modelName = e["components"]["model"]["modelName"].get<std::string>(),
+						.model = AssetManager::GetModel(name),
+						.modelName = name,
+						.path = path,
 						.hasAOTexture = e["components"]["model"]["hasAOTexture"].get<bool>()
 					});
 			}
@@ -334,23 +333,10 @@ namespace Scene
 			Common::ssaoKernelSize = jsonData["config"]["ssao"]["ssaoKernelSize"].get<int>();;
 			Common::ssaoOn = jsonData["config"]["ssao"]["ssaoOn"].get<bool>();
 		}
-
-		// EDITOR INFO
-
-		if (jsonData["editor"].contains("editorCamera"))
-		{
-			EditorCamera& editorCamera = Editor::getInstance().GetEditorCamera();
-			editorCamera.SetTransform(
-				EditorCameraTransform{
-					.position = jsonToVec3(jsonData["editor"]["editorCamera"]["transform"]["position"]),
-					.rotation = jsonToQuat(jsonData["editor"]["editorCamera"]["transform"]["rotation"])
-				});
-		}
 	}
 
 	void SaveSceneToJson(const std::string& path)
 	{
-		
 		nlohmann::json serializedScene = SerializeScene();
 
 		std::ofstream o(path);

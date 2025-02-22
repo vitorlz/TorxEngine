@@ -2,7 +2,7 @@
 #include "stb_image.h"
 #include "../Util/TextureLoader.h"
 
-std::unordered_map<std::string, Model> AssetManager::m_Models{};
+std::vector<ModelData> AssetManager::m_Models{};
 std::unordered_map<std::string, Mesh> AssetManager::m_Meshes{};
 std::unordered_map<std::string, Animation> AssetManager::m_Animations;
 std::vector<Texture> AssetManager::m_LoadedMeshTextures{};
@@ -11,17 +11,23 @@ std::unordered_map<std::string, TextRendering>  AssetManager::m_textFonts;
 void AssetManager::LoadModels()
 {
 	
-	stbi_set_flip_vertically_on_load(false);
+}
+
+void AssetManager::LoadModel(std::string path, std::string name)
+{
+	// if the model was already loaded, no need to load it again
+	std::vector<std::string> modelPaths = GetModelPaths();
 	
-	Model sponza("res/models/sponza-atrium/Sponza.gltf");
-	Model ceilingLamp1("res/models/ceilingLamp1/scene.gltf");
-	Model camera("res/models/camera/scene.gltf");
-	Model zombie("res/models/zombie/zombie.gltf");
+	if (std::find(modelPaths.begin(), modelPaths.end(), name) != modelPaths.end())
+	{
+		std::cout << "model " << name << " is already loaded! " << "\n";
+		return;
+	}
+
+	Model model(path.c_str());
+
 	
-	m_Models.insert({ "zombie", zombie });
-	m_Models.insert({ "sponza", sponza });
-	m_Models.insert({ "ceilingLamp1", ceilingLamp1 });
-	m_Models.insert({ "camera", camera });
+	m_Models.push_back(ModelData{ .name = name, .path = path, .model = model });
 }
 
 void AssetManager::LoadAnimations()
@@ -39,7 +45,6 @@ void AssetManager::LoadAnimations()
 	// on enemy state (attack, run, etc...)
 
 	m_Animations.insert({ "zombieDance", Animation("res/models/zombie/zombie.gltf", &GetModel("zombie"))});
-
 }
 
 void AssetManager::LoadFonts()
@@ -167,8 +172,30 @@ void AssetManager::LoadMeshes()
 
 Model& AssetManager::GetModel(const std::string name)
 {
-	return m_Models[name];
+	for (auto& modelData : m_Models)
+	{
+		if (modelData.name == name)
+		{
+			return modelData.model;
+		}
+	}
+
+	std::cout << "Model for " << name << " not found\n";
 }
+
+std::string AssetManager::GetModelPath(std::string name)
+{
+	for (auto& modelData : m_Models)
+	{
+		if (modelData.name == name)
+		{
+			return modelData.path;
+		}
+	}
+
+	std::cout << "ModelData for " << name << " not found\n";
+}
+
 
 Mesh& AssetManager::GetMesh(const std::string name)
 {
@@ -180,19 +207,34 @@ Animation& AssetManager::GetAnimation(const std::string name)
 	return m_Animations[name];
 }
 
-std::unordered_map<std::string, Model>& AssetManager::GetModelMap()
-{
-	return m_Models;
-}
-
 std::vector<std::string> AssetManager::GetModelNames()
 {
 	std::vector<std::string> names{};
-	for (auto& pair : m_Models)
+	for (auto& modelData : m_Models)
 	{
-		names.push_back(pair.first);
+		//std::cout << "name: " << modelData.name << "\n";
+
+	
+		names.push_back(modelData.name);
+
+		//std::cout << "name vector size: " << names.size() << "\n";
 	}
 	return names;
+}
+
+std::vector<std::string> AssetManager::GetModelPaths()
+{
+	std::vector<std::string> paths{};
+	for (auto& modelData : m_Models)
+	{
+		/*std::cout << "name: " << modelData.name << "\n";
+		std::cout << "path: " << modelData.path << "\n";*/
+
+		paths.push_back(modelData.path);
+
+		//std::cout << "name vector size: " << paths.size() << "\n";
+	}
+	return paths;
 }
 
 void AssetManager::LoadAssets()

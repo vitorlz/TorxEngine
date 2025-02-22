@@ -189,6 +189,9 @@ std::vector<Texture> Model::loadMaterialTextures(aiMaterial* mat, aiTextureType 
 			// THIS FUNCTION ONLY WORKS IF THE TEXTURES ARE STORED IN THE SAME DIRECTORY AS THE MODEL ITSELF
 			// SOME MODELS STORE TEXTURES IN ABSOLUTE PATHS, WHICH WE NEED TO EDIT TO LOCAL IF WE WANT IT TO WORK
 
+			std::cout << "directory: " << directory << "\n";
+			std::cout << "filename: " << std::string(str.C_Str()) << "\n";
+
 			if (typeName == "texture_albedo")
 			{
 				texture.id = TextureFromFile(str.C_Str(), directory, true);

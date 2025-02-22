@@ -1,6 +1,6 @@
 {
     "config": {
-        "environmentMap": "",
+        "environmentMap": "lilienstein_2k.hdr",
         "ssao": {
             "ssaoKernelSize": 64,
             "ssaoOn": true,
@@ -24,23 +24,6 @@
             "voxelizationAreaSize": 12.0,
             "vxSpecularBias": 1.0,
             "vxgi": true
-        }
-    },
-    "editor": {
-        "editorCamera": {
-            "transform": {
-                "position": [
-                    -2.8731367588043213,
-                    2.9145123958587646,
-                    -0.9505525231361389
-                ],
-                "rotation": [
-                    -0.15948006510734558,
-                    0.026115983724594116,
-                    -0.9738853573799133,
-                    -0.1594802737236023
-                ]
-            }
         }
     },
     "entities": [

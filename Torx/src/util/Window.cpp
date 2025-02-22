@@ -3,11 +3,11 @@
 #include "Util/Window.h"
 
 #include "../Util/ShaderManager.h"
-#include "../UI/UI.h"
+//#include "../UI/UI.h"
 #include "../Core/Common.h"
 #include "Engine.h"
-#include "../Editor/EditorCamera.h"
-#include "../Editor/Editor.h"
+//#include "../Editor/EditorCamera.h"
+//#include "../Editor/Editor.h"
 #include "../Scene/Scene.h"
 #include "../Core/Coordinator.hpp"
 
@@ -20,8 +20,6 @@ bool Window::cursorHidden = false;
 
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods);
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
-void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
-
 extern Coordinator ecs;
 
 void Window::Init(int width, int height, const char* windowTitle)
@@ -61,7 +59,6 @@ void Window::Init(int width, int height, const char* windowTitle)
 	Window::EnableVsync();
 	glfwSetFramebufferSizeCallback(mWindow, framebuffer_size_callback);
 	glfwSetKeyCallback(mWindow, key_callback);
-	glfwSetScrollCallback(mWindow, scroll_callback);
 }
 
 GLFWwindow* Window::GetPointer() const{
@@ -117,21 +114,7 @@ double Window::GetScrollOffset()
 }
 
 
-void scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
-{
-	Window::SetScrollOffset(yoffset);
 
-	EditorCamera& editorCamera = Editor::getInstance().GetEditorCamera();
-
-	float EditorCameraZOffset = 0.0f;
-	
-	EditorCameraZOffset += (float)yoffset;
-	
-	editorCamera.SetZOffset(EditorCameraZOffset);
-
-	std::cout << "scroll callback called " << "\n";
-
-}
 
 // glfw: whenever the window size changed (by OS or user resize) this callback function executes
 // ---------------------------------------------------------------------------------------------

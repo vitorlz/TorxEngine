@@ -4,7 +4,7 @@
 #include "../Core/Coordinator.hpp"
 #include "../Components/CSingleton_Input.h"
 #include "../Core/Common.h"
-#include "../UI/UI.h"
+//#include "../UI/UI.h"
 #include <iostream>
 #include "../Engine.h"
 #include "../Util/Keys.h"
@@ -52,7 +52,7 @@ void GeneralInputSystem::Update(float deltaTime)
 		inputSing.mouseX = x;
 		inputSing.mouseY = y;
 		inputSing.firstMouse = false;
-		UI::firstMouseUpdateAfterMenu = false;
+		//UI::firstMouseUpdateAfterMenu = false;
 	}
 
 	inputSing.mouseOffsetX = x - inputSing.mouseX;

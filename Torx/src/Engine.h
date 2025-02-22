@@ -43,7 +43,6 @@ namespace Torx
 		void Run();
 
 		static EngineMode MODE;
-
 	private:
 		static Window m_window;
 	};

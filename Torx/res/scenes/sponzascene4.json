@@ -1,0 +1,151 @@
+{
+    "config": {
+        "environmentMap": "lilienstein_2k.hdr",
+        "ssao": {
+            "ssaoKernelSize": 64,
+            "ssaoOn": true,
+            "ssaoPower": 1.0,
+            "ssaoRadius": 0.5
+        },
+        "ssr": {
+            "ssrMaxBlurDistance": 10.0,
+            "ssrMaxDistance": 20.0,
+            "ssrResolution": 1.0,
+            "ssrSpecularBias": 1.0,
+            "ssrSteps": 50,
+            "ssrThickness": 0.5
+        },
+        "vxgi": {
+            "diffuseConeSpread": 5.392000198364258,
+            "specularConeMaxDistance": 1.0,
+            "specularConeOriginOffset": 0.800000011920929,
+            "specularStepSizeMultiplier": 1.0,
+            "voxelGridDimensions": 64,
+            "voxelizationAreaSize": 12.0,
+            "vxSpecularBias": 1.0,
+            "vxgi": true
+        }
+    },
+    "entities": [
+        {
+            "components": {
+                "model": {
+                    "hasAOTexture": true,
+                    "modelName": "sponza",
+                    "path": "res/models/sponza-atrium/Sponza.gltf"
+                },
+                "rigidbody": {
+                    "mass": 0.0
+                },
+                "transform": {
+                    "position": [
+                        0.0,
+                        0.0,
+                        -2.0
+                    ],
+                    "rotation": [
+                        1.0,
+                        0.0,
+                        0.0,
+                        0.0
+                    ],
+                    "scale": [
+                        1.0,
+                        1.0,
+                        1.0
+                    ]
+                }
+            },
+            "id": 0
+        },
+        {
+            "components": {
+                "model": {
+                    "hasAOTexture": true,
+                    "modelName": "C:\\dev\\Torx\\out\\build\\x64-Release\\TorxEditor\\res\\models\\ceilingLamp1\\scene.gltf",
+                    "path": "C:\\dev\\Torx\\out\\build\\x64-Release\\TorxEditor\\res\\models\\ceilingLamp1\\scene.gltf"
+                },
+                "rigidbody": {
+                    "mass": 0.0
+                },
+                "transform": {
+                    "position": [
+                        2.8638124465942383,
+                        1.3047692775726318,
+                        -1.7077856063842773
+                    ],
+                    "rotation": [
+                        1.0,
+                        0.0,
+                        0.0,
+                        0.0
+                    ],
+                    "scale": [
+                        1.0,
+                        1.0,
+                        1.0
+                    ]
+                }
+            },
+            "id": 1
+        },
+        {
+            "components": {
+                "light": {
+                    "color": [
+                        1.0,
+                        1.0,
+                        1.0
+                    ],
+                    "direction": [
+                        0.0,
+                        0.0,
+                        0.0
+                    ],
+                    "innerCutoff": 0.0,
+                    "isDirty": true,
+                    "offset": [
+                        0.0,
+                        0.0,
+                        0.0
+                    ],
+                    "outerCutoff": 0.0,
+                    "radius": 0.0,
+                    "shadowCaster": true,
+                    "strength": 12.520000457763672,
+                    "type": 0
+                },
+                "mesh": {
+                    "meshType": "cube",
+                    "texture": "darkmarble",
+                    "textureScaling": [
+                        1.0,
+                        1.0
+                    ]
+                },
+                "rigidbody": {
+                    "mass": 0.0
+                },
+                "transform": {
+                    "position": [
+                        4.3277587890625,
+                        20.0,
+                        -0.300445556640625
+                    ],
+                    "rotation": [
+                        1.0,
+                        0.0,
+                        0.0,
+                        0.0
+                    ],
+                    "scale": [
+                        1.0,
+                        1.0,
+                        1.0
+                    ]
+                }
+            },
+            "id": 2
+        }
+    ]
+}

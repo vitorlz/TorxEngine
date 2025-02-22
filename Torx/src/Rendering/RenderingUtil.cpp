@@ -58,6 +58,7 @@ unsigned int RenderingUtil::gViewPosition;
 unsigned int RenderingUtil::gViewNormal;
 unsigned int RenderingUtil::gGameWindowFBO;
 unsigned int RenderingUtil::gGameWindowTexture;
+unsigned int RenderingUtil::gFinalRenderTarget{ 0 };
 
 void RenderingUtil::Init()
 {

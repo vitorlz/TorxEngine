@@ -12,8 +12,6 @@
 #include "../Components/CMesh.h"
 #include "../Physics/BulletDebugDrawer.h"
 #include "../Physics/Raycast.h"
-#include "../UI/UI.h"
-#include "../Editor/Editor.h"
 #include "../Engine.h"
 
 #include "btBulletDynamicsCommon.h"

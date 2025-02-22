@@ -1,7 +1,7 @@
 #include "Common.h"
-#include "../UI/UI.h"
-#include "../Editor/Editor.h"
-#include "../Editor/EditorCamera.h"
+//#include "../UI/UI.h"
+//#include "../Editor/Editor.h"
+//#include "../Editor/EditorCamera.h"
 
 
 // -------- SCREEN SETTINGS -----------------------------------
@@ -73,7 +73,6 @@ bool Common::showAO{ false };
 glm::vec3 Common::textColor{ 0.7f };
 
 // -------------- CURRENT MATRICES --------------------------------
-static EditorCamera& editorCamera = Editor::getInstance().GetEditorCamera();
-glm::mat4 Common::currentViewMatrix{ editorCamera.GetViewMatrix() };
-glm::mat4 Common::currentProjMatrix{ editorCamera.GetProjMatrix() };
-glm::vec3 Common::currentCamPos{ editorCamera.GetCamPos() };
+glm::mat4 Common::currentViewMatrix;
+glm::mat4 Common::currentProjMatrix;
+glm::vec3 Common::currentCamPos;

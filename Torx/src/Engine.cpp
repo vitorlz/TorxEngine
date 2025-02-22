@@ -11,7 +11,6 @@
 #include "Components/CTransform.h"
 #include "Game/PlayerInputScript.hpp"
 #include "Game/TestController.hpp"
-#include "Editor/Editor.h"
 
 Coordinator ecs;
 
@@ -19,7 +18,7 @@ using namespace Torx;
 
 Window Engine::m_window;
 
-EngineMode Engine::MODE{};
+EngineMode Engine::MODE{ Torx::PLAY };
 
 Engine::Engine() {};
 
@@ -53,7 +52,7 @@ void Engine::Init(const std::string scenePath)
 void Engine::Init()
 {
 	TextRendering::Init();
-	AssetManager::LoadAssets();
+	//AssetManager::LoadAssets();
 	ShaderManager::LoadShaders();
 	RenderingUtil::Init();
 	ECSCore::RegisterCoreComponentsAndSystems();
@@ -62,46 +61,27 @@ void Engine::Init()
 
 void Engine::Run()
 {
+	ScriptFactory::Register("PlayerController", []() { return new PlayerController(); });
+	ScriptFactory::Register("TestController", []() { return new TestController(); });
 
-    ScriptFactory::Register("PlayerController", []() { return new PlayerController(); });
-    ScriptFactory::Register("TestController", []() { return new TestController(); });
+	float deltaTime{};
+	float lastFrame{};
 
-#ifdef ENGINE_MODE_EDITOR
-    Torx::Engine::MODE = Torx::EDITOR;
-    Editor& editor = Editor::getInstance();
-    editor.InitUI();
-#else
-    Torx::Engine::MODE = Torx::PLAY;
-#endif 
+	Scene::LoadSceneFromJson("res/scenes/sponzascene2.json");
 
-#ifdef ENGINE_MODE_GAME
-    Scene::LoadSceneFromJson("res/scenes/sponzascene2.json");
-#endif 
+	while (!glfwWindowShouldClose(GetWindow().GetPointer()))
+	{
+		float currentFrame = glfwGetTime();
+		deltaTime = currentFrame - lastFrame;
+		lastFrame = currentFrame;
 
-    float deltaTime{};
-    float lastFrame{};
+		ECSCore::UpdateSystems(deltaTime);
 
-    while (!glfwWindowShouldClose(GetWindow().GetPointer()))
-    {
-        float currentFrame = glfwGetTime();
-        deltaTime = currentFrame - lastFrame;
-        lastFrame = currentFrame;
+		GetWindow().Update();
+	}
 
-        ECSCore::UpdateSystems(deltaTime);
-
-#ifdef ENGINE_MODE_EDITOR
-        editor.Update(deltaTime);
-#endif 
-
-        GetWindow().Update();
-    }
-
-#ifdef ENGINE_MODE_EDITOR
-    editor.GetUI().Terminate();
-#endif 
-
-    FT_Done_FreeType(TextRendering::m_ft);
-    GetWindow().Terminate();
+	FT_Done_FreeType(TextRendering::m_ft);
+	GetWindow().Terminate();  
 }
 
 
