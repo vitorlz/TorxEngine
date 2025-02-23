@@ -27,6 +27,7 @@
 #include <sstream>
 #include "Util/Util.h"
 #include "Engine.h"
+#include "Util/ShaderManager.h"
 #include "../Editor/EditorCamera.h"
 #include "Scene/Scene.h"
 #include "Util/WindowsPlatform/WindowsUtil.h"
@@ -44,6 +45,8 @@ bool UI::isOpen{ true };
 bool UI::firstMouseUpdateAfterMenu{ false };
 bool UI::hovering{ false };
 bool UI::spectatingCamera{ false };
+
+bool UI::projectLoaded{ false };
 
 void showComponents(Entity entity);
 void showEntityOptions(Entity entity, bool addingNewEntity);
@@ -495,7 +498,6 @@ void UI::Update()
                                 std::cout << "Projects folder not found" << "\n";
                                 break;
                             }
-
                         }
                     }
                 }
@@ -515,6 +517,14 @@ void UI::Update()
                         if (ImGui::MenuItem(it->first.c_str()))
                         {
                             std::filesystem::current_path(it->second);
+
+                            // if a project was already loaded, reload shaders when switching projects
+                            if (projectLoaded)
+                            {
+                                ShaderManager::ReloadShaders();
+                            }
+
+                            std::cout << "PROJECT LOADED!" << "\n";
 
                             projectLoaded = true;
 

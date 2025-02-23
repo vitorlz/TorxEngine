@@ -57,17 +57,22 @@ void Engine::Init()
 	RenderingUtil::Init();
 	ECSCore::RegisterCoreComponentsAndSystems();
 	ECSCore::InitSystems();
+	
+
 }
 
 void Engine::Run()
 {
+	AssetManager::LoadModel("res/models/zombie/zombie.gltf", "zombie");
+	AssetManager::LoadAssets();
+
 	ScriptFactory::Register("PlayerController", []() { return new PlayerController(); });
 	ScriptFactory::Register("TestController", []() { return new TestController(); });
 
 	float deltaTime{};
 	float lastFrame{};
 
-	Scene::LoadSceneFromJson("res/scenes/sponzascene2.json");
+	Scene::LoadSceneFromJson("res/scenes/sponzascene4.json");
 
 	while (!glfwWindowShouldClose(GetWindow().GetPointer()))
 	{

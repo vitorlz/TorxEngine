@@ -60,37 +60,6 @@
         },
         {
             "components": {
-                "model": {
-                    "hasAOTexture": true,
-                    "modelName": "C:\\dev\\Torx\\out\\build\\x64-Release\\TorxEditor\\res\\models\\ceilingLamp1\\scene.gltf",
-                    "path": "C:\\dev\\Torx\\out\\build\\x64-Release\\TorxEditor\\res\\models\\ceilingLamp1\\scene.gltf"
-                },
-                "rigidbody": {
-                    "mass": 0.0
-                },
-                "transform": {
-                    "position": [
-                        2.8638124465942383,
-                        1.3047692775726318,
-                        -1.7077856063842773
-                    ],
-                    "rotation": [
-                        1.0,
-                        0.0,
-                        0.0,
-                        0.0
-                    ],
-                    "scale": [
-                        1.0,
-                        1.0,
-                        1.0
-                    ]
-                }
-            },
-            "id": 1
-        },
-        {
-            "components": {
                 "light": {
                     "color": [
                         1.0,
@@ -103,7 +72,7 @@
                         0.0
                     ],
                     "innerCutoff": 0.0,
-                    "isDirty": true,
+                    "isDirty": false,
                     "offset": [
                         0.0,
                         0.0,
@@ -137,6 +106,75 @@
                         0.0,
                         0.0,
                         0.0
+                    ],
+                    "scale": [
+                        1.0,
+                        1.0,
+                        1.0
+                    ]
+                }
+            },
+            "id": 1
+        },
+        {
+            "components": {
+                "camera": {
+                    "bottom": -20.0,
+                    "far": 100.0,
+                    "fov": 45.0,
+                    "left": -20.0,
+                    "near": 0.10000000149011612,
+                    "projType": "perspective",
+                    "projection": [
+                        1.3579951524734497,
+                        0.0,
+                        0.0,
+                        0.0,
+                        0.0,
+                        2.4142134189605713,
+                        0.0,
+                        0.0,
+                        0.0,
+                        0.0,
+                        -1.0002000331878662,
+                        -1.0,
+                        0.0,
+                        0.0,
+                        -0.020002000033855438,
+                        0.0
+                    ],
+                    "right": 20.0,
+                    "top": 20.0
+                },
+                "mesh": {
+                    "meshType": "cube",
+                    "texture": "darkmarble",
+                    "textureScaling": [
+                        1.0,
+                        1.0
+                    ]
+                },
+                "player": {
+                    "flashlightOn": false,
+                    "movementSpeed": 3.0
+                },
+                "rigidbody": {
+                    "mass": 0.0
+                },
+                "script": {
+                    "name": "PlayerController"
+                },
+                "transform": {
+                    "position": [
+                        -1.836742877960205,
+                        5.3120527267456055,
+                        -3.518440008163452
+                    ],
+                    "rotation": [
+                        0.37804684042930603,
+                        -0.08329188078641891,
+                        0.9004366993904114,
+                        0.1983857899904251
                     ],
                     "scale": [
                         1.0,

@@ -13,6 +13,7 @@
 #include "Components/CTransform.h"
 #include "Game/PlayerInputScript.hpp"
 #include "Game/TestController.hpp"
+#include "Rendering/RenderingUtil.h"
 
 int main()
 {
@@ -20,18 +21,11 @@ int main()
     engine.ConfigWindow(1600, 900, "TorxEditor");
     engine.Init();
 
-    AssetManager::LoadModel("res/models/zombie/zombie.gltf", "zombie");
-
-    AssetManager::LoadAssets();
-
     ScriptFactory::Register("PlayerController", []() { return new PlayerController(); });
     ScriptFactory::Register("TestController", []() { return new TestController(); });
 
     Torx::Engine::MODE = Torx::EDITOR;
     Editor& editor = Editor::getInstance();
     editor.InitUI();
-
     editor.Run();
-
-    return 0;
 }

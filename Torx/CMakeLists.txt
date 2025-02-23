@@ -23,6 +23,7 @@ link_directories(
 file(GLOB_RECURSE TORX_SOURCES
     "${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/src/*.h"
+    "${CMAKE_CURRENT_SOURCE_DIR}/src/*.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/vendor/glad/src/glad.c"
     "${CMAKE_CURRENT_SOURCE_DIR}/vendor/imgui/*.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/vendor/imguizmo/*.cpp"

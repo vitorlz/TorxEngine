@@ -11,7 +11,7 @@ add_custom_command(TARGET TorxEditor POST_BUILD
 # copy res into executable directory
 add_custom_command(TARGET TorxEditor POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E copy_directory
-    "${CMAKE_SOURCE_DIR}/Torx/res/" "${CMAKE_CURRENT_BINARY_DIR}/res"
+    "${CMAKE_CURRENT_SOURCE_DIR}/res/" "${CMAKE_CURRENT_BINARY_DIR}/res"
 )
 
 target_link_libraries(TorxEditor PRIVATE Torx)

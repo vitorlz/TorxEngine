@@ -19,7 +19,7 @@ public:
 
 	void showComponents(Entity entity);
 
-	bool projectLoaded = false;
+	static bool projectLoaded;
 	std::string projectsDir = "";
 
 	static glm::vec2 gameWindowMousePos;

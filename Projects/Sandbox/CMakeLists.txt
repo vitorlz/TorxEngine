@@ -9,9 +9,8 @@ add_custom_command(TARGET Sandbox POST_BUILD
 )
 
 # copy res into executable directory
-add_custom_command(TARGET Sandbox POST_BUILD
-    COMMAND ${CMAKE_COMMAND} -E copy_directory
-    "${CMAKE_SOURCE_DIR}/Torx/res/" "${CMAKE_CURRENT_BINARY_DIR}/res"
-)
+if (NOT EXISTS "${CMAKE_CURRENT_BINARY_DIR}/res")
+    file(COPY "${CMAKE_CURRENT_SOURCE_DIR}/res" DESTINATION "${CMAKE_CURRENT_BINARY_DIR}")
+endif()
 
 target_link_libraries(Sandbox PRIVATE Torx)

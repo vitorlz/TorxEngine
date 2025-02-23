@@ -16,6 +16,8 @@
 #include "Engine.h"
 #include <Rendering/TextRendering.h>
 #include "Rendering/RenderingUtil.h"
+#include "AssetLoading/AssetManager.h"
+#include "Util/ShaderManager.h"
 
 
 extern Coordinator ecs;
@@ -167,7 +169,6 @@ void Editor::RenderGizmo(int selectedEntity)
 void Editor::Run()
 {
     Torx::Engine& engine = Torx::Engine::getInstance();
-    
     RenderingUtil::gFinalRenderTarget = RenderingUtil::gGameWindowFBO;
 
     float deltaTime{};
@@ -178,11 +179,24 @@ void Editor::Run()
         float currentFrame = glfwGetTime();
         deltaTime = currentFrame - lastFrame;
         lastFrame = currentFrame;
-
-        ECSCore::UpdateSystems(deltaTime);
+        
+        // only initialized the engine a load assets when a project is selected
+        static bool assetsLoaded = false;
+        if (UI::projectLoaded)
+        {
+            if (!assetsLoaded)
+            {
+                ShaderManager::ReloadShaders();
+                AssetManager::LoadAssets();
+                assetsLoaded = true;
+            }
+            else
+            {
+                ECSCore::UpdateSystems(deltaTime);
+            }
+        }
 
         Update(deltaTime);
-
         engine.GetWindow().Update();
     }
 

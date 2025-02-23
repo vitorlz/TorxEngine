@@ -39,7 +39,7 @@ void RenderSystem::Update(float deltaTime)
 {
 
     // just testing some animation stuff
-    static bool addedAnimator = false;
+   /* static bool addedAnimator = false;
     for (const auto& entity : mEntities)
     {
         if (ecs.HasComponent<CModel>(entity) && !addedAnimator)
@@ -57,7 +57,7 @@ void RenderSystem::Update(float deltaTime)
                 addedAnimator = true;
             }
         }
-    }
+    }*/
     directionalShadowMapPass();
     omnidirectionalShadowMapPass();
     voxelizationPass();
