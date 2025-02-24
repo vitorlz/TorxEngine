@@ -88,7 +88,11 @@ void LightSystem::Init()
 		EntityToLightIndexMap[entity] = mLightIndex - 1;
 
 		glNamedBufferSubData(mSsbo, EntityToLightIndexMap[entity] * sizeof(Light), sizeof(Light), (const void*)&lightData);
+
+		
 	}
+
+	std::cout << "EntityToLightIndex size: " << EntityToLightIndexMap.size() << "\n";
 }
 
 void LightSystem::Update(float deltaTime)

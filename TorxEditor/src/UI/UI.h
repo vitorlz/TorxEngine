@@ -25,4 +25,7 @@ public:
 	static glm::vec2 gameWindowMousePos;
 	static glm::vec2 gameWindowSize;
 	static glm::vec2 gameWindowPos;
+
+private:
+	bool openChooseScenePopup = false;
 };

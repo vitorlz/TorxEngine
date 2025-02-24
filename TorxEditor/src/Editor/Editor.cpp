@@ -171,6 +171,8 @@ void Editor::Run()
     Torx::Engine& engine = Torx::Engine::getInstance();
     RenderingUtil::gFinalRenderTarget = RenderingUtil::gGameWindowFBO;
 
+    AssetManager::LoadAssets();
+
     float deltaTime{};
     float lastFrame{};
 
@@ -179,22 +181,8 @@ void Editor::Run()
         float currentFrame = glfwGetTime();
         deltaTime = currentFrame - lastFrame;
         lastFrame = currentFrame;
-        
-        // only initialized the engine a load assets when a project is selected
-        static bool assetsLoaded = false;
-        if (UI::projectLoaded)
-        {
-            if (!assetsLoaded)
-            {
-                ShaderManager::ReloadShaders();
-                AssetManager::LoadAssets();
-                assetsLoaded = true;
-            }
-            else
-            {
-                ECSCore::UpdateSystems(deltaTime);
-            }
-        }
+
+        ECSCore::UpdateSystems(deltaTime);
 
         Update(deltaTime);
         engine.GetWindow().Update();

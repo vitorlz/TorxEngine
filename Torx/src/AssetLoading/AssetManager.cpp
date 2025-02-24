@@ -163,8 +163,14 @@ std::vector<Texture> AssetManager::LoadMeshTextures(const char* tag)
 
 void AssetManager::LoadMeshes()
 {	
-	Mesh cube(cubeVertices, cubeIndices, LoadMeshTextures("darkmarble"));
-	Mesh quad(quadVertices, quadIndices, LoadMeshTextures("darkmarble"));
+
+	std::vector<Texture> emptyTextures{};
+
+	/*Mesh cube(cubeVertices, cubeIndices, LoadMeshTextures("darkmarble"));
+	Mesh quad(quadVertices, quadIndices, LoadMeshTextures("darkmarble"));*/
+
+	Mesh cube(cubeVertices, cubeIndices, emptyTextures);
+	Mesh quad(quadVertices, quadIndices, emptyTextures);
 
 	m_Meshes.insert({ "cube", cube });
 	m_Meshes.insert({ "quad", quad });

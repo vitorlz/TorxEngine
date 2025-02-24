@@ -23,6 +23,7 @@
 #include "../Editor/Editor.h"
 #include "Scene/Scene.h"
 #include <filesystem>
+#include <fstream>
 #include <iomanip>
 #include <sstream>
 #include "Util/Util.h"
@@ -466,6 +467,7 @@ void UI::Update()
     {
         if (ImGui::BeginMenu("File"))
         {
+      
             // essentially by "load project" we mean simply setting the working directory to the project's folder so we can access its resources folder.
             if (ImGui::BeginMenu("Load project"))
             {
@@ -538,63 +540,86 @@ void UI::Update()
                 ImGui::EndMenu();
             }
 
-            if (ImGui::BeginMenu("Load scene"))
+            if(projectLoaded)
             {
-                std::unordered_map<std::string, std::filesystem::path> scenes;
-                std::string path = "res/scenes";
-
-                if (std::filesystem::exists(path))
+                if (ImGui::BeginMenu("Load scene"))
                 {
-                    for (const auto& i : std::filesystem::directory_iterator(path))
+                    std::unordered_map<std::string, std::filesystem::path> scenes;
+                    std::string path = "res/scenes";
+
+                    if (std::filesystem::exists(path))
                     {
-                        scenes.insert({ i.path().filename().string(), i.path() });
+                        for (const auto& i : std::filesystem::directory_iterator(path))
+                        {
+                            scenes.insert({ i.path().filename().string(), i.path() });
+                        }
                     }
+
+                    if (!scenes.empty())
+                    {
+                        auto it = scenes.begin();
+                        for (size_t i = 0; i < scenes.size(); i++)
+                        {
+                            if (ImGui::MenuItem(it->first.c_str()))
+                            {
+
+                                for (Entity e : ecs.GetLivingEntities())
+                                {
+                                    ecs.DestroyEntity(e);
+                                }
+                                ecs.ResetEntityIDs();
+                                ECSCore::UpdateSystems(0.0f);
+                                Scene::LoadSceneFromJson(it->second.string());
+                                Common::voxelize = true;
+
+                                break;
+                            }
+
+                            it++;
+                        }
+                    }
+
+                    ImGui::EndMenu();
                 }
 
-                if (!scenes.empty())
+                
+                if (ImGui::MenuItem("New scene..."))
                 {
-                    auto it = scenes.begin();
-                    for (size_t i = 0; i < scenes.size(); i++)
+                  
+                    openChooseScenePopup = true;
+                    
+                }
+
+               
+
+                if (ImGui::MenuItem("Save scene"))
+                {
+                    if (!Scene::g_currentScenePath.empty())
                     {
-                        if (ImGui::MenuItem(it->first.c_str()))
+                        if (!std::filesystem::exists(Scene::g_currentScenePath))
                         {
-
-                            for (Entity e : ecs.GetLivingEntities())
-                            {
-                                ecs.DestroyEntity(e);
-                            }
-                            ecs.ResetEntityIDs();
-                            ECSCore::UpdateSystems(0.0f);
-                            Scene::LoadSceneFromJson(it->second.string());
-                            Common::voxelize = true;
-
-                            break;
+                            std::cout << "New scene created!\n";
+                            std::ofstream ofs(Scene::g_currentScenePath);
+                            ofs.close();
                         }
 
-                        it++;
+                        Scene::SaveSceneToJson(Scene::g_currentScenePath);
                     }
                 }
-
-                ImGui::EndMenu();
-            }
-
-            if (ImGui::MenuItem("Save"))
-            {
-                if (!Scene::g_currentScenePath.empty())
+                if (ImGui::MenuItem("Save scene as..."))
                 {
-                    Scene::SaveSceneToJson(Scene::g_currentScenePath);
-                }
-            }
-            if (ImGui::MenuItem("Save as...")) 
-            {
-                std::string filePath = FileDialogs::SaveFile("Json files (*.json)\0*.json\0");
+                    std::string filePath = FileDialogs::SaveFile("Json files (*.json)\0*.json\0");
 
-                if (!filePath.empty())
-                {
-                    Scene::SaveSceneToJson(filePath);
+                    if (!filePath.empty())
+                    {
+                        Scene::SaveSceneToJson(filePath);
+                    }
                 }
+                
             }
+
             ImGui::EndMenu();
+            
         }
         if (ImGui::BeginMenu("Build"))
         {
@@ -608,6 +633,64 @@ void UI::Update()
         }
 
         ImGui::EndMainMenuBar();
+    }
+
+    // we have to openg this popup from outside the menu's scope because imgui menu's and widgets have different lifetimes.
+    if (openChooseScenePopup)
+    {
+        ImGui::OpenPopup("Choose scene title");
+        openChooseScenePopup = false;
+    }
+
+    if (ImGui::BeginPopupModal("Choose scene title", NULL, ImGuiWindowFlags_AlwaysAutoResize))
+    {
+        static char fileName[32] = "";
+        std::filesystem::path path;
+        static bool fileAlreadyExists = false;
+
+        ImGui::InputText("", fileName, 32);
+        path = "res/scenes";
+        path /= std::string(fileName) + ".json";
+        //std::cout << "New save path: " << path.string() << "\n";
+        if (std::filesystem::is_regular_file(path))
+        {
+            ImGui::TextColored(ImVec4(1.0f, 1.0f, 0.0f, 1.0f), "Title already exists, please choose a new one.");
+            fileAlreadyExists = true;
+        }
+        else
+        {
+            fileAlreadyExists = false;
+        }
+
+        if (ImGui::Button("Ok") && !fileAlreadyExists)
+        {
+            if (!Scene::g_currentScenePath.empty())
+            {
+                for (Entity e : ecs.GetLivingEntities())
+                {
+                    ecs.DestroyEntity(e);
+                }
+                ecs.ResetEntityIDs();
+                ECSCore::UpdateSystems(0.0f);
+                Scene::SetEnvironmentMap("");
+                Scene::g_currentScenePath = path.string();
+                Common::voxelize = true;
+            }
+            else
+            {
+                Scene::g_currentScenePath = path.string();
+            }
+            ImGui::CloseCurrentPopup();
+        }
+
+        ImGui::SameLine();
+
+        if (ImGui::Button("Cancel"))
+        {
+            ImGui::CloseCurrentPopup();
+        }
+
+        ImGui::EndPopup();
     }
 
     ImGui::Render();
@@ -1241,7 +1324,6 @@ void showEntityOptions(Entity entity, bool addingNewEntity)
 
                 if (multipleChoiceComponents[i] == "Model" && !ecs.HasComponent<CModel>(entity))
                 {
-                    //std::vector<std::string> modelNames = AssetManager::GetModelNames();
                     std::unordered_map<std::string, std::filesystem::path> models;
                     std::string path = "res/models";
 
@@ -1273,7 +1355,7 @@ void showEntityOptions(Entity entity, bool addingNewEntity)
 
                                         std::string relativePath = i.path().relative_path().string();
 
-                                        // replace back slashes with forward slaghes
+                                        // replace backslashes with forward slashes
                                         std::replace(relativePath.begin(), relativePath.end(), '\\', '/');
 
                                         AssetManager::LoadModel(relativePath, modelName);
