@@ -720,8 +720,6 @@ void RenderSystem::skyboxPass()
         skyBoxShader.setVec3("defaultColor", glm::vec3(0.0f));
     }
 
-    std::cout << "ENVIRONMENT MAP: " << Scene::environmentMap << "\n";
-
     glBindTexture(GL_TEXTURE_CUBE_MAP, RenderingUtil::mEnvironmentCubemap);
     glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
 
