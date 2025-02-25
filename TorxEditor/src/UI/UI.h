@@ -28,4 +28,8 @@ public:
 
 private:
 	bool openChooseScenePopup = false;
+	bool openChooseProjectTitlePopup = false;
+	bool savingUnnamedScene = false;
+
+	void findProjectsDir();
 };

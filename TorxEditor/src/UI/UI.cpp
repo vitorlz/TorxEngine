@@ -239,11 +239,15 @@ void UI::Update()
         {
             std::vector<std::string> envMaps;
             std::string path = "res/textures/hdr";
-            for (const auto& entry : std::filesystem::directory_iterator(path))
-            {
-                envMaps.push_back(entry.path().filename().string());
-            }
 
+            if (std::filesystem::is_directory(path))
+            {
+                for (const auto& entry : std::filesystem::directory_iterator(path))
+                {
+                    envMaps.push_back(entry.path().filename().string());
+                }
+            }
+            
             for (int i = 0; i < envMaps.size(); i++)
             {
                 ImGui::PushID(i);
@@ -463,6 +467,11 @@ void UI::Update()
         hovering = false;
     }
 
+    if (projectsDir.empty())
+    {
+        findProjectsDir();
+    }
+
     if (ImGui::BeginMainMenuBar())
     {
         if (ImGui::BeginMenu("File"))
@@ -472,38 +481,8 @@ void UI::Update()
             if (ImGui::BeginMenu("Load project"))
             {
                 std::unordered_map<std::string, std::filesystem::path> projects;
-                std::string path = "../";
-
-                // if there is already a project loaded, keep searching for projects from the editor root directory
                
-                // go up the file hierarchy until we find the Projects folder, then get all project names
-                if (projectsDir.empty())
-                {
-                    if (std::filesystem::exists(path))
-                    {
-                        for (const auto& i : std::filesystem::directory_iterator(path))
-                        {
-                            if (i.path().filename().string() == "Projects")
-                            {
-                                projectsDir = std::filesystem::absolute(i.path()).string();
-
-                                std::cout << "projectsDir: " << projectsDir << "\n";
-                                for (const auto& j : std::filesystem::directory_iterator(i.path()))
-                                {
-                                    projects.insert({ j.path().filename().string(), j.path() });
-                                }
-                            }
-
-                            path = path + "..";
-                            if (!std::filesystem::exists(path))
-                            {
-                                std::cout << "Projects folder not found" << "\n";
-                                break;
-                            }
-                        }
-                    }
-                }
-                else
+                if(!projectsDir.empty())
                 {
                     for (const auto& j : std::filesystem::directory_iterator(projectsDir))
                     {
@@ -525,9 +504,46 @@ void UI::Update()
                             {
                                 ShaderManager::ReloadShaders();
                             }
+                            bool scenefound = false;
+                            // load one of the scenes when loading a new project
+                            std::string path = "res/scenes";
+                            if (std::filesystem::exists(path))
+                            {
+                                for (const auto& i : std::filesystem::directory_iterator(path))
+                                {
+                                    for (Entity e : ecs.GetLivingEntities())
+                                    {
+                                        ecs.DestroyEntity(e);
+                                    }
+                                    ecs.ResetEntityIDs();
+                                    ECSCore::UpdateSystems(0.0f);
+                                    Scene::LoadSceneFromJson(i.path().string());
+                                    Common::voxelize = true;
 
+                                    scenefound = true;
+
+                                    break;
+                                }
+
+                                if (!scenefound)
+                                {
+
+                                    std::cout << "No scenes were found\n";
+
+                                    for (Entity e : ecs.GetLivingEntities())
+                                    {
+                                        ecs.DestroyEntity(e);
+                                    }
+                                    ecs.ResetEntityIDs();
+                                    ECSCore::UpdateSystems(0.0f);
+                                    Scene::SetEnvironmentMap("");
+                                    RenderingUtil::LoadNewEnvironmentMap("");
+                                    Scene::g_currentScenePath = "";
+                                    Common::voxelize = true;
+                                }
+                            }
+                            
                             std::cout << "PROJECT LOADED!" << "\n";
-
                             projectLoaded = true;
 
                             break;
@@ -540,97 +556,105 @@ void UI::Update()
                 ImGui::EndMenu();
             }
 
-            if(projectLoaded)
+            if (ImGui::MenuItem("New project..."))
             {
-                if (ImGui::BeginMenu("Load scene"))
-                {
-                    std::unordered_map<std::string, std::filesystem::path> scenes;
-                    std::string path = "res/scenes";
-
-                    if (std::filesystem::exists(path))
-                    {
-                        for (const auto& i : std::filesystem::directory_iterator(path))
-                        {
-                            scenes.insert({ i.path().filename().string(), i.path() });
-                        }
-                    }
-
-                    if (!scenes.empty())
-                    {
-                        auto it = scenes.begin();
-                        for (size_t i = 0; i < scenes.size(); i++)
-                        {
-                            if (ImGui::MenuItem(it->first.c_str()))
-                            {
-
-                                for (Entity e : ecs.GetLivingEntities())
-                                {
-                                    ecs.DestroyEntity(e);
-                                }
-                                ecs.ResetEntityIDs();
-                                ECSCore::UpdateSystems(0.0f);
-                                Scene::LoadSceneFromJson(it->second.string());
-                                Common::voxelize = true;
-
-                                break;
-                            }
-
-                            it++;
-                        }
-                    }
-
-                    ImGui::EndMenu();
-                }
-
-                
-                if (ImGui::MenuItem("New scene..."))
-                {
-                  
-                    openChooseScenePopup = true;
-                    
-                }
-
-               
-
-                if (ImGui::MenuItem("Save scene"))
-                {
-                    if (!Scene::g_currentScenePath.empty())
-                    {
-                        if (!std::filesystem::exists(Scene::g_currentScenePath))
-                        {
-                            std::cout << "New scene created!\n";
-                            std::ofstream ofs(Scene::g_currentScenePath);
-                            ofs.close();
-                        }
-
-                        Scene::SaveSceneToJson(Scene::g_currentScenePath);
-                    }
-                }
-                if (ImGui::MenuItem("Save scene as..."))
-                {
-                    std::string filePath = FileDialogs::SaveFile("Json files (*.json)\0*.json\0");
-
-                    if (!filePath.empty())
-                    {
-                        Scene::SaveSceneToJson(filePath);
-                    }
-                }
-                
+                openChooseProjectTitlePopup = true;
             }
 
             ImGui::EndMenu();
             
         }
-        if (ImGui::BeginMenu("Build"))
+
+        if (!projectLoaded)
         {
-            if (ImGui::MenuItem("Build game"))
+            ImGui::BeginDisabled();
+        }
+
+        if (ImGui::BeginMenu("Project"))
+        {
+            
+            if (ImGui::BeginMenu("Load scene"))
             {
-                std::system("cmake C:/dev/Torx/Games/Sandbox -B C:/dev/Torx/out/build/game -DGAME_BUILD=ON");
-                std::system("cmake --build C:/dev/Torx/out/build/game --config Release");
+                std::unordered_map<std::string, std::filesystem::path> scenes;
+                std::string path = "res/scenes";
+
+                if (std::filesystem::exists(path))
+                {
+                    for (const auto& i : std::filesystem::directory_iterator(path))
+                    {
+                        scenes.insert({ i.path().filename().string(), i.path() });
+                    }
+                }
+
+                if (!scenes.empty())
+                {
+                    auto it = scenes.begin();
+                    for (size_t i = 0; i < scenes.size(); i++)
+                    {
+                        if (ImGui::MenuItem(it->first.c_str()))
+                        {
+
+                            for (Entity e : ecs.GetLivingEntities())
+                            {
+                                ecs.DestroyEntity(e);
+                            }
+                            ecs.ResetEntityIDs();
+                            ECSCore::UpdateSystems(0.0f);
+                            Scene::LoadSceneFromJson(it->second.string());
+                            Common::voxelize = true;
+
+                            break;
+                        }
+
+                        it++;
+                    }
+                }
+
+                ImGui::EndMenu();
+            }
+
+            if (ImGui::MenuItem("New scene..."))
+            {
+                openChooseScenePopup = true;
+            }
+
+            if (ImGui::MenuItem("Save scene"))
+            {
+                if (!Scene::g_currentScenePath.empty())
+                {
+                    if (!std::filesystem::exists(Scene::g_currentScenePath))
+                    {
+                        std::cout << "New scene created!\n";
+                        std::ofstream ofs(Scene::g_currentScenePath);
+                        ofs.close();
+                    }
+
+                    Scene::SaveSceneToJson(Scene::g_currentScenePath);
+                }
+                else
+                {
+                    openChooseScenePopup = true;
+                    savingUnnamedScene = true;
+                }
+            }
+            if (ImGui::MenuItem("Save scene as..."))
+            {
+                std::string filePath = FileDialogs::SaveFile("Json files (*.json)\0*.json\0");
+
+                if (!filePath.empty())
+                {
+                    Scene::SaveSceneToJson(filePath);
+                }
             }
 
             ImGui::EndMenu();
         }
+
+        if (!projectLoaded)
+        {
+            ImGui::EndDisabled();
+        }
+
 
         ImGui::EndMainMenuBar();
     }
@@ -662,24 +686,117 @@ void UI::Update()
             fileAlreadyExists = false;
         }
 
-        if (ImGui::Button("Ok") && !fileAlreadyExists)
+        if (ImGui::Button("Ok"))
         {
-            if (!Scene::g_currentScenePath.empty())
+            if (!fileAlreadyExists && !savingUnnamedScene)
             {
-                for (Entity e : ecs.GetLivingEntities())
+                if (!Scene::g_currentScenePath.empty())
                 {
-                    ecs.DestroyEntity(e);
+                    for (Entity e : ecs.GetLivingEntities())
+                    {
+                        ecs.DestroyEntity(e);
+                    }
+                    ecs.ResetEntityIDs();
+                    ECSCore::UpdateSystems(0.0f);
+                    Scene::SetEnvironmentMap("");
+                    RenderingUtil::LoadNewEnvironmentMap("");
+                    Scene::g_currentScenePath = path.string();
+                    Common::voxelize = true;
                 }
-                ecs.ResetEntityIDs();
-                ECSCore::UpdateSystems(0.0f);
-                Scene::SetEnvironmentMap("");
-                Scene::g_currentScenePath = path.string();
-                Common::voxelize = true;
+                else
+                {
+                    Scene::g_currentScenePath = path.string();
+                }
             }
-            else
+            else if (!fileAlreadyExists && savingUnnamedScene)
             {
                 Scene::g_currentScenePath = path.string();
+                Scene::SaveSceneToJson(Scene::g_currentScenePath);
+                savingUnnamedScene = false;
             }
+
+            ImGui::CloseCurrentPopup();
+        }
+       
+
+        ImGui::SameLine();
+
+        if (ImGui::Button("Cancel"))
+        {
+            ImGui::CloseCurrentPopup();
+        }
+
+        ImGui::EndPopup();
+    }
+
+    if (openChooseProjectTitlePopup)
+    {
+        ImGui::OpenPopup("Choose project title");
+        openChooseProjectTitlePopup = false;
+    }
+
+    static bool newProjectCreated = false;
+    static std::string newProjectPath = "";
+
+    if (ImGui::BeginPopupModal("Choose project title", NULL, ImGuiWindowFlags_AlwaysAutoResize))
+    {
+        static char projectName[32] = "";
+        std::filesystem::path path;
+        static bool projectAlreadyExists = false;
+
+        ImGui::InputText("", projectName, 32);
+        path = std::string(PROJECT_SOURCE_DIR) + "/Projects" ;
+        path /= std::string(projectName);
+        //std::cout << "New save path: " << path.string() << "\n";
+        if (std::filesystem::is_directory(path) && !std::string(projectName).empty())
+        {
+            ImGui::TextColored(ImVec4(1.0f, 1.0f, 0.0f, 1.0f), "Title already exists, please choose a new one.");
+            projectAlreadyExists = true;
+        }
+        else if (std::string(projectName).empty())
+        {
+            ImGui::TextColored(ImVec4(1.0f, 1.0f, 0.0f, 1.0f), "Project title cannot be empty");
+            projectAlreadyExists = true;
+        }
+        else
+        {
+            projectAlreadyExists = false;
+        }
+
+        if (ImGui::Button("Ok"))
+        {
+            if (!projectAlreadyExists)
+            {
+                std::string command = "python " + std::string(PROJECT_SOURCE_DIR) + "/create_new_project.py " + projectName;
+                int result = std::system(command.c_str());
+
+                if (result == 0)
+                {
+                    newProjectCreated = true;
+                    newProjectPath = projectsDir + "\\" + projectName;
+
+                    for (Entity e : ecs.GetLivingEntities())
+                    {
+                        ecs.DestroyEntity(e);
+                    }
+                    ecs.ResetEntityIDs();
+                    ECSCore::UpdateSystems(0.0f);
+                    Scene::SetEnvironmentMap("");
+                    RenderingUtil::LoadNewEnvironmentMap("");
+                    Scene::g_currentScenePath = "";
+                    Common::voxelize = true;
+
+                    std::cout << "New project path: " << newProjectPath << "\n";
+                    std::cout << "Project created successfully\n";
+                }
+                else
+                {
+                    std::cout << "Error creating project\n";
+                }
+
+                std::cout << "command: " << command << "\n";
+            }
+
             ImGui::CloseCurrentPopup();
         }
 
@@ -691,6 +808,16 @@ void UI::Update()
         }
 
         ImGui::EndPopup();
+    }
+
+    if (newProjectCreated && std::filesystem::is_directory(newProjectPath + "/res") && !newProjectPath.empty())
+    {
+        std::filesystem::current_path(newProjectPath);
+        projectLoaded = true;
+
+        newProjectCreated = false;
+
+        std::cout << "Changed current path!" << "\n";
     }
 
     ImGui::Render();
@@ -1466,5 +1593,34 @@ void showEntityOptions(Entity entity, bool addingNewEntity)
     if (ImGui::Button("Duplicate"))
     {
         Util::duplicateEntity(entity);
+    }
+}
+
+void UI::findProjectsDir()
+{
+    std::string path = "../";
+
+    // if there is already a project loaded, keep searching for projects from the editor root directory
+
+    // go up the file hierarchy until we find the Projects folder, then get all project names
+    if (projectsDir.empty())
+    {
+        if (std::filesystem::exists(path))
+        {
+            for (const auto& i : std::filesystem::directory_iterator(path))
+            {
+                if (i.path().filename().string() == "Projects")
+                {
+                    projectsDir = std::filesystem::absolute(i.path()).string();
+                }
+
+                path = path + "..";
+                if (!std::filesystem::exists(path))
+                {
+                    std::cout << "Projects folder not found" << "\n";
+                    break;
+                }
+            }
+        }
     }
 }

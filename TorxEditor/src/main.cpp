@@ -2,18 +2,10 @@
 #include <Engine.h>
 #include "Editor/Editor.h"
 #include "Engine.h"
-#include "Core/Common.h"
-#include "Core/Coordinator.hpp"
 
-#include "Util/ShaderManager.h"
-#include "AssetLoading/AssetManager.h"
-#include "Rendering/TextRendering.h"
-#include "Scene/Scene.h"
 #include "Components/CNativeScript.h"
-#include "Components/CTransform.h"
 #include "Game/PlayerInputScript.hpp"
 #include "Game/TestController.hpp"
-#include "Rendering/RenderingUtil.h"
 
 int main()
 {
