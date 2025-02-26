@@ -1,11 +1,10 @@
 # TorxEngine
 Custom game engine built from scratch using C++ and OpenGL.
 
-https://github.com/user-attachments/assets/c94439a4-017c-409b-bb2d-52b3e5a0c8bd
+![bistroDay](https://github.com/user-attachments/assets/ed6f0fec-b238-4b61-a846-dc06dfa78f00)
 
-https://github.com/user-attachments/assets/bd16ce13-ceeb-48e2-b0ed-964f2b4c2a72
+![bistroNight](https://github.com/user-attachments/assets/a08f6897-2df1-4fc3-9165-486a109112a4)
 
--------------------------------------------------------------------------------
 ## Features:
 <li>Voxel Cone Tracing Global Illumination</li> 
 <li>Screen Space Reflections</li>
@@ -32,23 +31,43 @@ Clone the repository
 ```
 git clone git@github.com:vitorlz/TorxEngine.git
 ```
-From the directory containing CMakeLists.txt:
+From the TorxEngine directory:
 ```
 mkdir build
-```
-```
 cd build
-```
-```
 cmake ..
 ```
-```
-cmake --build . --config Release
-```
-To run:
-```
-cd bin
-```
-```
-./TorxEngine.exe
-```
+**After that, run the TorxEditor project in release mode.**
+
+## How to use
+After booting up TorxEditor, you can take a look at an example scene by going **File** → **Load Project** → **Sandbox**. <br/>
+You can also create a new empty project. However, this is not advised yet as new project creation is a work in progress.
+
+## Controls
+The editor camera's controls are very similar to Blender's:
+<table>
+  <tr>
+    <th>Control</th>
+    <th>Action</th>
+  </tr>
+  <tr>
+    <td>Middle Mouse Click</td>
+    <td>Pan the camera</td>
+  </tr>
+  <tr>
+    <td>Middle Mouse Click + Shift</td>
+    <td>Move up, down, right, and left</td>
+  </tr>
+  <tr>
+    <td>Scroll</td>
+    <td>Move backwards and forwards</td>
+  </tr>
+</table>
+If you hit play in the Sandbox project, you will be able to control the player with WASD and the 
+mouse cursor will be hidden. Hit ESCAPE to see your mouse again and click the stop button to go back to the editor camera.
+
+
+
+
+
+
