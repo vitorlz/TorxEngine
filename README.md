@@ -46,7 +46,7 @@ After booting up TorxEditor, you can take a look at an example scene by going **
 You can also create a new empty project. However, this is not advised yet as new project creation is a work in progress.
 
 ## Controls
-The editor camera's controls are very similar to Blender's:
+The editor camera controls are very similar to Blender's:
 <table>
   <tr>
     <th>Control</th>
