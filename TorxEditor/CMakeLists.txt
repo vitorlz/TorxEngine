@@ -28,4 +28,6 @@ add_custom_command(TARGET TorxEditor POST_BUILD
     COMMENT "Copying shaders from TorxEditor to template"
 )
 
+file(COPY "${CMAKE_SOURCE_DIR}/TorxEditor/res/shaders" DESTINATION "${CMAKE_SOURCE_DIR}/Projects/template/res")
+
 target_link_libraries(TorxEditor PRIVATE Torx)

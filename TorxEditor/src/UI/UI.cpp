@@ -244,6 +244,10 @@ void UI::Update()
             {
                 for (const auto& entry : std::filesystem::directory_iterator(path))
                 {
+                    if (entry.path().filename().string() == ".gitkeep")
+                    {
+                        continue;
+                    }
                     envMaps.push_back(entry.path().filename().string());
                 }
             }
@@ -486,6 +490,10 @@ void UI::Update()
                 {
                     for (const auto& j : std::filesystem::directory_iterator(projectsDir))
                     {
+                        if (j.path().filename().string() == ".gitkeep")
+                        {
+                            continue;
+                        }
                         projects.insert({ j.path().filename().string(), j.path() });
                     }
                 }
@@ -511,6 +519,11 @@ void UI::Update()
                             {
                                 for (const auto& i : std::filesystem::directory_iterator(path))
                                 {
+                                    if (i.path().filename().string() == ".gitkeep")
+                                    {
+                                        continue;
+                                    }
+
                                     for (Entity e : ecs.GetLivingEntities())
                                     {
                                         ecs.DestroyEntity(e);
@@ -583,6 +596,11 @@ void UI::Update()
                 {
                     for (const auto& i : std::filesystem::directory_iterator(path))
                     {
+                        if (i.path().filename().string() == ".gitkeep")
+                        {
+                            continue;
+                        }
+
                         scenes.insert({ i.path().filename().string(), i.path() });
                     }
                 }
@@ -1130,6 +1148,11 @@ void UI::showComponents(Entity entity)
                 std::string path = "res/textures/pbr";
                 for (const auto& entry : std::filesystem::directory_iterator(path))
                 {
+                    if (entry.path().filename().string() == ".gitkeep")
+                    {
+                        continue;
+                    }
+
                     textureTags.push_back(entry.path().filename().string());
                 }
 
@@ -1460,6 +1483,10 @@ void showEntityOptions(Entity entity, bool addingNewEntity)
                     {
                         for (const auto& i : std::filesystem::directory_iterator(path))
                         {
+                            if (i.path().filename().string() == ".gitkeep")
+                            {
+                                continue;
+                            }
                             models.insert({ i.path().filename().string(), i.path() });
                         }
                     }
@@ -1477,6 +1504,10 @@ void showEntityOptions(Entity entity, bool addingNewEntity)
 
                                 for (const auto& i : std::filesystem::directory_iterator(it->second))
                                 {
+                                    if (i.path().filename().string() == ".gitkeep")
+                                    {
+                                        continue;
+                                    }
 
                                     if (i.path().filename().extension() == ".gltf")
                                     {
@@ -1613,6 +1644,10 @@ void UI::findProjectsDir()
             {
                 if (i.path().filename().string() == "Projects")
                 {
+                    if (i.path().filename().string() == ".gitkeep")
+                    {
+                        continue;
+                    }
                     projectsDir = std::filesystem::absolute(i.path()).string();
                 }
 

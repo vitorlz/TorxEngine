@@ -1,6 +1,6 @@
 {
     "config": {
-        "environmentMap": "lilienstein_2k.hdr",
+        "environmentMap": "rogland_clear_night_2k.hdr",
         "ssao": {
             "ssaoKernelSize": 64,
             "ssaoOn": true,
@@ -16,7 +16,7 @@
             "ssrThickness": 0.5
         },
         "vxgi": {
-            "diffuseConeSpread": 5.392000198364258,
+            "diffuseConeSpread": 5.120999813079834,
             "specularConeMaxDistance": 1.0,
             "specularConeOriginOffset": 0.800000011920929,
             "specularStepSizeMultiplier": 1.0,
@@ -60,64 +60,6 @@
         },
         {
             "components": {
-                "light": {
-                    "color": [
-                        1.0,
-                        1.0,
-                        1.0
-                    ],
-                    "direction": [
-                        0.0,
-                        0.0,
-                        0.0
-                    ],
-                    "innerCutoff": 0.0,
-                    "isDirty": false,
-                    "offset": [
-                        0.0,
-                        0.0,
-                        0.0
-                    ],
-                    "outerCutoff": 0.0,
-                    "radius": 0.0,
-                    "shadowCaster": true,
-                    "strength": 12.520000457763672,
-                    "type": 0
-                },
-                "mesh": {
-                    "meshType": "cube",
-                    "texture": "darkmarble",
-                    "textureScaling": [
-                        1.0,
-                        1.0
-                    ]
-                },
-                "rigidbody": {
-                    "mass": 0.0
-                },
-                "transform": {
-                    "position": [
-                        4.3277587890625,
-                        20.0,
-                        -0.300445556640625
-                    ],
-                    "rotation": [
-                        1.0,
-                        0.0,
-                        0.0,
-                        0.0
-                    ],
-                    "scale": [
-                        1.0,
-                        1.0,
-                        1.0
-                    ]
-                }
-            },
-            "id": 1
-        },
-        {
-            "components": {
                 "camera": {
                     "bottom": -20.0,
                     "far": 100.0,
@@ -146,40 +88,84 @@
                     "right": 20.0,
                     "top": 20.0
                 },
-                "mesh": {
-                    "meshType": "cube",
-                    "texture": "darkmarble",
-                    "textureScaling": [
-                        1.0,
-                        1.0
-                    ]
-                },
                 "player": {
                     "flashlightOn": false,
                     "movementSpeed": 3.0
-                },
-                "rigidbody": {
-                    "mass": 0.0
                 },
                 "script": {
                     "name": "PlayerController"
                 },
                 "transform": {
                     "position": [
-                        -1.836742877960205,
-                        5.3120527267456055,
-                        -3.518440008163452
+                        -7.067468643188477,
+                        1.2507014274597168,
+                        -2.2173044681549072
                     ],
                     "rotation": [
-                        0.37804684042930603,
-                        -0.08329188078641891,
-                        0.9004366993904114,
-                        0.1983857899904251
+                        -0.7071068286895752,
+                        -6.181724643283815e-08,
+                        0.7071068286895752,
+                        -6.181724643283815e-08
                     ],
                     "scale": [
                         1.0,
                         1.0,
                         1.0
+                    ]
+                }
+            },
+            "id": 1
+        },
+        {
+            "components": {
+                "light": {
+                    "color": [
+                        1.0,
+                        0.9152249097824097,
+                        0.5196078419685364
+                    ],
+                    "direction": [
+                        0.0,
+                        0.0,
+                        0.0
+                    ],
+                    "innerCutoff": 0.0,
+                    "isDirty": true,
+                    "offset": [
+                        -0.597000002861023,
+                        -0.2939999997615814,
+                        0.0
+                    ],
+                    "outerCutoff": 0.0,
+                    "radius": 38.27539825439453,
+                    "shadowCaster": true,
+                    "strength": 6.349999904632568,
+                    "type": 1
+                },
+                "model": {
+                    "hasAOTexture": true,
+                    "modelName": "victorianLamp",
+                    "path": "res/models/victorianLamp/scene.gltf"
+                },
+                "rigidbody": {
+                    "mass": 0.0
+                },
+                "transform": {
+                    "position": [
+                        6.548464298248291,
+                        3.528289318084717,
+                        -2.2851028442382813
+                    ],
+                    "rotation": [
+                        0.7071068286895752,
+                        0.0,
+                        0.7071068286895752,
+                        0.0
+                    ],
+                    "scale": [
+                        0.4130001366138458,
+                        0.41300004720687866,
+                        0.4130001366138458
                     ]
                 }
             },

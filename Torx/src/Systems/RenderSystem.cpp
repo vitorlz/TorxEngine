@@ -171,8 +171,8 @@ void RenderSystem::directionalShadowMapPass()
     {
         auto& transform = ecs.GetComponent<CTransform>(lightEntity);
 
-        float near_plane = 0.1f, far_plane = 80.0f;
-        glm::mat4 lightProjection = glm::ortho(-40.0f, 40.0f, -40.0f, 40.0f, near_plane, far_plane);
+        float near_plane = 0.1f, far_plane = 40.0f;
+        glm::mat4 lightProjection = glm::ortho(-17.0f, 17.0f, -17.0f, 17.0f, near_plane, far_plane);
 
         glm::mat4 lightView = glm::lookAt(transform.position, glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
 
