@@ -43,9 +43,9 @@ cmake ..
 
 ## How to use
 After booting up TorxEditor, you can take a look at an example scene by going **File** → **Load Project** → **Sandbox**. <br/>
-You can also create a new empty project. However, this is not advised yet as new project creation is a work in progress.
+You can also create a new empty project. However, this is not advised as I'm currently working on project creation.
 
-## Controls
+### Controls
 The editor camera controls are very similar to Blender's:
 <table>
   <tr>
