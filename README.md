@@ -78,6 +78,7 @@ mouse cursor will be hidden. Hit ESCAPE to see your mouse again and click the st
 <li>Python scripting</li> 
 <li>Improve performance</li> 
 <li>Improve UI and user experience</li> 
+<li>Transparency</li> 
 
 
 
