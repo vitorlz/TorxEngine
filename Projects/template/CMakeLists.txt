@@ -13,4 +13,6 @@ if (NOT EXISTS "${CMAKE_CURRENT_BINARY_DIR}/res")
     file(COPY "${CMAKE_CURRENT_SOURCE_DIR}/res" DESTINATION "${CMAKE_CURRENT_BINARY_DIR}")
 endif()
 
+file(COPY "${CMAKE_SOURCE_DIR}/TorxEditor/res/shaders" DESTINATION "${CMAKE_SOURCE_DIR}/Projects/template/res")
+
 target_link_libraries(PROJECT_NAME_TEMPLATE PRIVATE Torx)

@@ -236,7 +236,7 @@ void main()
 	}
 	else 
 	{
-		FragColor = vec4(color + emission * 2, 1.0);	
+		FragColor = vec4(color + emission * 1.5, 1.0);	
 		
 
 		if (bloom)
@@ -455,8 +455,8 @@ vec3 CalcPointLight(Light light, vec3 N, vec3 V, vec3 F0)
 	vec3 L = normalize(light.position.xyz - FragPos); // lightDir
 	vec3 H = normalize(V + L); // halfway vector
 
-	//float distance = length(light.position.xyz - FragPos);
-	float attenuation = smoothstep(light.radius, 0.0, length(light.position.xyz - FragPos));
+	float distance = length(light.position.xyz - FragPos);
+	float attenuation = 1/ (distance * distance); //smoothstep(light.radius, 0.0, length(light.position.xyz - FragPos));
 	vec3 radiance = light.color.xyz * attenuation; // the scaling by the angle between the normal of the surface and the solid angle (which is just the direction vector
 	// of the fragment to the light in this case) is in the final reflectance formula.
 

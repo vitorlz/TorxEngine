@@ -159,6 +159,11 @@ Mesh Model::processMesh(aiMesh* mesh, const aiScene* scene, glm::mat4 globalTran
 
 		std::vector<Texture> rmaMaps = loadMaterialTextures(material, aiTextureType_DIFFUSE_ROUGHNESS, "texture_rma");
 		textures.insert(textures.end(), rmaMaps.begin(), rmaMaps.end());
+		if (rmaMaps.empty())
+		{
+			rmaMaps = loadMaterialTextures(material, aiTextureType_SPECULAR, "texture_rma");
+			textures.insert(textures.end(), rmaMaps.begin(), rmaMaps.end());
+		}	
 	}
 
 	ExtractBoneWeightForVertices(vertices, mesh, scene);

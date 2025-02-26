@@ -14,4 +14,18 @@ add_custom_command(TARGET TorxEditor POST_BUILD
     "${CMAKE_CURRENT_SOURCE_DIR}/res/" "${CMAKE_CURRENT_BINARY_DIR}/res"
 )
 
+add_custom_command(TARGET TorxEditor POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy_directory
+            "${CMAKE_SOURCE_DIR}/TorxEditor/res/shaders"
+            "${CMAKE_CURRENT_BINARY_DIR}/../Projects/Sandbox/res/shaders"
+    COMMENT "Copying shaders from TorxEditor to Sandbox"
+)
+
+add_custom_command(TARGET TorxEditor POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy_directory
+            "${CMAKE_SOURCE_DIR}/TorxEditor/res/shaders"
+            "${CMAKE_SOURCE_DIR}/Projects/template/res/shaders"
+    COMMENT "Copying shaders from TorxEditor to template"
+)
+
 target_link_libraries(TorxEditor PRIVATE Torx)

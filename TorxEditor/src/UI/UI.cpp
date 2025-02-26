@@ -288,12 +288,12 @@ void UI::Update()
         ImGui::Checkbox("VXGI on", &Common::vxgi);
        
         ImGui::Checkbox("Show voxelized scene", &Common::showVoxelDebug);
-        ImGui::SliderFloat("Voxelization area size", &Common::voxelizationAreaSize, 0.0f, 50.0f);
+        ImGui::SliderFloat("Voxelization area size", &Common::voxelizationAreaSize, 0.0f, 150.0f);
 
         ImGui::SeparatorText("Indirect Diffuse Lighting");
         ImGui::Checkbox("Show indirect diffuse light accumulation", &Common::showDiffuseAccumulation);
         ImGui::Checkbox("Show total indirect diffuse light", &Common::showTotalIndirectDiffuseLight);
-        ImGui::SliderFloat("Diffuse cone spread", &Common::diffuseConeSpread, 0.001f, 20.0f);
+        ImGui::SliderFloat("Diffuse cone spread", &Common::diffuseConeSpread, 0.001f, 100.0f);
 
         ImGui::SeparatorText("Indirect specular lighting");
         ImGui::SliderFloat("Specular bias", &Common::vxSpecularBias, 0.0f, 100.0f);
@@ -543,6 +543,7 @@ void UI::Update()
                                 }
                             }
                             
+                            ShaderManager::ReloadShaders();
                             std::cout << "PROJECT LOADED!" << "\n";
                             projectLoaded = true;
 
@@ -602,6 +603,7 @@ void UI::Update()
                             ECSCore::UpdateSystems(0.0f);
                             Scene::LoadSceneFromJson(it->second.string());
                             Common::voxelize = true;
+                            ShaderManager::ReloadShaders();
 
                             break;
                         }

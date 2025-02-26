@@ -9,8 +9,11 @@ add_custom_command(TARGET Sandbox POST_BUILD
 )
 
 # copy res into executable directory
+
 if (NOT EXISTS "${CMAKE_CURRENT_BINARY_DIR}/res")
     file(COPY "${CMAKE_CURRENT_SOURCE_DIR}/res" DESTINATION "${CMAKE_CURRENT_BINARY_DIR}")
 endif()
+
+file(COPY "${CMAKE_SOURCE_DIR}/TorxEditor/res/shaders" DESTINATION "${CMAKE_CURRENT_BINARY_DIR}/res")
 
 target_link_libraries(Sandbox PRIVATE Torx)

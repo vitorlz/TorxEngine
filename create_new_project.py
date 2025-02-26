@@ -4,7 +4,6 @@ import sys
 from pathlib import Path
 
 def update_file(file_path: Path, old_placeholder: str, new_name: str):
-    """Replaces placeholders in the given file with the new project name."""
     if not file_path.exists():
         print(f"Warning: {file_path} does not exist.")
         return
@@ -14,7 +13,6 @@ def update_file(file_path: Path, old_placeholder: str, new_name: str):
     print(f"Updated {file_path} with project name '{new_name}'.")
 
 def append_to_top_cmake(top_cmake: Path, subdirectory: str):
-    """Appends the new project subdirectory to the top-level CMakeLists.txt if not already included."""
     if not top_cmake.exists():
         print(f"Top-level CMake file '{top_cmake}' not found.")
         return
@@ -28,7 +26,6 @@ def append_to_top_cmake(top_cmake: Path, subdirectory: str):
     print(f"Appended '{add_line}' to {top_cmake}.")
 
 def create_new_project(template_dir: Path, projects_root: Path, new_project_name: str):
-    """Creates a new project based on a template, renaming files and placeholders accordingly."""
     new_project_dir = projects_root / new_project_name
 
     if new_project_dir.exists():
