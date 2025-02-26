@@ -69,9 +69,9 @@ unsigned int TextureLoader::LoadRMATexture(const char* tag) {
 	unsigned char* rmaData = new unsigned char[width * height * 3]; // RGB texture
 
 	for (int i = 0; i < width * height; ++i) {
-		rmaData[i * 3 + 0] = aoData[i];       // Red channel (ambient occlusion)
-		rmaData[i * 3 + 1] = roughnessData[i]; // Green channel (roughness)
-		rmaData[i * 3 + 2] = metallicData[i]; // Blue channel (metallic)
+		rmaData[i * 3 + 0] = aoData[i];       // red channel (ambient occlusion)
+		rmaData[i * 3 + 1] = roughnessData[i]; // rreen channel (roughness)
+		rmaData[i * 3 + 2] = metallicData[i]; // blue channel (metallic)
 	}
 
 	if (!roughnessData || !metallicData || !aoData) {

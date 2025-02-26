@@ -11,32 +11,27 @@ Shader::Shader()
 Shader::Shader(const char* vertexPath, const char* fragmentPath)
 	: ID(0)
 {
-
-	// 1. retrieve the vertex/fragment source code from filePath
 	std::string vertexCode;
 	std::string fragmentCode;
 	std::ifstream vShaderFile;
 	std::ifstream fShaderFile;
-	// ensure ifstream objects can throw exceptions
-	// the exceptions() method allows us to specify which flags throws an exception. 
-	// when something goes wrong, filestreams can enter different error state, these states
-	// are represented by flags.
+	
 	vShaderFile.exceptions(std::ifstream::failbit | std::ifstream::badbit);
 	fShaderFile.exceptions(std::ifstream::failbit | std::ifstream::badbit);
 
 	try
 	{
-		// open files 
+		
 		vShaderFile.open(vertexPath);
 		fShaderFile.open(fragmentPath);
 		std::stringstream vShaderStream, fShaderStream;
-		// read file's buffer contents into streams
+		
 		vShaderStream << vShaderFile.rdbuf();
 		fShaderStream << fShaderFile.rdbuf();
-		// close file handlers
+		
 		vShaderFile.close();
 		fShaderFile.close();
-		// convert stream into string 
+		
 		vertexCode = vShaderStream.str();
 		fragmentCode = fShaderStream.str();
 	}
@@ -68,8 +63,7 @@ Shader::Shader(const char* vertexPath, const char* fragmentPath)
 	fragment = glCreateShader(GL_FRAGMENT_SHADER);
 	glShaderSource(fragment, 1, &fShaderCode, NULL);
 	glCompileShader(fragment);
-	// print compile errors if any
-	// return a parameter from a shader object
+	
 	glGetShaderiv(fragment, GL_COMPILE_STATUS, &success);
 	if (!success)
 	{
@@ -84,8 +78,6 @@ Shader::Shader(const char* vertexPath, const char* fragmentPath)
 	glAttachShader(ID, fragment);
 	glLinkProgram(ID);
 
-	// pring linking errors if any
-	// return a parameter from a shader program
 	glGetProgramiv(ID, GL_LINK_STATUS, &success);
 	if (!success) {
 		// returns the information log for a shader program
@@ -101,17 +93,13 @@ Shader::Shader(const char* vertexPath, const char* fragmentPath)
 Shader::Shader(const char* vertexPath, const char* fragmentPath, const char* geometryPath)
 	: ID(0)
 {
-	// 1. retrieve the vertex/fragment source code from filePath
 	std::string vertexCode;
 	std::string fragmentCode;
 	std::string geometryCode;
 	std::ifstream vShaderFile;
 	std::ifstream fShaderFile;
 	std::ifstream gShaderFile;
-	// ensure ifstream objects can throw exceptions
-	// the exceptions() method allows us to specify which flags throws an exception. 
-	// when something goes wrong, filestreams can enter different error state, these states
-	// are represented by flags.
+	
 	vShaderFile.exceptions(std::ifstream::failbit | std::ifstream::badbit);
 	fShaderFile.exceptions(std::ifstream::failbit | std::ifstream::badbit);
 	gShaderFile.exceptions(std::ifstream::failbit | std::ifstream::badbit);
@@ -165,8 +153,7 @@ Shader::Shader(const char* vertexPath, const char* fragmentPath, const char* geo
 	fragment = glCreateShader(GL_FRAGMENT_SHADER);
 	glShaderSource(fragment, 1, &fShaderCode, NULL);
 	glCompileShader(fragment);
-	// print compile errors if any
-	// return a parameter from a shader object
+	
 	glGetShaderiv(fragment, GL_COMPILE_STATUS, &success);
 	if (!success)
 	{
@@ -179,8 +166,7 @@ Shader::Shader(const char* vertexPath, const char* fragmentPath, const char* geo
 	geometry = glCreateShader(GL_GEOMETRY_SHADER);
 	glShaderSource(geometry, 1, &gShaderCode, NULL);
 	glCompileShader(geometry);
-	// print compile errors if any
-	// return a parameter from a shader object
+
 	glGetShaderiv(geometry, GL_COMPILE_STATUS, &success);
 	if (!success)
 	{
@@ -189,15 +175,12 @@ Shader::Shader(const char* vertexPath, const char* fragmentPath, const char* geo
 		std::cout << "ERROR::SHADER::FRAGMENT::COMPILATION_FAILED\n" << infoLog << " ID: " << ID << std::endl;
 	};
 
-	// shader Program
 	ID = glCreateProgram();
 	glAttachShader(ID, vertex);
 	glAttachShader(ID, fragment);
 	glAttachShader(ID, geometry);
 	glLinkProgram(ID);
 
-	// pring linking errors if any
-	// return a parameter from a shader program
 	glGetProgramiv(ID, GL_LINK_STATUS, &success);
 	if (!success) {
 		// returns the information log for a shader program
@@ -205,7 +188,6 @@ Shader::Shader(const char* vertexPath, const char* fragmentPath, const char* geo
 		std::cout << "ERROR::SHADER::PROGRAM::LINKING_FAILED\n" << infoLog << " ID: " << ID << std::endl;
 	}
 
-	// delete the shaders as they are linked into our program now and no longer necessary
 	glDeleteShader(vertex);
 	glDeleteShader(fragment);
 	glDeleteShader(geometry);

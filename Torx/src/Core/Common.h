@@ -3,35 +3,6 @@
 #include <vector>
 #include <glm/glm.hpp>
 
-enum InputKey {
-	NONE,
-	W,
-	A,
-	S,
-	D,
-	F,
-	Q,
-	V,
-	K,
-	NUMBER_1,
-	NUMBER_2,
-	NUMBER_3,
-	NUMBER_4,
-	NUMBER_5,
-	SHIFT_W,
-	SHIFT_A,
-	SHIFT_S,
-	SHIFT_D,
-	SPACE,
-	TAB,
-	LEFT_CONTROL,
-	ESC,
-	MOUSE_LEFT,
-	MOUSE_RIGHT,
-	MOUSE_MIDDLE,
-	MOUSE_MIDDLE_SHIFT
-};
-
 class Common
 {
 public:

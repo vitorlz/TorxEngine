@@ -38,27 +38,6 @@ void RenderSystem::Init()
 }
 void RenderSystem::Update(float deltaTime)
 {
-
-    // just testing some animation stuff
-   /* static bool addedAnimator = false;
-    for (const auto& entity : mEntities)
-    {
-        if (ecs.HasComponent<CModel>(entity) && !addedAnimator)
-        {
-            if (ecs.GetComponent<CModel>(entity).modelName == "zombie")
-            {
-                ecs.AddComponent(entity,
-                    CAnimator{
-                        .animator = Animator(&AssetManager::GetAnimation("zombieDance"))
-                    }
-                );
-
-                std::cout << "added animator? " << ecs.HasComponent<CAnimator>(entity) << "\n";
-
-                addedAnimator = true;
-            }
-        }
-    }*/
     directionalShadowMapPass();
     omnidirectionalShadowMapPass();
     voxelizationPass();
@@ -75,8 +54,6 @@ void RenderSystem::Update(float deltaTime)
     postProcessingPass();
     forwardRenderingPass();
 }
-
-
 
 void RenderSystem::voxelizationPass()
 {
@@ -374,9 +351,6 @@ void RenderSystem::geometryPass()
     glPushDebugGroup(GL_DEBUG_SOURCE_APPLICATION, 0, -1, "Geometry Pass");
     glBindFramebuffer(GL_FRAMEBUFFER, RenderingUtil::gBufferFBO);
 
-    // set both color buffer attachments as the draw buffers before clearing them, otherwise only the first color attachment will get cleared.
-    // This would mean that the color buffer which we render the bloom brightness texture onto would not get cleared and the bloom would effect would
-    // just accumulate over frames.
     unsigned int attachments[8] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1, GL_COLOR_ATTACHMENT2, GL_COLOR_ATTACHMENT3, GL_COLOR_ATTACHMENT4, GL_COLOR_ATTACHMENT5, GL_COLOR_ATTACHMENT6, GL_COLOR_ATTACHMENT7 };
     glDrawBuffers(8, attachments);
 
@@ -468,8 +442,6 @@ void RenderSystem::ssaoPass()
     Shader& ssaoShader = ShaderManager::GetShaderProgram("ssaoShader");
     ssaoShader.use();
 
- 
-
     ssaoShader.setMat4("projection", Common::currentProjMatrix);
 
     glActiveTexture(GL_TEXTURE0);
@@ -541,8 +513,6 @@ void RenderSystem::lightingPass()
  
     if (!Common::showVoxelDebug)
     {
-        
-
         Shader& lightingShader = ShaderManager::GetShaderProgram("lightingShader");
         lightingShader.use();
 

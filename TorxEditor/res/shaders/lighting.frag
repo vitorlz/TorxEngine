@@ -167,9 +167,6 @@ void main()
 		}
 	}
 
-	// We now use the value sampled from our irradiance map as the indirect diffuse lighting, which we put in the ambient component of the light.
-	// indirect lighting has both a diffuse and specular part, so we need to weigh both parts according to the indirect reflectance (specular) ratio 
-	// and indirect refractive (diffuse) ratio. We use the fresnelSchlick formula to find the reflectance ratio and use that to find the refractive ratio.
 	vec3 F = fresnelSchlick(max(dot(N, V), 0.0), F0);
 
 	vec3 kS = F;
@@ -249,151 +246,6 @@ void main()
 		}
 	}
 
-}
-
-
-// Scales and bias a given vector (i.e. from [-1, 1] to [0, 1]).
-vec3 scaleAndBias(const vec3 p) { return 0.5f * p + vec3(0.5f); }
-
-// Returns true if the point p is inside the unity cube. 
-bool isInsideCube(const vec3 p, float e) { return abs(p.x) < 1 + e && abs(p.y) < 1 + e && abs(p.z) < 1 + e; }
-
-// Returns a soft shadow blend by using shadow cone tracing.
-// Uses 2 samples per step, so it's pretty expensive.
-
-vec3 orthogonal(vec3 u){
-	u = normalize(u);
-	vec3 v = vec3(0.99146, 0.11664, 0.05832); // Pick any normalized vector.
-	return abs(dot(u, v)) > 0.99999f ? cross(u, vec3(0, 1, 0)) : cross(u, v);
-}
-
-// Traces a diffuse voxel cone.
-vec3 traceDiffuseVoxelCone(const vec3 from, vec3 direction){
-	direction = normalize(direction);
-
-	float CONE_SPREAD = diffuseConeSpread;
-
-	vec4 acc = vec4(0.0f);
-
-	// Controls bleeding from close surfaces.
-	// Low values look rather bad if using shadow cone tracing.
-	// Might be a better choice to use shadow maps and lower this value.
-	float dist = 0.0;
-
-	// Trace.
-	while(dist < SQRT2 && acc.a < 1){
-		vec3 c = (from + dist * direction) / voxelizationAreaSize;
-		if(!isInsideCube(c, 0)) break;
-		c = scaleAndBias(c);		
-		float l = 1 + CONE_SPREAD * dist / voxelSize;
-		float level = log2(l);
-		float ll = (level + 1) * (level + 1);
-		vec4 voxel = textureLod(voxelTexture, c, min(MIPMAP_HARDCAP, level));
-		acc += 0.075 * ll * voxel * pow(1 - voxel.a, 2);
-		dist += ll * voxelSize * 2;
-	}
-	return pow(acc.rgb * 2.0, vec3(1.5));
-}
-
-vec3 indirectDiffuseLight(vec3 normal){
-	const float ANGLE_MIX = 0.666; // Angle mix (1.0f => orthogonal direction, 0.0f => direction of normal).
-
-	const float w[3] = {1.0, 1.0, 1.0}; // Cone weights.
-
-	// Find a base for the side cones with the normal as one of its base vectors.
-	const vec3 ortho = normalize(orthogonal(normal));
-	const vec3 ortho2 = normalize(cross(ortho, normal));
-
-	// Find base vectors for the corner cones too.
-	const vec3 corner = 0.5f * (ortho + ortho2);
-	const vec3 corner2 = 0.5f * (ortho - ortho2);
-
-	// Find start position of trace (start with a bit of offset).
-	const vec3 N_OFFSET = normal * (1 + 4 * ISQRT2) * voxelSize;
-	const vec3 C_ORIGIN = FragPos + N_OFFSET;
-
-	// Accumulate indirect diffuse light.
-	vec3 acc = vec3(0);
-
-	// We offset forward in normal direction, and backward in cone direction.
-	// Backward in cone direction improves GI, and forward direction removes
-	// artifacts.
-	const float CONE_OFFSET = -0.01;
-
-	// Trace front cone
-	acc += w[0] * traceDiffuseVoxelCone(C_ORIGIN + CONE_OFFSET * normal, normal);
-		
-	// Trace 4 side cones.
-	const vec3 s1 = mix(normal, ortho, ANGLE_MIX);
-	const vec3 s2 = mix(normal, -ortho, ANGLE_MIX);
-	const vec3 s3 = mix(normal, ortho2, ANGLE_MIX);
-	const vec3 s4 = mix(normal, -ortho2, ANGLE_MIX);
-
-	acc += w[1] * traceDiffuseVoxelCone(C_ORIGIN + CONE_OFFSET * ortho, s1);
-	acc += w[1] * traceDiffuseVoxelCone(C_ORIGIN - CONE_OFFSET * ortho, s2);
-	acc += w[1] * traceDiffuseVoxelCone(C_ORIGIN + CONE_OFFSET * ortho2, s3);
-	acc += w[1] * traceDiffuseVoxelCone(C_ORIGIN - CONE_OFFSET * ortho2, s4);
-
-	// Trace 4 corner cones.
-	const vec3 c1 = mix(normal, corner, ANGLE_MIX);
-	const vec3 c2 = mix(normal, -corner, ANGLE_MIX);
-	const vec3 c3 = mix(normal, corner2, ANGLE_MIX);
-	const vec3 c4 = mix(normal, -corner2, ANGLE_MIX);
-
-	acc += w[2] * traceDiffuseVoxelCone(C_ORIGIN + CONE_OFFSET * corner, c1);
-	acc += w[2] * traceDiffuseVoxelCone(C_ORIGIN - CONE_OFFSET * corner, c2);
-	acc += w[2] * traceDiffuseVoxelCone(C_ORIGIN + CONE_OFFSET * corner2, c3);
-	acc += w[2] * traceDiffuseVoxelCone(C_ORIGIN - CONE_OFFSET * corner2, c4);
-
-	// Return result.
-
-	if(showDiffuseAccumulation)
-	{
-		return  acc;
-	}
-	else 
-	{
-		return acc * (albedo + vec3(0.001f));
-	}
-}
-
-vec3 traceSpecularVoxelCone(vec3 from, vec3 direction, vec3 normal) {
-    direction = normalize(direction);
-
-    const float OFFSET = specularConeOriginOffset * voxelSize;
-    const float STEP = voxelSize * specularStepSizeMultiplier;
-
-    // Offset the starting point to prevent self-reflection artifacts
-    from += OFFSET * normal;
-
-	float angleFactor = log2(clamp(1 - dot(direction, normal), 0.0, 1.0) * 10);
-
-    vec4 acc = vec4(0.0);
-    float dist = OFFSET;
-
-    // Trace the voxel cone
-    while (dist < MAX_DISTANCE && acc.a < 1.0) { 
-        vec3 c = (from + dist * direction) / voxelizationAreaSize;
-        if (!isInsideCube(c, 0)) break;
-        c = scaleAndBias(c);
-		// introduce an angle factor to hide artifact of smooth surfaces reflections when viewed at an angle
-        float level = max(roughness * log2(1 + dist / voxelSize) / vxSpecularBias, 0.0);
-		vec4 voxel = textureLod(voxelTexture, c, min(MIPMAP_HARDCAP, level));
-        float contributionFactor = 1.0 - acc.a;
-        acc.rgb += 0.25 * (1.0 + roughness) * voxel.rgb * voxel.a * contributionFactor;
-        acc.a += 0.25 * voxel.a * contributionFactor;
-        dist += STEP * (1.0 + 0.125 * level);
-    }
-
-    return pow(roughness + 1.0, 0.8) * acc.rgb;
-}
-
-vec3 indirectSpecularLight(vec3 viewDirection, vec3 normal) {
-    const vec3 reflection = normalize(reflect(-viewDirection, normal));
-    float grazingAngleFactor = max(dot(normal, reflection), 0.05); // Avoid near-zero artifacts
-
-    // Add grazing angle falloff to reduce artifacts
-    return (1.0 - roughness) * vxSpecularBias *		traceSpecularVoxelCone(FragPos, reflection, normal) * grazingAngleFactor;
 }
 
 vec3 fresnelSchlick(float cosTheta, vec3 F0)
@@ -650,3 +502,132 @@ float DirShadowCalculation(vec4 fragPosLightSpace, vec3 normal, vec3 lightDir)
 	return shadow;
 }
 
+vec3 scaleAndBias(const vec3 p) { return 0.5f * p + vec3(0.5f); }
+
+// returns true if the point p is inside the unity cube. 
+bool isInsideCube(const vec3 p, float e) { return abs(p.x) < 1 + e && abs(p.y) < 1 + e && abs(p.z) < 1 + e; }
+
+vec3 orthogonal(vec3 u){
+	u = normalize(u);
+	vec3 v = vec3(0.99146, 0.11664, 0.05832); 
+	return abs(dot(u, v)) > 0.99999f ? cross(u, vec3(0, 1, 0)) : cross(u, v);
+}
+
+
+vec3 traceDiffuseVoxelCone(const vec3 from, vec3 direction){
+	direction = normalize(direction);
+
+	float CONE_SPREAD = diffuseConeSpread;
+
+	vec4 acc = vec4(0.0f);
+	float dist = 0.0;
+
+	while(dist < SQRT2 && acc.a < 1){
+		vec3 c = (from + dist * direction) / voxelizationAreaSize;
+		if(!isInsideCube(c, 0)) break;
+		c = scaleAndBias(c);		
+		float l = 1 + CONE_SPREAD * dist / voxelSize;
+		float level = log2(l);
+		float ll = (level + 1) * (level + 1);
+		vec4 voxel = textureLod(voxelTexture, c, min(MIPMAP_HARDCAP, level));
+		acc += 0.075 * ll * voxel * pow(1 - voxel.a, 2);
+		dist += ll * voxelSize * 2;
+	}
+	return pow(acc.rgb * 2.0, vec3(1.5));
+}
+
+vec3 indirectDiffuseLight(vec3 normal){
+	const float ANGLE_MIX = 0.666; // angle mix (1.0f => orthogonal direction, 0.0f => direction of normal).
+
+	const float w[3] = {1.0, 1.0, 1.0}; // cone weights.
+
+	// find a base for the side cones with the normal as one of its base vectors.
+	const vec3 ortho = normalize(orthogonal(normal));
+	const vec3 ortho2 = normalize(cross(ortho, normal));
+
+	// find base vectors for the corner cones too.
+	const vec3 corner = 0.5f * (ortho + ortho2);
+	const vec3 corner2 = 0.5f * (ortho - ortho2);
+
+	// find start position of trace.
+	const vec3 N_OFFSET = normal * (1 + 4 * ISQRT2) * voxelSize;
+	const vec3 C_ORIGIN = FragPos + N_OFFSET;
+
+	// accumulate indirect diffuse light.
+	vec3 acc = vec3(0);
+
+	const float CONE_OFFSET = -0.01;
+
+	// trace front cone
+	acc += w[0] * traceDiffuseVoxelCone(C_ORIGIN + CONE_OFFSET * normal, normal);
+		
+	// trace 4 side cones.
+	const vec3 s1 = mix(normal, ortho, ANGLE_MIX);
+	const vec3 s2 = mix(normal, -ortho, ANGLE_MIX);
+	const vec3 s3 = mix(normal, ortho2, ANGLE_MIX);
+	const vec3 s4 = mix(normal, -ortho2, ANGLE_MIX);
+
+	acc += w[1] * traceDiffuseVoxelCone(C_ORIGIN + CONE_OFFSET * ortho, s1);
+	acc += w[1] * traceDiffuseVoxelCone(C_ORIGIN - CONE_OFFSET * ortho, s2);
+	acc += w[1] * traceDiffuseVoxelCone(C_ORIGIN + CONE_OFFSET * ortho2, s3);
+	acc += w[1] * traceDiffuseVoxelCone(C_ORIGIN - CONE_OFFSET * ortho2, s4);
+
+	// trace 4 corner cones.
+	const vec3 c1 = mix(normal, corner, ANGLE_MIX);
+	const vec3 c2 = mix(normal, -corner, ANGLE_MIX);
+	const vec3 c3 = mix(normal, corner2, ANGLE_MIX);
+	const vec3 c4 = mix(normal, -corner2, ANGLE_MIX);
+
+	acc += w[2] * traceDiffuseVoxelCone(C_ORIGIN + CONE_OFFSET * corner, c1);
+	acc += w[2] * traceDiffuseVoxelCone(C_ORIGIN - CONE_OFFSET * corner, c2);
+	acc += w[2] * traceDiffuseVoxelCone(C_ORIGIN + CONE_OFFSET * corner2, c3);
+	acc += w[2] * traceDiffuseVoxelCone(C_ORIGIN - CONE_OFFSET * corner2, c4);
+
+	if(showDiffuseAccumulation)
+	{
+		return  acc;
+	}
+	else 
+	{
+		return acc * (albedo + vec3(0.001f));
+	}
+}
+
+vec3 traceSpecularVoxelCone(vec3 from, vec3 direction, vec3 normal) {
+    direction = normalize(direction);
+
+    const float OFFSET = specularConeOriginOffset * voxelSize;
+    const float STEP = voxelSize * specularStepSizeMultiplier;
+
+    // offset the starting point to prevent self-reflection artifacts
+    from += OFFSET * normal;
+
+	float angleFactor = log2(clamp(1 - dot(direction, normal), 0.0, 1.0) * 10);
+
+    vec4 acc = vec4(0.0);
+    float dist = OFFSET;
+
+    // trace the voxel cone
+    while (dist < MAX_DISTANCE && acc.a < 1.0) { 
+        vec3 c = (from + dist * direction) / voxelizationAreaSize;
+        if (!isInsideCube(c, 0)) break;
+        c = scaleAndBias(c);
+		// introduce an angle factor to hide artifact of smooth surfaces reflections when viewed at an angle
+        float level = max(roughness * log2(1 + dist / voxelSize) / vxSpecularBias, 0.0);
+		vec4 voxel = textureLod(voxelTexture, c, min(MIPMAP_HARDCAP, level));
+        float contributionFactor = 1.0 - acc.a;
+        acc.rgb += 0.25 * (1.0 + roughness) * voxel.rgb * voxel.a * contributionFactor;
+        acc.a += 0.25 * voxel.a * contributionFactor;
+        dist += STEP * (1.0 + 0.125 * level);
+    }
+
+    return pow(roughness + 1.0, 0.8) * acc.rgb;
+}
+
+vec3 indirectSpecularLight(vec3 viewDirection, vec3 normal) {
+    const vec3 reflection = normalize(reflect(-viewDirection, normal));
+    float grazingAngleFactor = max(dot(normal, reflection), 0.05); 
+
+    // add grazing angle falloff to reduce artifacts
+    return (1.0 - roughness) * vxSpecularBias *	traceSpecularVoxelCone(FragPos, reflection, normal) * grazingAngleFactor;
+}

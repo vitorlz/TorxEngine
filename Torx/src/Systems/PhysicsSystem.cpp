@@ -29,17 +29,13 @@ btAlignedObjectArray<btCollisionShape*> collisionShapes;
 
 btDefaultCollisionConfiguration* collisionConfiguration = new btDefaultCollisionConfiguration();
 
-///use the default collision dispatcher. For parallel processing you can use a diffent dispatcher (see Extras/BulletMultiThreaded)
 btCollisionDispatcher* dispatcher = new btCollisionDispatcher(collisionConfiguration);
 
-///btDbvtBroadphase is a good general purpose broadphase. You can also try out btAxis3Sweep.
 btBroadphaseInterface* overlappingPairCache = new btDbvtBroadphase();
 
-///the default constraint solver. For parallel processing you can use a different solver (see Extras/BulletMultiThreaded)
 btSequentialImpulseConstraintSolver* solver = new btSequentialImpulseConstraintSolver;
 
 btDiscreteDynamicsWorld* dynamicsWorld = new btDiscreteDynamicsWorld(dispatcher, overlappingPairCache, solver, collisionConfiguration);
-
 
 BulletDebugDrawer debugDrawer;
 void PhysicsSystem::Init()
@@ -86,7 +82,6 @@ void PhysicsSystem::Init()
 
 					btConvexHullShape* convexHullShape = new btConvexHullShape();
 
-
 					for (const Mesh& mesh : model.model.meshes)
 					{
 						for (const Vertex& vertex : mesh.vertices) {
@@ -110,8 +105,6 @@ void PhysicsSystem::Init()
 
 					btConvexHullShape* convexHullShape = new btConvexHullShape();
 
-
-					
 					for (const Vertex& vertex : meshComponent.mesh.vertices) {
 						convexHullShape->addPoint(btVector3(vertex.Position.x, vertex.Position.y, vertex.Position.z), false);
 					}
@@ -129,7 +122,6 @@ void PhysicsSystem::Init()
 			}
 			else
 			{
-
 				if (ecs.HasComponent<CModel>(entity))
 				{
 					auto& model = ecs.GetComponent<CModel>(entity);
@@ -147,8 +139,6 @@ void PhysicsSystem::Init()
 						indexedMesh.m_triangleIndexStride = sizeof(unsigned int) * 3;
 						indexedMesh.m_numTriangles = mesh.indices.size() / 3;
 						indexedMesh.m_indexType = PHY_INTEGER;
-
-						//std::cout << mesh.indices.size() << "\n";
 
 						triangleIndexVertex->addIndexedMesh(indexedMesh, PHY_INTEGER);
 
@@ -176,8 +166,6 @@ void PhysicsSystem::Init()
 					indexedMesh.m_triangleIndexStride = sizeof(unsigned int) * 3;
 					indexedMesh.m_numTriangles = meshComponent.mesh.indices.size() / 3;
 					indexedMesh.m_indexType = PHY_INTEGER;
-
-					//std::cout << mesh.indices.size() << "\n";
 
 					triangleIndexVertex->addIndexedMesh(indexedMesh, PHY_INTEGER);
 
@@ -232,7 +220,6 @@ void PhysicsSystem::Update(float deltaTime)
 	{
 		return;
 	}
-	
 
 	if (Torx::Engine::MODE == Torx::PLAY)
 	{
@@ -261,7 +248,6 @@ void PhysicsSystem::Update(float deltaTime)
 			};
 		}
 	}
-
 
 	// Check for new rigidbodies
 	if (mEntities.size() > dynamicsWorld->getNumCollisionObjects())
@@ -377,8 +363,6 @@ void PhysicsSystem::Update(float deltaTime)
 							indexedMesh.m_numTriangles = mesh.indices.size() / 3;
 							indexedMesh.m_indexType = PHY_INTEGER;
 
-							//std::cout << mesh.indices.size() << "\n";
-
 							triangleIndexVertex->addIndexedMesh(indexedMesh, PHY_INTEGER);
 
 						}
@@ -405,8 +389,6 @@ void PhysicsSystem::Update(float deltaTime)
 						indexedMesh.m_triangleIndexStride = sizeof(unsigned int) * 3;
 						indexedMesh.m_numTriangles = meshComponent.mesh.indices.size() / 3;
 						indexedMesh.m_indexType = PHY_INTEGER;
-
-						//std::cout << mesh.indices.size() << "\n";
 
 						triangleIndexVertex->addIndexedMesh(indexedMesh, PHY_INTEGER);
 
@@ -509,42 +491,6 @@ void PhysicsSystem::Update(float deltaTime)
 	}
 
 	CSingleton_Input& inputSing = CSingleton_Input::getInstance();
-	
-	// Useful for firing bullets later
-
-	//static bool shotFired{ false };
-	//if (Torx::Engine::MODE == Torx::EDITOR)
-	//{
-	//	if (inputSing.pressedKeys[MOUSE_LEFT] && Common::usingGuizmo)
-	//	{
-	//		int entityHit = Raycast::mouseRaycast();
-
-
-	//		glm::vec3 mouseRayDir = glm::normalize(Raycast::getMouseRayDir());
-	//		shotFired = true;
-	//		//std::cout << Util::vec3ToString(mouseRayDir);
-	//		btRigidBody* entityHitRb = ecs.GetComponent<CRigidBody>(entityHit).body;
-
-	//		if (entityHitRb)
-	//		{
-	//			btVector3 offset = Raycast::getMouseHitPointWorld() - entityHitRb->getCenterOfMassPosition() ;
-
-	//			std::cout << "entity hit: " << entityHit << "\n";
-	//			std::cout << "Hitpoint World: " << Raycast::getMouseHitPointWorld().x() << ", " << Raycast::getMouseHitPointWorld().y() << ", " << Raycast::getMouseHitPointWorld().z() << "\n";
-	//			std::cout << "Center of mass position: " << entityHitRb->getCenterOfMassPosition().x() << ", " << entityHitRb->getCenterOfMassPosition().y() << ", " << entityHitRb->getCenterOfMassPosition().z() << "\n";
-	//			std::cout << "Offset: " << offset.x() << ", " << offset.y() << ", " << offset.z() << "\n";
-
-	//		
-	//			entityHitRb->activate();
-	//			entityHitRb->applyImpulse(btVector3(mouseRayDir.x, mouseRayDir.y, mouseRayDir.z) * 2, offset);
-	//		}
-	//		
-	//	}
-	//	else if (!inputSing.pressedKeys[MOUSE_RIGHT])
-	//	{
-	//		shotFired = false;
-	//	}
-	//}
 
 	if (Common::bulletLinesDebug)
 	{

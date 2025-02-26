@@ -13,7 +13,6 @@
 
 namespace Torx
 {
-
 	enum EngineMode
 	{
 		EDITOR,
@@ -23,7 +22,6 @@ namespace Torx
 	class Engine
 	{
 	public:
-
 		static Engine& getInstance();
 
 	private:

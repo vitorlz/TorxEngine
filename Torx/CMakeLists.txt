@@ -32,7 +32,7 @@ file(GLOB_RECURSE TORX_SOURCES
 
 add_library(Torx STATIC ${TORX_SOURCES})
 
-# Propagate include directories to any target linking Torx
+
 target_include_directories(Torx PUBLIC
     "${CMAKE_CURRENT_SOURCE_DIR}/vendor/assimp/include"
     "${CMAKE_CURRENT_SOURCE_DIR}/vendor/bulletphysics/include"

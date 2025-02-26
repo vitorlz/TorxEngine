@@ -57,8 +57,6 @@ void Engine::Init()
 	RenderingUtil::Init();
 	ECSCore::RegisterCoreComponentsAndSystems();
 	ECSCore::InitSystems();
-	
-
 }
 
 void Engine::Run()
