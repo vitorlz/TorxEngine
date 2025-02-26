@@ -9,6 +9,8 @@ Custom game engine built from scratch using C++ and OpenGL.
 <li>Voxel Cone Tracing Global Illumination</li> 
 <li>Screen Space Reflections</li>
 <li>Screen Space Ambient Occlusion</li> 
+<li>Skeletal animations</li>
+<li>Native scripting</li>
 <li>ECS</li> 
 <li>BulletPhysics integration</li> 
 <li>Shadow mapping</li> 
