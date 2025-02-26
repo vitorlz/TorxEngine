@@ -22,7 +22,7 @@ Custom game engine built from scratch using C++ and OpenGL.
 <li>Bloom</li> 
 <li>PBR materials support</li> 
 <li>Point, directional, and spot lights</li> 
- <br/>
+ 
 
 ## Project Build Instructions
 
