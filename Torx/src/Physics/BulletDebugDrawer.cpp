@@ -1,6 +1,6 @@
 #include "bulletDebugDrawer.h"
 #include <glad/glad.h>
-#include "../Rendering/RenderingUtil.h"
+#include "../Util/RenderingUtil.h"
 #include "../Core/Common.h"
 #include <vector>
 #include <iostream>

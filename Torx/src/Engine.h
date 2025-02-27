@@ -1,11 +1,5 @@
 #pragma once
 
-#ifdef GAME_BUILD
-#define ENGINE_MODE_GAME
-#else
-#define ENGINE_MODE_EDITOR
-#endif
-
 #include "Util/Window.h"
 
 #include <iostream>

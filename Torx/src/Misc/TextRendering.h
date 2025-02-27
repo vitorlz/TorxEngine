@@ -21,10 +21,13 @@ public:
 	TextRendering();
 
 	TextRendering(const std::string& path);
+	TextRendering(const std::string& path, bool isIcon);
 
 	static int Init();
 	
 	void RenderText(Shader& s, std::string text, float x, float y, float scale, float lineSpace, glm::vec3 color);
+
+	void RenderIcon(Shader& s, wchar_t unicode, float x, float y, float scale, glm::mat4 model, glm::vec3 color);
 	
 	static FT_Library m_ft;
 
@@ -39,5 +42,6 @@ private:
 	std::vector<glm::mat4> m_transforms;
 	std::vector<int> m_letterMap;
 	std::map<char, Character> m_characters;
+	std::map<wchar_t, Character> m_icons;
 	unsigned int m_textureArray;
 };

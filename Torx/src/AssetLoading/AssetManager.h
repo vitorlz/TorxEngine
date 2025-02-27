@@ -3,7 +3,8 @@
 #include <unordered_map>
 #include "model.h"
 #include "Animator.h"
-#include "../Rendering/TextRendering.h"
+#include "../Misc/TextRendering.h"
+#include <IconsFontAwesome4.h>
 
 struct ModelData
 {
@@ -31,7 +32,6 @@ public:
 	static void LoadAnimation(std::string path);
 	static void LoadFont(std::string path);
 private:
-	//static std::unordered_map<std::string, Model> m_Models;
 	static std::unordered_map<std::string, Mesh> m_Meshes;
 	static std::unordered_map<std::string, Animation> m_Animations;
 	static std::vector<Texture> m_LoadedMeshTextures;
@@ -39,11 +39,8 @@ private:
 
 	static std::vector<ModelData> m_Models;
 
-	static void LoadModels();
 	static void LoadMeshes();
 	static void LoadAnimations();
 	static void LoadFonts();
-
-
 };
 

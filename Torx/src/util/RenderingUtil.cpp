@@ -9,8 +9,8 @@
 #include "../Util/TextureLoader.h"
 #include <LinearMath/btScalar.h>
 #include <random>;
-#include "Shadows.h"
-#include "../Util/Util.h"
+#include "../Misc/Shadows.h"
+#include "Util.h"
 
 unsigned int RenderingUtil::mScreenQuadTexture;
 unsigned int RenderingUtil::mBloomBrightnessTexture;
@@ -262,7 +262,6 @@ void RenderingUtil::CreatePointLightShadowMapFBO(unsigned int shadowWidth, unsig
     glGenTextures(1, &mPointLightShadowMap);
     glBindTexture(GL_TEXTURE_CUBE_MAP_ARRAY, mPointLightShadowMap);
 
-    // CUBE MAPS REQUIRE THE SAME WIDTH AND HEIGHT FOR THE TEXTURE IMAGE SIZE OF EACH FACE OF THE CUBE. SO SHADOW_WIDTH AND SHADOW_HEIGHT HAVE TO BE THE SAME
 
     glTexImage3D(GL_TEXTURE_CUBE_MAP_ARRAY, 0, GL_DEPTH_COMPONENT, shadowWidth, shadowHeight, 30 , 0, GL_DEPTH_COMPONENT, GL_FLOAT, nullptr);
     
@@ -365,7 +364,7 @@ void RenderingUtil::EquirectangularToCubemap(const char* path)
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, hdrTexture);
 
-    glViewport(0, 0, 1024, 1024); // don't forget to configure the viewport to the capture dimensions.
+    glViewport(0, 0, 1024, 1024); // configure the viewport to the capture dimensions.
     glBindFramebuffer(GL_FRAMEBUFFER, captureFBO);
 
     glDisable(GL_CULL_FACE);
@@ -686,11 +685,8 @@ void RenderingUtil::CreateSSRBoxBlurFBO()
 
     glBindTexture(GL_TEXTURE_2D, mSSRBlurredTexture);
 
-
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-    //glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-    //glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, Common::SCR_WIDTH, Common::SCR_HEIGHT, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
 
@@ -707,7 +703,6 @@ void RenderingUtil::CreateSSRBoxBlurFBO()
         std::cout << "ERROR::FRAMEBUFFER:: Framebuffer is not complete!\n";
         throw 0;
     }
-
 
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }

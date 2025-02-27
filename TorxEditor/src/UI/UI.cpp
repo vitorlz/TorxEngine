@@ -5,7 +5,7 @@
 #include "imgui_impl_glfw.h"
 #include "imgui_impl_opengl3.h"
 #include "ImGuizmo.h"
-#include "Rendering/RenderingUtil.h"
+#include "Util/RenderingUtil.h"
 #include "Core/Common.h"
 #include "Core/Coordinator.hpp"
 #include "AssetLoading/AssetManager.h"
@@ -273,13 +273,10 @@ void UI::Update()
     {
         ImGui::Checkbox("Show normals", &Common::normalsDebug);
         ImGui::Checkbox("Show World Position", &Common::worldPosDebug);
-        ImGui::Checkbox("Wireframe mode", &Common::wireframeDebug);
-        ImGui::Checkbox("PBR demo", &Common::pbrDemonstration);
         ImGui::Checkbox("Show light position", &Common::lightPosDebug);
         ImGui::Checkbox("Show albedo ", &Common::albedoDebug);
         ImGui::Checkbox("Show roughness", &Common::roughnessDebug);
         ImGui::Checkbox("Show metalness", &Common::metallicDebug);
-        ImGui::Checkbox("Show ambient occlusion", &Common::aoDebug);
         ImGui::Checkbox("Show emission", &Common::emissionDebug);
         ImGui::Checkbox("Show physics debug lines", &Common::bulletLinesDebug);
 
@@ -343,6 +340,8 @@ void UI::Update()
         {
             Common::voxelize = true;
         }
+
+        ImGui::Checkbox("Voxelize in real-time", &Common::voxelizeInRealTime);
 
         ImGui::TreePop();
     }
@@ -1010,6 +1009,7 @@ void UI::showComponents(Entity entity)
                 ImGui::SliderFloat3("Offset", &light.offset.x, -10.0f, 10.0f);
             }
             ImGui::Checkbox("Cast Shadows", (bool*)&light.shadowCaster);
+            ImGui::Checkbox("Dynamic", &light.dynamic);
         }
         ImGui::SameLine();
         if (ImGui::Button("Delete##xx0"))

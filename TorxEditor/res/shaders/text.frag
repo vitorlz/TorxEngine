@@ -1,11 +1,8 @@
 #version 460 core
 out vec4 color;
 
-
 in vec2 TexCoords;
 in flat int index;
-
-
 
 uniform sampler2DArray text;
 uniform int letterMap[200];

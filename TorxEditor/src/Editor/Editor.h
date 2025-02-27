@@ -16,6 +16,7 @@ public:
 
 	void InitUI();
 	void RenderGizmo(int selectedEntity);
+	void RenderIcons();
 	int GetCurrentGizmoMode();
 	int GetCurrentGizmoOperation();
 	void SetCurrentGizmoMode(int gizmoMode);

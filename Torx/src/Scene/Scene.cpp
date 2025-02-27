@@ -14,7 +14,7 @@
 #include "../Components/CNativeScript.h"
 #include "../Util/Util.h"
 #include "../AssetLoading/AssetManager.h"
-#include "../Rendering/RenderingUtil.h"
+#include "../Util/RenderingUtil.h"
 #include <algorithm>
 
 extern Coordinator ecs;

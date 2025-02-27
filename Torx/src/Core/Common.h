@@ -9,12 +9,10 @@ public:
 	static unsigned int SCR_WIDTH;
 	static unsigned int SCR_HEIGHT;
 	static bool normalsDebug;
-	static bool wireframeDebug;
 	static bool worldPosDebug;
 	static bool lightPosDebug;
 	static bool bulletLinesDebug;
 	static bool bulletLinesReady;
-	static int debugLinesCount;
 	static bool aces;
 	static bool reinhard;
 	static bool uncharted;
@@ -23,14 +21,11 @@ public:
 	static int bloomKernelSize;
 	static float bloomStdDeviation;
 	static float bloomIntervalMultiplier;
-	static bool pbrDemonstration;
 	static bool albedoDebug;
 	static bool roughnessDebug;
 	static bool metallicDebug;
-	static bool aoDebug;
 	static bool emissionDebug;
 	static std::vector<float> bloomWeights;
-	static glm::mat4 playerViewMatrix;
 	static bool usingGuizmo;
 	static bool voxelize;
 	static bool showVoxelDebug;
@@ -60,4 +55,5 @@ public:
 	static glm::mat4 currentViewMatrix;
 	static glm::mat4 currentProjMatrix;
 	static glm::vec3 currentCamPos;
+	static bool voxelizeInRealTime;
 };

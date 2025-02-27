@@ -32,16 +32,6 @@ void Window::Init(int width, int height, const char* windowTitle)
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 6);
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
-	// Full screen:
-	/*const GLFWvidmode* mode = glfwGetVideoMode(glfwGetPrimaryMonitor());
-
-	glfwWindowHint(GLFW_RED_BITS, mode->redBits);
-	glfwWindowHint(GLFW_GREEN_BITS, mode->greenBits);
-	glfwWindowHint(GLFW_BLUE_BITS, mode->blueBits);
-	glfwWindowHint(GLFW_REFRESH_RATE, mode->refreshRate);
-
-	mWindow = glfwCreateWindow(mode->width, mode->height, windowTitle, glfwGetPrimaryMonitor(), NULL);*/
-
 	mWindow = glfwCreateWindow(screenWidth, screenHeight, windowTitle, NULL, NULL);
 
 	if (mWindow == NULL)

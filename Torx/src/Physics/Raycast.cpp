@@ -54,7 +54,7 @@ void Raycast::setDynamicsWorld(btDiscreteDynamicsWorld* dynamicsWorld)
 
 void Raycast::setSelectedEntity(int entity)
 {
-	m_SelectedEntity == entity;
+	m_SelectedEntity = entity;
 }
 
 glm::vec3 Raycast::getMouseRayDir() 

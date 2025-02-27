@@ -199,7 +199,7 @@ void LightSystem::Update(float deltaTime)
 			continue;
 		}
 
-		if (light.isDirty) 
+		if (light.isDirty || light.dynamic) 
 		{	
 			auto& transform = ecs.GetComponent<CTransform>(entity);
 

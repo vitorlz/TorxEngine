@@ -28,6 +28,7 @@ void ShaderManager::LoadShaders()
 	std::shared_ptr<Shader>	gBufferShader = std::make_shared<Shader>("res/shaders/gBufferShader.vert", "res/shaders/gBufferShader.frag");
 	std::shared_ptr<Shader>	animShader = std::make_shared<Shader>("res/shaders/anim.vert", "res/shaders/anim.frag");
 	std::shared_ptr<Shader>	textShader = std::make_shared<Shader>("res/shaders/text.vert", "res/shaders/text.frag");
+	std::shared_ptr<Shader>	iconShader = std::make_shared<Shader>("res/shaders/icon.vert", "res/shaders/text.frag");
 
 	shaderPrograms.clear();
 
@@ -53,6 +54,7 @@ void ShaderManager::LoadShaders()
 	shaderPrograms.insert({ "gBufferShader", gBufferShader });
 	shaderPrograms.insert({ "animShader", animShader });
 	shaderPrograms.insert({ "textShader", textShader });
+	shaderPrograms.insert({ "iconShader", iconShader });
 }
 
 // maybe make this more efficient in the future.

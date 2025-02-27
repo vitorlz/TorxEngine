@@ -4,8 +4,8 @@
 
 #include "Util/ShaderManager.h"
 #include "AssetLoading/AssetManager.h"
-#include "Rendering/RenderingUtil.h"
-#include "Rendering/TextRendering.h"
+#include "Util/RenderingUtil.h"
+#include "Misc/TextRendering.h"
 #include "Scene/Scene.h"
 #include "Components/CNativeScript.h"
 #include "Components/CTransform.h"
@@ -38,21 +38,9 @@ Window& Engine::GetWindow()
 	return m_window;
 }
 
-void Engine::Init(const std::string scenePath)
-{
-	TextRendering::Init();
-	AssetManager::LoadAssets();
-	ShaderManager::LoadShaders();
-	RenderingUtil::Init();
-	ECSCore::RegisterCoreComponentsAndSystems();
-	Scene::LoadSceneFromJson(scenePath);
-	ECSCore::InitSystems();
-}
-
 void Engine::Init()
 {
 	TextRendering::Init();
-	//AssetManager::LoadAssets();
 	ShaderManager::LoadShaders();
 	RenderingUtil::Init();
 	ECSCore::RegisterCoreComponentsAndSystems();

@@ -14,7 +14,7 @@
 #include "../Components/CNativeScript.h"
           
 #include "../Systems/RenderSystem.h"
-#include "../Rendering/RenderingUtil.h"
+#include "../Util/RenderingUtil.h"
 #include "../Systems/LightSystem.h"
 #include "../Systems/GeneralInputSystem.h"
 #include "../Systems/PhysicsSystem.h"

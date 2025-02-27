@@ -1,8 +1,4 @@
 #include "Common.h"
-//#include "../UI/UI.h"
-//#include "../Editor/Editor.h"
-//#include "../Editor/EditorCamera.h"
-
 
 // -------- SCREEN SETTINGS -----------------------------------
 unsigned int Common::SCR_WIDTH = 1600;
@@ -10,13 +6,11 @@ unsigned int Common::SCR_HEIGHT = 900;
 
 // ------------- DEBUG ----------------------------------------
 bool  Common::normalsDebug{ false };
-bool  Common::wireframeDebug{ false };
 bool  Common::worldPosDebug{ false };
 bool  Common::lightPosDebug{ false };
 bool  Common::albedoDebug{ false };
 bool  Common::roughnessDebug{ false };
 bool  Common::metallicDebug{ false };
-bool  Common::aoDebug{ false };
 bool  Common::emissionDebug{ false };
 bool  Common::bulletLinesDebug{ false };
 bool  Common::bulletLinesReady{ false };
@@ -25,7 +19,6 @@ bool  Common::bulletLinesReady{ false };
 bool  Common::aces{ true };
 bool  Common::reinhard{ false };
 bool  Common::uncharted{ false };
-bool  Common::pbrDemonstration{ false };
 float Common::exposure{ 2.0f };
 
 // -------------- BLOOM ---------------------------------------
@@ -34,10 +27,6 @@ int   Common::bloomKernelSize{ 5 };
 float Common::bloomStdDeviation{ 1.0f };
 float Common::bloomIntervalMultiplier{ 0.2f };
 std::vector<float> Common::bloomWeights;
-
-// ------------- TEMPORARY STUFF -------------------------------
-glm::mat4 Common::playerViewMatrix;
-bool Common::usingGuizmo{ false };
 
 // --------------- VXGI ----------------------------------------
 bool Common::voxelize{ true };
@@ -53,6 +42,7 @@ float Common::specularStepSizeMultiplier{ 1 };
 float Common::specularConeOriginOffset{ 0.8f };
 bool Common::showTotalIndirectSpecularLight{ false };
 float Common::specularConeMaxDistance{ 1 };
+bool Common::voxelizeInRealTime{ false };
 
 // --------------- SSR ----------------------------------------
 float Common::ssrMaxDistance{ 20 };
@@ -69,10 +59,14 @@ int Common::ssaoKernelSize{ 64 };
 bool Common::ssaoOn{ true };
 bool Common::showAO{ false };
 
-// -------------- TEMPORARY TEXT STUFF ---------------------------
+// -------------- TEMPORARY STUFF ---------------------------
 glm::vec3 Common::textColor{ 0.7f };
+bool Common::usingGuizmo{ false };
 
 // -------------- CURRENT MATRICES --------------------------------
 glm::mat4 Common::currentViewMatrix;
 glm::mat4 Common::currentProjMatrix;
 glm::vec3 Common::currentCamPos;
+
+
+

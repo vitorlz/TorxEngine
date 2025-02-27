@@ -1,6 +1,6 @@
 #include "PhysicsSystem.h"
 #include "../Core/Coordinator.hpp"
-#include "../Rendering/RenderingUtil.h"
+#include "../Util/RenderingUtil.h"
 #include "../Util/ShaderManager.h"
 #include "../Util/Util.h"
 #include "glm/glm.hpp"
@@ -419,7 +419,6 @@ void PhysicsSystem::Update(float deltaTime)
 
 				std::cout << "new rigid body added \n";
 
-				//using motionstate is optional, it provides interpolation capabilities, and only synchronizes 'active' objects
 				btDefaultMotionState* myMotionState = new btDefaultMotionState(startTransform);
 				if (isDynamic)
 				{

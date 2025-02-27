@@ -1,3 +1,5 @@
+#define GLM_ENABLE_EXPERIMENTAL 
+#define GLFW_INCLUDE_NONE
 #include "Editor.h"
 #include "Core/Common.h"
 #include "Core/Coordinator.hpp"
@@ -8,17 +10,20 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 #include "Util/Util.h"
-#define GLM_ENABLE_EXPERIMENTAL 
+
 #include <glm/gtx/string_cast.hpp>
 #include "EditorCamera.h"
 #include "Scene/Scene.h"
 #include "../UI/UI.h"
 #include "Engine.h"
-#include <Rendering/TextRendering.h>
-#include "Rendering/RenderingUtil.h"
+#include <Misc/TextRendering.h>
+#include "Util/RenderingUtil.h"
 #include "AssetLoading/AssetManager.h"
 #include "Util/ShaderManager.h"
-
+#include "glad/glad.h"
+#include "glm/glm.hpp"
+#include "Components/CLight.h"
+#include "Components/CTransform.h"
 
 extern Coordinator ecs;
 
@@ -89,7 +94,6 @@ void Editor::RenderGizmo(int selectedEntity)
 
     // you need to create a camera component and give it to the player and store the projection and view matrix inside it.
     // the way we are getting the view and projection matrix right now is just ugly.
-
 
     glm::mat4 model = glm::mat4(1.0f);
     model = glm::translate(model, transform.position);
@@ -235,8 +239,65 @@ EditorCamera& Editor::GetEditorCamera()
     return editorCamera;
 }
 
+void Editor::RenderIcons()
+{
+    glBindFramebuffer(GL_READ_FRAMEBUFFER, RenderingUtil::gBufferFBO);
+
+    glBindFramebuffer(GL_DRAW_FRAMEBUFFER, RenderingUtil::gFinalRenderTarget);
+
+    glBlitFramebuffer(0, 0, Common::SCR_WIDTH, Common::SCR_HEIGHT, 0, 0, Common::SCR_WIDTH, Common::SCR_HEIGHT, GL_DEPTH_BUFFER_BIT, GL_NEAREST);
+    glEnable(GL_DEPTH_TEST);
+
+    glBindFramebuffer(GL_FRAMEBUFFER, RenderingUtil::gFinalRenderTarget);
+
+    std::vector<Entity> entities = ecs.GetLivingEntities();
+
+    if (Torx::Engine::MODE == Torx::EDITOR)
+    {
+        for (const auto& entity : entities)
+        {
+            auto& transform = ecs.GetComponent<CTransform>(entity);
+
+            if (ecs.HasComponent<CLight>(entity))
+            {
+                auto& light = ecs.GetComponent<CLight>(entity);
+
+                glEnable(GL_BLEND);
+                glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+                glm::mat4 projection = glm::ortho(0.0f, float(Common::SCR_WIDTH), 0.0f, float(Common::SCR_HEIGHT), 0.0f, 100.0f);
+
+                Shader& iconShader = ShaderManager::GetShaderProgram("iconShader");
+
+                iconShader.use();
+
+                iconShader.setMat4("projection", Common::currentProjMatrix);
+                iconShader.setMat4("view", Common::currentViewMatrix);
+
+                glm::mat4 worldPos = glm::translate(glm::mat4(1.0f), transform.position + light.offset);
+                worldPos *= glm::mat4_cast(transform.rotation);
+
+                glDepthMask(GL_FALSE);
+
+                TextRendering fontawesome = AssetManager::GetTextFont("fontawesome");
+
+                fontawesome.RenderIcon(iconShader, 0xf0eb,
+                    0.0f, 0.0f, 0.5f, worldPos, light.color);
+
+                glDepthMask(GL_TRUE);
+                glDisable(GL_BLEND);
+            }
+        }
+    }
+}
+
 void Editor::Update(float dt)
 {
+    if (Common::lightPosDebug)
+    {
+        RenderIcons();
+    }
+
     ui.NewFrame();
    
     editorCamera.Update(dt);

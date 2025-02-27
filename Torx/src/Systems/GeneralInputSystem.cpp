@@ -52,7 +52,6 @@ void GeneralInputSystem::Update(float deltaTime)
 		inputSing.mouseX = x;
 		inputSing.mouseY = y;
 		inputSing.firstMouse = false;
-		//UI::firstMouseUpdateAfterMenu = false;
 	}
 
 	inputSing.mouseOffsetX = x - inputSing.mouseX;

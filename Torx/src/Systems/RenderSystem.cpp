@@ -16,19 +16,18 @@
 #include "../Util/ShaderManager.h"
 #include "../Util/TextureLoader.h"
 #include "../Util/Util.h"
-#include "../Rendering/RenderingUtil.h"
+#include "../Util/RenderingUtil.h"
 #include "../AssetLoading/AssetManager.h"
 #include "../Physics/Raycast.h"
 #include "../Physics/BulletDebugDrawer.h"
-//#include "../UI/UI.h"
-//#include "../Editor/Editor.h"
-#include "../Rendering/Shadows.h"
-#include "../Rendering/Bloom.h"
+#include "../Misc/Shadows.h"
+#include "../Misc/Bloom.h"
 #include "../Components/CAnimator.h"
-#include "../Rendering/TextRendering.h"
+#include "../Misc/TextRendering.h"
 #include "../Engine.h"
 #include "Scene/Scene.h"
 
+#include <IconsFontAwesome4.h>
 
 extern Coordinator ecs;
 
@@ -62,7 +61,7 @@ void RenderSystem::voxelizationPass()
         return;
     }
 
-    if (Common::voxelize)
+    if (Common::voxelize || Common::voxelizeInRealTime)
     {
         glPushDebugGroup(GL_DEBUG_SOURCE_APPLICATION, 0, -1, "Voxelization");
 
@@ -130,8 +129,6 @@ void RenderSystem::voxelizationPass()
                 meshComponent.mesh.Draw(voxelizationShader);
             }
         }
-
-        std::cout << "voxelized scene" << "\n";
 
         glBindTexture(GL_TEXTURE_3D, RenderingUtil::mVoxelTexture);
         glGenerateMipmap(GL_TEXTURE_3D);
@@ -542,7 +539,6 @@ void RenderSystem::lightingPass()
         lightingShader.setBool("albedoDebug", Common::albedoDebug);
         lightingShader.setBool("roughnessDebug", Common::roughnessDebug);
         lightingShader.setBool("metallicDebug", Common::metallicDebug);
-        lightingShader.setBool("aoDebug", Common::aoDebug);
         lightingShader.setBool("emissionDebug", Common::emissionDebug);
         lightingShader.setBool("bloom", Common::bloomOn);
         lightingShader.setInt("dirShadowMap", 9);
@@ -664,10 +660,6 @@ void RenderSystem::skyboxPass()
     glEnable(GL_DEPTH_TEST);
     unsigned int attachments[1] = { GL_COLOR_ATTACHMENT0 };
     glDrawBuffers(1, attachments);
-
-    if (Common::wireframeDebug) {
-        glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-    }
 
     glDisable(GL_CULL_FACE);
     glDepthFunc(GL_LEQUAL);
@@ -808,7 +800,6 @@ void RenderSystem::forwardRenderingPass()
 {
     glBindFramebuffer(GL_READ_FRAMEBUFFER, RenderingUtil::gBufferFBO);
 
-    
     glBindFramebuffer(GL_DRAW_FRAMEBUFFER, RenderingUtil::gFinalRenderTarget);
 
     glBlitFramebuffer(0, 0, Common::SCR_WIDTH, Common::SCR_HEIGHT, 0, 0, Common::SCR_WIDTH, Common::SCR_HEIGHT, GL_DEPTH_BUFFER_BIT, GL_NEAREST);
@@ -842,43 +833,6 @@ void RenderSystem::forwardRenderingPass()
                 Util::renderSphere();
             }
         }
-    }
-
-    if (false /*Torx::Engine::MODE == Torx::EDITOR*/)
-    {
-        glEnable(GL_BLEND);
-        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-
-        glm::mat4 projection = glm::ortho(0.0f, float(Common::SCR_WIDTH), 0.0f, float(Common::SCR_HEIGHT), 0.0f, 100.0f);
-
-        Shader& textShader = ShaderManager::GetShaderProgram("textShader");
-
-        textShader.use();
-
-        textShader.setMat4("projection", projection);
-        textShader.setMat4("view", glm::mat4(1.0f));
-
-        glDepthMask(GL_FALSE);
-
-        TextRendering texGyreCursor = AssetManager::GetTextFont("texGyreCursor");
-        TextRendering arial = AssetManager::GetTextFont("arial");
-
-        std::string modeText;
-
-        if (Torx::Engine::MODE == Torx::EDITOR)
-        {
-            modeText = "Editor Mode";
-        }
-        else if (Torx::Engine::MODE == Torx::PLAY)
-        {
-            modeText = "Player Mode";
-        }
-
-        texGyreCursor.RenderText(textShader, modeText,
-            20.0f, 830.0f, 32.0f, 1.5f, Common::textColor);
-
-        glDepthMask(GL_TRUE);
-        glDisable(GL_BLEND);
     }
 
     if (Common::bulletLinesDebug)

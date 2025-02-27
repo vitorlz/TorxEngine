@@ -1,17 +1,13 @@
 #include "AssetManager.h"
 #include "stb_image.h"
 #include "../Util/TextureLoader.h"
+#include <IconsFontAwesome4.h>
 
 std::vector<ModelData> AssetManager::m_Models{};
 std::unordered_map<std::string, Mesh> AssetManager::m_Meshes{};
 std::unordered_map<std::string, Animation> AssetManager::m_Animations;
 std::vector<Texture> AssetManager::m_LoadedMeshTextures{};
 std::unordered_map<std::string, TextRendering>  AssetManager::m_textFonts;
-
-void AssetManager::LoadModels()
-{
-	
-}
 
 void AssetManager::LoadModel(std::string path, std::string name)
 {
@@ -51,9 +47,11 @@ void AssetManager::LoadFonts()
 {
 	TextRendering texGyreCursor("res/fonts/texgyrecursor/texgyrecursor-bold.otf");
 	TextRendering arial("res/fonts/arial/arial.ttf");
+	TextRendering fontawesome(FONT_ICON_FILE_NAME_FA, true);
 
 	m_textFonts.insert({ "texGyreCursor", texGyreCursor });
 	m_textFonts.insert({ "arial", arial });
+	m_textFonts.insert({ "fontawesome", fontawesome });
 }
 
 TextRendering& AssetManager::GetTextFont(const std::string name)
@@ -163,14 +161,10 @@ std::vector<Texture> AssetManager::LoadMeshTextures(const char* tag)
 
 void AssetManager::LoadMeshes()
 {	
-
 	std::vector<Texture> emptyTextures{};
 
-	/*Mesh cube(cubeVertices, cubeIndices, LoadMeshTextures("darkmarble"));
-	Mesh quad(quadVertices, quadIndices, LoadMeshTextures("darkmarble"));*/
-
-	Mesh cube(cubeVertices, cubeIndices, emptyTextures);
-	Mesh quad(quadVertices, quadIndices, emptyTextures);
+	Mesh cube(cubeVertices, cubeIndices, LoadMeshTextures("whitepaper"));
+	Mesh quad(quadVertices, quadIndices, LoadMeshTextures("whitepaper"));
 
 	m_Meshes.insert({ "cube", cube });
 	m_Meshes.insert({ "quad", quad });
@@ -218,12 +212,7 @@ std::vector<std::string> AssetManager::GetModelNames()
 	std::vector<std::string> names{};
 	for (auto& modelData : m_Models)
 	{
-		//std::cout << "name: " << modelData.name << "\n";
-
-	
 		names.push_back(modelData.name);
-
-		//std::cout << "name vector size: " << names.size() << "\n";
 	}
 	return names;
 }
@@ -233,19 +222,13 @@ std::vector<std::string> AssetManager::GetModelPaths()
 	std::vector<std::string> paths{};
 	for (auto& modelData : m_Models)
 	{
-		/*std::cout << "name: " << modelData.name << "\n";
-		std::cout << "path: " << modelData.path << "\n";*/
-
 		paths.push_back(modelData.path);
-
-		//std::cout << "name vector size: " << paths.size() << "\n";
 	}
 	return paths;
 }
 
 void AssetManager::LoadAssets()
 {
-	LoadModels();
 	LoadMeshes();
 	LoadAnimations();
 	LoadFonts();

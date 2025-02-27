@@ -7,23 +7,15 @@
 class Shader
 {
 public:
-	// the program ID
 	unsigned int ID;
 
 	Shader();
 
-	// constructor reads and builds the shader
 	Shader(const char* vertexPath, const char* fragmentPath);
 	Shader(const char* vertexPath, const char* fragmentPath, const char* geometryPath);
 
-	// use/activate the shader
 	void use();
 
-	// utility uniform functions
-	// the first const makes sure that the original variable referred to by the reference name is
-	// not modified by the function. The second const makes sure that the function won't modify
-	// any of the member variables of the class (does not modify the state of the class). So if we
-	// make a const instance of the class we can only use const functions.
 	void setBool(const std::string& name, bool value) const;
 	void setInt(const std::string& name, int value) const;
 	void setFloat(const std::string& name, float value) const;
