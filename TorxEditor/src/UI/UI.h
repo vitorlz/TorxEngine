@@ -26,6 +26,9 @@ public:
 	static glm::vec2 gameWindowSize;
 	static glm::vec2 gameWindowPos;
 
+	static int selectedEntity;
+	static int hoveredEntity;
+
 private:
 	bool openChooseScenePopup = false;
 	bool openChooseProjectTitlePopup = false;

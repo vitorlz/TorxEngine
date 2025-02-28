@@ -130,7 +130,7 @@
                         0.0
                     ],
                     "innerCutoff": 0.0,
-                    "isDirty": false,
+                    "isDirty": true,
                     "offset": [
                         -0.597000002861023,
                         -0.2939999997615814,
@@ -148,7 +148,7 @@
                     "path": "res/models/victorianLamp/scene.gltf"
                 },
                 "rigidbody": {
-                    "mass": 1.0
+                    "mass": 0.0
                 },
                 "transform": {
                     "position": [

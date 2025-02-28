@@ -13,3 +13,4 @@ target_compile_definitions(TorxEditor PRIVATE PROJECT_SOURCE_DIR="${CMAKE_SOURCE
 
 
 
+

@@ -1,7 +1,7 @@
 #version 460 core
 
 uniform sampler2D gViewPosition;
-uniform sampler2D gViewNormal;
+uniform sampler2D gNormal;
 uniform sampler2D gRMA;
 uniform sampler2D lightingTexture;
 //uniform samplerCube skybox;
@@ -20,6 +20,7 @@ uniform float maxDistance;
 uniform float resolution;
 uniform int   steps;
 uniform float thickness;
+uniform mat3 viewNormalMatrix;
 
 void main()
 {
@@ -32,7 +33,7 @@ void main()
   vec4 positionFrom = vec4(texture(gViewPosition, texCoord).xyz, 1.0);
 
   vec3 unitPositionFrom = normalize(positionFrom.xyz);
-  vec3 normal           = normalize(texture(gViewNormal, texCoord).xyz);
+  vec3 normal           = viewNormalMatrix * normalize(texture(gNormal, texCoord).xyz);
   vec3 pivot            = normalize(reflect(unitPositionFrom, normal));
 
 

@@ -15,7 +15,7 @@ public:
 	static Editor& getInstance();
 
 	void InitUI();
-	void RenderGizmo(int selectedEntity);
+	void RenderGizmo(int selectedEntity, bool isLightIcon);
 	void RenderIcons();
 	int GetCurrentGizmoMode();
 	int GetCurrentGizmoOperation();

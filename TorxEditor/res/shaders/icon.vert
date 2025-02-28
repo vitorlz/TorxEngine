@@ -8,11 +8,12 @@ uniform mat4 projection;
 uniform mat4 view;
 uniform vec3 worldPos;
 uniform float scale;
+uniform vec3 iconOffset;
 
 void main()
 {
     vec3 pos = worldPos + transpose(mat3(view)) * ((vec3(vertex.xy, 0.0) + vec3(-0.25, -0.5, 0.0)) * scale);
-    gl_Position = projection * view  * (vec4(pos + vec3(0.0, 0.25, 0.0) , 1.0));
+    gl_Position = projection * view  * (vec4(pos + iconOffset, 1.0));
 
     index = gl_InstanceID;
     TexCoords = vertex.xy;

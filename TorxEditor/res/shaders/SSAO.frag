@@ -4,11 +4,13 @@ out float FragColor;
 in vec2 TexCoords;
 
 uniform sampler2D gViewPosition;
-uniform sampler2D gViewNormal;
+uniform sampler2D gNormal;
 uniform sampler2D texNoise;
 
 uniform vec3 samples[64];
 uniform mat4 projection;
+
+uniform mat3 viewNormalMatrix;
 
 uniform int screenWidth;
 uniform int screenHeight;
@@ -21,7 +23,7 @@ vec2 noiseScale = vec2(screenWidth/4.0, screenHeight/4.0);
 void main()
 {
 	vec3 fragPos   = texture(gViewPosition, TexCoords).xyz;
-	vec3 normal    = texture(gViewNormal, TexCoords).rgb;
+	vec3 normal    = viewNormalMatrix * normalize(texture(gNormal, TexCoords).xyz);
 	vec3 randomVec = texture(texNoise, TexCoords * noiseScale).xyz; 
 
 	vec3 tangent   = normalize(randomVec - normal * dot(randomVec, normal));

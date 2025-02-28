@@ -7,8 +7,8 @@ layout (location = 3) out vec3 gRMA;
 layout (location = 4) out vec4 gEmission;
 layout (location = 5) out vec4 gDirLightSpacePosition;
 layout (location = 6) out vec3 gViewPosition;
-layout (location = 7) out vec3 gViewNormal;
-//layout (location = 8) out vec3 gMeshId;
+//layout (location = 7) out vec3 gViewNormal;
+layout (location = 7) out vec3 gMeshId;
 
 in vec2 TexCoords;	
 in vec3 FragPos;
@@ -49,8 +49,8 @@ void main()
 	gEmission = texture(material.texture_emission1, scaledTexCoords);
 	gDirLightSpacePosition = FragPosLightSpaceDir;
 	gViewPosition = ViewPosition;
-	gViewNormal = viewNormalMatrix * gNormal;
-	//gMeshId = meshIdColor;
+	//gViewNormal = viewNormalMatrix * gNormal;
+	gMeshId = meshIdColor;
 }
 
 vec3 getNormalFromMap()

@@ -46,6 +46,8 @@ bool UI::isOpen{ true };
 bool UI::firstMouseUpdateAfterMenu{ false };
 bool UI::hovering{ false };
 bool UI::spectatingCamera{ false };
+int UI::selectedEntity{ -1 };
+int UI::hoveredEntity{ -1 };
 
 bool UI::projectLoaded{ false };
 
@@ -105,7 +107,6 @@ void UI::Update()
     );
 
     // dock inspector, settings, and game windows to their starting positions
-
     static bool firstTime = true;
     if (firstTime)
     {
@@ -273,7 +274,7 @@ void UI::Update()
     {
         ImGui::Checkbox("Show normals", &Common::normalsDebug);
         ImGui::Checkbox("Show World Position", &Common::worldPosDebug);
-        ImGui::Checkbox("Show light position", &Common::lightPosDebug);
+        ImGui::Checkbox("Show light icons", &Common::lightPosDebug);
         ImGui::Checkbox("Show albedo ", &Common::albedoDebug);
         ImGui::Checkbox("Show roughness", &Common::roughnessDebug);
         ImGui::Checkbox("Show metalness", &Common::metallicDebug);
@@ -386,78 +387,70 @@ void UI::Update()
     ImGui::Begin("Inspector");
     editorWindowHovered = ImGui::IsWindowHovered(ImGuiHoveredFlags_AllowWhenBlockedByPopup | ImGuiHoveredFlags_AllowWhenBlockedByActiveItem);
 
-    static int selectedEntity{ -1 };
     static bool addingNewEntity{ false };
     static Entity newEntity;
 
     if (Torx::Engine::MODE == Torx::EDITOR)
     {
-       
-        if (!addingNewEntity && inputSing.rightMousePressed)
+        glm::vec2 gameWindowMousePosRel(gameWindowMousePos.x / gameWindowSize.x , gameWindowMousePos.y / gameWindowSize.y);
+
+        glBindFramebuffer(GL_FRAMEBUFFER, RenderingUtil::gBufferFBO);
+
+        glReadBuffer(GL_COLOR_ATTACHMENT7);
+
+        glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+
+        glm::vec2 mousePickPos(gameWindowMousePosRel.x* Common::SCR_WIDTH, Common::SCR_HEIGHT - ((gameWindowMousePosRel.y * Common::SCR_HEIGHT)));
+
+        unsigned char data[4];
+        glReadPixels(mousePickPos.x, mousePickPos.y, 1, 1, GL_RGB, GL_UNSIGNED_BYTE, data);
+
+        hoveredEntity = data[0] + data[1] * 256 + data[2] * 256 * 256;
+
+        static bool hoveringLightIcon = false;
+        if (hoveredEntity >= 1000 && ecs.HasComponent<CLight>(hoveredEntity % 1000))
         {
-            glm::vec4 rayStartNDC(
-                (UI::gameWindowMousePos.x / (double)UI::gameWindowSize.x - 0.5f) * 2.0f,
-                (((double)UI::gameWindowSize.y - UI::gameWindowMousePos.y) / (double)UI::gameWindowSize.y - 0.5f) * 2.0f,
-                -1.0f,
-                1.0f
-            );
-
-            glm::vec4 rayEndNDC(
-                (UI::gameWindowMousePos.x / (double)UI::gameWindowSize.x - 0.5f) * 2.0f,
-                (((double)UI::gameWindowSize.y - UI::gameWindowMousePos.y) / (double)UI::gameWindowSize.y - 0.5f) * 2.0f,
-                1.0f,
-                1.0f
-            );
-
-           // ImVec2 mousepos = ImGui::GetMousePos();
-            selectedEntity = Raycast::mouseRaycast(Common::currentProjMatrix * Common::currentViewMatrix, rayStartNDC, rayEndNDC, 1000.0f);
-            //std::cout << "Mouse Pos game: " << gameWindowMousePos.x << ", " << gameWindowMousePos.y << std::endl;
-            //std::cout << "Mouse pos imgui: " << mousepos.x << ", " << mousepos.y << std::endl;
+            hoveredEntity = hoveredEntity % 1000;
+            hoveringLightIcon = true;
         }
+        else
+        {
+            hoveringLightIcon = false;
+        }
+        
+        static bool selectedLightIcon = false;
+        if (inputSing.rightMousePressed)
+        {
+            selectedLightIcon = hoveringLightIcon;
+            selectedEntity = hoveredEntity;
+            addingNewEntity = false;
+        }
+
+        glBindFramebuffer(GL_FRAMEBUFFER, 0);   
 
         if (selectedEntity >= 0 && ecs.isAlive(selectedEntity) && !spectatingCamera)
         {
-            Editor::getInstance().RenderGizmo(selectedEntity);
+            Editor::getInstance().RenderGizmo(selectedEntity, selectedLightIcon);
         }
     }
 
-    if (!addingNewEntity && selectedEntity >= 0 && ecs.isAlive(selectedEntity))
+    if (selectedEntity >= 0 && ecs.isAlive(selectedEntity))
     {
-                
         std::stringstream ss;
         ss << "Selected Entity: " << selectedEntity;
         std::string selectedEntityText = ss.str();
-        ImGui::TextColored(ImVec4(1.0f, 1.0f, 0.0f, 1.0f), selectedEntityText.c_str());
+        ImGui::TextColored(ImVec4(0.8f, 0.8f, 0.0f, 1.0f), selectedEntityText.c_str());
         showComponents(selectedEntity);
         showEntityOptions(selectedEntity, addingNewEntity);
     }
-        
+ 
     ImGui::Separator();
 
-    if (!addingNewEntity)
+    if (ImGui::Button("Add Entity"))
     {
-        if (ImGui::Button("Add Entity"))
-        {
-            addingNewEntity = true;
-            newEntity = ecs.CreateEntity();
-        }
-    }
-
-    if (addingNewEntity)
-    {
-        std::stringstream ss;
-        ss << "Adding Entity: " << newEntity;
-        std::string addingEntityText = ss.str();
-
-        ImGui::TextColored(ImVec4(1.0f, 1.0f, 0.0f, 1.0f), addingEntityText.c_str());
-
-        showComponents(newEntity);
-        showEntityOptions(newEntity, addingNewEntity);
-
-        if (ImGui::Button("Done"))
-        {
-            addingNewEntity = false;
-        }
+        newEntity = ecs.CreateEntity();
+        selectedEntity = newEntity;
+        addingNewEntity = true;
     }
 
     ImGui::End();
@@ -480,7 +473,6 @@ void UI::Update()
     {
         if (ImGui::BeginMenu("File"))
         {
-      
             // essentially by "load project" we mean simply setting the working directory to the project's folder so we can access its resources folder.
             if (ImGui::BeginMenu("Load project"))
             {
@@ -612,7 +604,6 @@ void UI::Update()
                     {
                         if (ImGui::MenuItem(it->first.c_str()))
                         {
-
                             for (Entity e : ecs.GetLivingEntities())
                             {
                                 ecs.DestroyEntity(e);
@@ -847,14 +838,14 @@ void UI::Update()
 void UI::RenderGameWindow()
 {
 
-    ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0, 0)); // No padding inside the window
+    ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0, 0)); 
     ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
 
     ImGui::Begin("Game");
 
     ImGui::PopStyleVar(2);
 
-    ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0, 0)); // Padding
+    ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0, 0)); 
 
     ImVec2 gameSize = ImGui::GetContentRegionAvail();
     ImGui::Image(RenderingUtil::gGameWindowTexture, gameSize, ImVec2(0, 1), ImVec2(1, 0));
@@ -863,12 +854,12 @@ void UI::RenderGameWindow()
 
     ImGui::SetNextItemAllowOverlap();
 
-    ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.93f, 0.93f, 0.93f, 0.3f));  // Change button color
-    ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.6f, 0.6f, 0.6f, 1.0f));  // Hover color
-    ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(0.1803921569f, 0.262745098f, 0.4549019608f, 1.0f));  // Click color
-    ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, 6.0f);  // Rounded corners
-    ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, 0.0f); // Border thickness
-    ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(12, 7)); // Padding
+    ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.93f, 0.93f, 0.93f, 0.3f));  
+    ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.6f, 0.6f, 0.6f, 1.0f));  
+    ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(0.1803921569f, 0.262745098f, 0.4549019608f, 1.0f));  
+    ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, 6.0f);  
+    ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, 0.0f);
+    ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(12, 7)); 
 
     ImVec2 windowSize = ImGui::GetWindowSize();
     ImVec2 windowPos = ImGui::GetWindowPos();
@@ -902,46 +893,57 @@ void UI::RenderGameWindow()
 
     ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.6f, 0.6f, 0.6f, 1.0f));  // Hover color
     
-   // Change button color
-
-    // Manually set cursor to draw button OVER the texture
     ImGui::SetCursorPos(buttonPos);
 
     if (ImGui::Button(ICON_FA_PLAY))
     {
         if (Torx::Engine::MODE == Torx::EDITOR)
         {
-            Scene::g_editorScene = Scene::SerializeScene();
+            if (!std::filesystem::exists(Scene::g_currentScenePath))
+            {
+                Scene::g_editorScene = Scene::SaveSceneToJson(Scene::g_currentScenePath);
+            }
+            else
+            {
+                Scene::g_editorScene = Scene::SerializeScene();
+            }
             Torx::Engine::MODE = Torx::PLAY;
         }
     }
 
     ImGui::PopStyleColor(2);
 
-    ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.93f, 0.93f, 0.93f, 0.3f));  // Change button color
-    ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.6f, 0.6f, 0.6f, 1.0f));  // Hover color
-    ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(0.1803921569f, 0.262745098f, 0.4549019608f, 1.0f));  // Click color
+    ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.93f, 0.93f, 0.93f, 0.3f));  
+    ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.6f, 0.6f, 0.6f, 1.0f));  
+    ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(0.1803921569f, 0.262745098f, 0.4549019608f, 1.0f)); 
 
+    buttonPos = ImVec2((windowSize.x + offset * 2) * 0.5f, 40.0f); 
+    
 
-    buttonPos = ImVec2((windowSize.x + offset * 2) * 0.5f, 40.0f); // Top center
-
-    // Manually set cursor to draw button OVER the texture
     ImGui::SetCursorPos(buttonPos);
 
     if (ImGui::Button(ICON_FA_STOP))
     {
         if (Torx::Engine::MODE == Torx::PLAY)
         {
+            
             for (Entity e : ecs.GetLivingEntities())
             {
+
+                std::cout << "Entity being destroyed: " << e << "\n";
+
                 ecs.DestroyEntity(e);
             }
             ecs.ResetEntityIDs();
             ECSCore::UpdateSystems(0.0f);
 
             Torx::Engine::MODE = Torx::EDITOR;
-            Scene::DeserializeScene(Scene::g_editorScene);
-
+            
+            if (!Scene::g_editorScene.empty())
+            {
+            
+                Scene::DeserializeScene(Scene::g_editorScene);
+            }
             Window::ShowCursor();
         }
     }
@@ -955,15 +957,11 @@ void UI::RenderGameWindow()
     gameWindowSize = { game_window_size.x, game_window_size.y };
     ImGuizmo::SetDrawlist(ImGui::GetCurrentWindow()->DrawList);
     
-
-    // Check if the mouse is hovering the game window
     if (ImGui::IsWindowHovered(ImGuiHoveredFlags_RootAndChildWindows))
     {
-        // Get mouse position relative to the game window
         ImVec2 mouse_pos = ImGui::GetMousePos();
 
-        // subtract 19 pixels from vertical position because of imgui's window header size
-        gameWindowMousePos = { mouse_pos.x - game_window_pos.x, mouse_pos.y - (game_window_pos.y + 19) };
+        gameWindowMousePos = { mouse_pos.x - game_window_pos.x, mouse_pos.y - (game_window_pos.y) };
     }
 
     ImGui::End();

@@ -24,6 +24,8 @@
 #include "glm/glm.hpp"
 #include "Components/CLight.h"
 #include "Components/CTransform.h"
+#include "Components/CModel.h"
+#include "Components/CMesh.h"
 
 extern Coordinator ecs;
 
@@ -36,7 +38,7 @@ Editor& Editor::getInstance()
     return instance;
 }
 
-void Editor::RenderGizmo(int selectedEntity)
+void Editor::RenderGizmo(int selectedEntity, bool isLightIcon)
 {
     ImGui::Shortcut(ImGuiKey_Tab, ImGuiInputFlags_None);
     ImGui::Separator();
@@ -82,7 +84,7 @@ void Editor::RenderGizmo(int selectedEntity)
 
     if (!ecs.HasComponent<CTransform>(selectedEntity))
     {
-        std::cout << "Can't render gizmo: entity has no transform" << "\n";
+        //std::cout << "Can't render gizmo: entity has no transform" << "\n";
         return;
     }
 
@@ -94,9 +96,20 @@ void Editor::RenderGizmo(int selectedEntity)
 
     // you need to create a camera component and give it to the player and store the projection and view matrix inside it.
     // the way we are getting the view and projection matrix right now is just ugly.
+    CLight* light;
 
     glm::mat4 model = glm::mat4(1.0f);
-    model = glm::translate(model, transform.position);
+
+    if (isLightIcon)
+    {
+        light = &ecs.GetComponent<CLight>(selectedEntity);
+        model = glm::translate(model, transform.position + light->offset);
+    }
+    else
+    {
+        model = glm::translate(model, transform.position);
+    }
+
     glm::mat4 rotMatrix = glm::mat4_cast(transform.rotation);
     model *= rotMatrix;
     model = glm::scale(model, transform.scale);
@@ -127,14 +140,28 @@ void Editor::RenderGizmo(int selectedEntity)
                 translation.y = round(translation.y / snap[1]) * snap[1];
                 translation.z = round(translation.z / snap[2]) * snap[2];
 
-                transform.position = translation;
+                if (isLightIcon && (ecs.HasComponent<CModel>(selectedEntity) || ecs.HasComponent<CMesh>(selectedEntity)) && light)
+                {
+                    light->offset = translation - transform.position;
+                }
+                else
+                {
+                    transform.position = translation;
+                } 
             }
             else
             {
-                transform.position = translation;
+                if (isLightIcon && (ecs.HasComponent<CModel>(selectedEntity) || ecs.HasComponent<CMesh>(selectedEntity)) && light)
+                {
+                    light->offset = translation - transform.position;
+                }
+                else
+                {
+                    transform.position = translation;
+                }
             }
         }
-        else if (currentGizmoOperation == ImGuizmo::ROTATE)
+        else if (currentGizmoOperation == ImGuizmo::ROTATE && !isLightIcon)
         {
             if (useSnap)
             {
@@ -150,12 +177,11 @@ void Editor::RenderGizmo(int selectedEntity)
             }
                
         }
-        else if (currentGizmoOperation == ImGuizmo::SCALE)
+        else if (currentGizmoOperation == ImGuizmo::SCALE && !isLightIcon)
         {
             if (useSnap)
             {
                 scale = round(scale / snap[0]) * snap[0];
-                  
                 transform.scale = scale;
             }
             else
@@ -241,19 +267,27 @@ EditorCamera& Editor::GetEditorCamera()
 
 void Editor::RenderIcons()
 {
-    glBindFramebuffer(GL_READ_FRAMEBUFFER, RenderingUtil::gBufferFBO);
-
-    glBindFramebuffer(GL_DRAW_FRAMEBUFFER, RenderingUtil::gFinalRenderTarget);
-
-    glBlitFramebuffer(0, 0, Common::SCR_WIDTH, Common::SCR_HEIGHT, 0, 0, Common::SCR_WIDTH, Common::SCR_HEIGHT, GL_DEPTH_BUFFER_BIT, GL_NEAREST);
-    glEnable(GL_DEPTH_TEST);
-
-    glBindFramebuffer(GL_FRAMEBUFFER, RenderingUtil::gFinalRenderTarget);
-
-    std::vector<Entity> entities = ecs.GetLivingEntities();
-
     if (Torx::Engine::MODE == Torx::EDITOR)
     {
+        glBindFramebuffer(GL_READ_FRAMEBUFFER, RenderingUtil::gBufferFBO);
+
+        glBindFramebuffer(GL_DRAW_FRAMEBUFFER, RenderingUtil::gFinalRenderTarget);
+
+        glBlitFramebuffer(0, 0, Common::SCR_WIDTH, Common::SCR_HEIGHT, 0, 0, Common::SCR_WIDTH, Common::SCR_HEIGHT, GL_DEPTH_BUFFER_BIT, GL_NEAREST);
+        glEnable(GL_DEPTH_TEST);
+
+        glBindFramebuffer(GL_FRAMEBUFFER, RenderingUtil::gFinalRenderTarget);
+
+        std::vector<Entity> entities = ecs.GetLivingEntities();
+
+        TextRendering fontawesome = AssetManager::GetTextFont("fontawesome");
+        Shader& iconShader = ShaderManager::GetShaderProgram("iconShader");
+
+         iconShader.use();
+
+        iconShader.setMat4("projection", Common::currentProjMatrix);
+        iconShader.setMat4("view", Common::currentViewMatrix);
+
         for (const auto& entity : entities)
         {
             auto& transform = ecs.GetComponent<CTransform>(entity);
@@ -265,36 +299,73 @@ void Editor::RenderIcons()
                 glEnable(GL_BLEND);
                 glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-                glm::mat4 projection = glm::ortho(0.0f, float(Common::SCR_WIDTH), 0.0f, float(Common::SCR_HEIGHT), 0.0f, 100.0f);
-
-                Shader& iconShader = ShaderManager::GetShaderProgram("iconShader");
-
-                iconShader.use();
-
-                iconShader.setMat4("projection", Common::currentProjMatrix);
-                iconShader.setMat4("view", Common::currentViewMatrix);
-
                 glm::vec3 worldPos = transform.position + light.offset;
 
                 glDepthMask(GL_FALSE);
-                TextRendering fontawesome = AssetManager::GetTextFont("fontawesome");
+
+                int unicode;
+
+                glm::vec3 color = light.color;
+
+                if (light.type == POINT)
+                {
+                    iconShader.setVec3("iconOffset", glm::vec3(0.0f, 0.25f, 0.0f));
+                    unicode = 0xf0eb;
+                }
+                else 
+                {
+                    color = glm::vec3(1.0f, 1.0f, 0.0f);
+                    iconShader.setVec3("iconOffset", glm::vec3(0.0f, 0.4f, -0.12f));
+                    unicode = 0xf185;
+                }
+
+                if (entity == UI::hoveredEntity)
+                {
+                    color = glm::vec3(1.0f);
+                }
+
+                fontawesome.RenderIcon(iconShader, unicode,
+                    0.0f, 0.0f, 0.5f, worldPos, color);
+                
+                glDepthMask(GL_TRUE);
+                glDisable(GL_BLEND);  
+            }
+        }
+
+        glBindFramebuffer(GL_FRAMEBUFFER, RenderingUtil::gBufferFBO);
+        glDrawBuffer(GL_COLOR_ATTACHMENT7);
+
+        for (auto entity : entities)
+        {
+            auto& transform = ecs.GetComponent<CTransform>(entity);
+
+            if (ecs.HasComponent<CLight>(entity))
+            {
+                auto& light = ecs.GetComponent<CLight>(entity);
 
                 int unicode;
 
                 if (light.type == POINT)
                 {
+                    entity += 1000;
                     unicode = 0xf0eb;
                 }
-                else 
+                else
                 {
                     unicode = 0xf185;
                 }
-                
-                fontawesome.RenderIcon(iconShader, unicode,
-                    0.0f, 0.0f, 0.5f, worldPos, light.color);
 
-                glDepthMask(GL_TRUE);
-                glDisable(GL_BLEND);
+                int r = (entity & 0x000000FF) >> 0;
+                int g = (entity & 0x0000FF00) >> 8;
+                int b = (entity & 0x00FF0000) >> 16;
+
+                glm::vec3 meshIdColor(r / 255.0f, g / 255.0f, b / 255.0f);
+                
+                glm::vec3 worldPos = transform.position + light.offset;
+
+                fontawesome.RenderIcon(iconShader, unicode,
+                    0.0f, 0.0f, 0.5f, worldPos, meshIdColor);
+
             }
         }
     }

@@ -455,14 +455,17 @@ void RenderSystem::ssaoPass()
     ssaoShader.setInt("gViewPosition", 0);
 
     glActiveTexture(GL_TEXTURE1);
-    glBindTexture(GL_TEXTURE_2D, RenderingUtil::gViewNormal);
-    ssaoShader.setInt("gViewNormal", 1);
+    glBindTexture(GL_TEXTURE_2D, RenderingUtil::gNormal);
+    ssaoShader.setInt("gNormal", 1);
 
     glActiveTexture(GL_TEXTURE2);
     glBindTexture(GL_TEXTURE_2D, RenderingUtil::mSSAONoiseTexture);
     ssaoShader.setInt("texNoise", 2);
 
     glUniform3fv(glGetUniformLocation(ssaoShader.ID, "samples"), RenderingUtil::mSSAOKernel.size(), glm::value_ptr(RenderingUtil::mSSAOKernel[0]));
+
+    glm::mat3 normalViewMatrix = glm::transpose(glm::inverse(Common::currentViewMatrix));
+    ssaoShader.setMat3("viewNormalMatrix", normalViewMatrix);
 
     ssaoShader.setInt("screenWidth", Common::SCR_WIDTH);
     ssaoShader.setInt("screenHeight", Common::SCR_HEIGHT);
@@ -620,14 +623,16 @@ void RenderSystem::ssrPass()
     ssrShader.setFloat("resolution", Common::ssrResolution);
     ssrShader.setInt("steps", Common::ssrSteps);
     ssrShader.setFloat("thickness", Common::ssrThickness);
+    glm::mat3 normalViewMatrix = glm::transpose(glm::inverse(Common::currentViewMatrix));
+    ssrShader.setMat3("viewNormalMatrix", normalViewMatrix);
 
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, RenderingUtil::gViewPosition);
     ssrShader.setInt("gViewPosition", 0);
 
     glActiveTexture(GL_TEXTURE1);
-    glBindTexture(GL_TEXTURE_2D, RenderingUtil::gViewNormal);
-    ssrShader.setInt("gViewNormal", 1);
+    glBindTexture(GL_TEXTURE_2D, RenderingUtil::gNormal);
+    ssrShader.setInt("gNormal", 1);
 
     glActiveTexture(GL_TEXTURE2);
     glBindTexture(GL_TEXTURE_2D, RenderingUtil::gRMA);

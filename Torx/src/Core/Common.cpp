@@ -7,7 +7,7 @@ unsigned int Common::SCR_HEIGHT = 900;
 // ------------- DEBUG ----------------------------------------
 bool  Common::normalsDebug{ false };
 bool  Common::worldPosDebug{ false };
-bool  Common::lightPosDebug{ false };
+bool  Common::lightPosDebug{ true };
 bool  Common::albedoDebug{ false };
 bool  Common::roughnessDebug{ false };
 bool  Common::metallicDebug{ false };

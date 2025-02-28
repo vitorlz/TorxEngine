@@ -36,6 +36,8 @@ namespace Scene
 		{
 			nlohmann::json e;
 
+			e["components"] = {};
+
 			if (ecs.HasComponent<CTransform>(entity))
 			{
 				const auto& transform = ecs.GetComponent<CTransform>(entity);
@@ -69,7 +71,7 @@ namespace Scene
 				e["components"]["mesh"]["meshType"] = mesh.meshType;
 				if (mesh.texture == "")
 				{
-					e["components"]["mesh"]["texture"] = "darkmarble";
+					e["components"]["mesh"]["texture"] = "whitepaper";
 				}
 				else
 				{
@@ -335,7 +337,7 @@ namespace Scene
 		}
 	}
 
-	void SaveSceneToJson(const std::string& path)
+	nlohmann::json SaveSceneToJson(const std::string& path)
 	{
 		nlohmann::json serializedScene = SerializeScene();
 
@@ -350,6 +352,8 @@ namespace Scene
 			o.close();
 			g_currentScenePath = path;
 		}
+
+		return serializedScene;
 	}
 
 	void LoadSceneFromJson(const std::string& path)
