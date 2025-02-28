@@ -237,8 +237,9 @@ void TextRendering::TextRenderCall(int length, unsigned int shaderID)
 }
 
 
-void TextRendering::RenderIcon(Shader& s, wchar_t unicode, float x, float y, float scale, glm::mat4 model, glm::vec3 color)
+void TextRendering::RenderIcon(Shader& s, wchar_t unicode, float x, float y, float scale, glm::vec3 worldPos, glm::vec3 color)
 {
+    scale = scale / QUAD_SIZE;
     float copyX = x;
     s.use();
     s.setVec3("textColor", color);
@@ -254,15 +255,13 @@ void TextRendering::RenderIcon(Shader& s, wchar_t unicode, float x, float y, flo
     float xpos = x  + ch.bearing.x * scale;
     float ypos = y - (QUAD_SIZE - (ch.bearing.y / 2)) * scale;
    
-    model = glm::translate(model, glm::vec3(-(0.25f) * scale, -(0.5f) * scale, 0.0f));
-    model = glm::scale(model, glm::vec3(scale, scale, 1.0f));
+    worldPos += glm::vec3(xpos, ypos, 0.0f);
 
-    s.setMat4("worldPos", model);   
-
+    s.setVec3("worldPos", worldPos);
+    s.setFloat("scale", scale * QUAD_SIZE);
+    
     m_letterMap[workingIndex] = ch.textureID;
 
-    // now advance cursors for next glyph (note that advance is number of 1/64 pixels)
-    x += (ch.advance >> 6) * scale; // bitshift by 6 to get value in pixels (2^6 = 64)
     workingIndex++;
 
     if (workingIndex == ARRAY_LIMIT - 1)

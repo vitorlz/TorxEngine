@@ -14,6 +14,7 @@ bool  Common::metallicDebug{ false };
 bool  Common::emissionDebug{ false };
 bool  Common::bulletLinesDebug{ false };
 bool  Common::bulletLinesReady{ false };
+bool  Common::showMousePickingDebug{ false };
 
 // ------------- TONE MAPPING ----------------------------------
 bool  Common::aces{ true };

@@ -274,14 +274,23 @@ void Editor::RenderIcons()
                 iconShader.setMat4("projection", Common::currentProjMatrix);
                 iconShader.setMat4("view", Common::currentViewMatrix);
 
-                glm::mat4 worldPos = glm::translate(glm::mat4(1.0f), transform.position + light.offset);
-                worldPos *= glm::mat4_cast(transform.rotation);
+                glm::vec3 worldPos = transform.position + light.offset;
 
                 glDepthMask(GL_FALSE);
-
                 TextRendering fontawesome = AssetManager::GetTextFont("fontawesome");
 
-                fontawesome.RenderIcon(iconShader, 0xf0eb,
+                int unicode;
+
+                if (light.type == POINT)
+                {
+                    unicode = 0xf0eb;
+                }
+                else 
+                {
+                    unicode = 0xf185;
+                }
+                
+                fontawesome.RenderIcon(iconShader, unicode,
                     0.0f, 0.0f, 0.5f, worldPos, light.color);
 
                 glDepthMask(GL_TRUE);

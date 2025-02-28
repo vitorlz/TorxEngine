@@ -348,7 +348,7 @@ void RenderSystem::geometryPass()
     glPushDebugGroup(GL_DEBUG_SOURCE_APPLICATION, 0, -1, "Geometry Pass");
     glBindFramebuffer(GL_FRAMEBUFFER, RenderingUtil::gBufferFBO);
 
-    unsigned int attachments[8] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1, GL_COLOR_ATTACHMENT2, GL_COLOR_ATTACHMENT3, GL_COLOR_ATTACHMENT4, GL_COLOR_ATTACHMENT5, GL_COLOR_ATTACHMENT6, GL_COLOR_ATTACHMENT7 };
+    unsigned int attachments[8] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1, GL_COLOR_ATTACHMENT2, GL_COLOR_ATTACHMENT3, GL_COLOR_ATTACHMENT4, GL_COLOR_ATTACHMENT5, GL_COLOR_ATTACHMENT6, GL_COLOR_ATTACHMENT7};
     glDrawBuffers(8, attachments);
 
     glViewport(0, 0, Common::SCR_WIDTH, Common::SCR_HEIGHT);
@@ -362,6 +362,9 @@ void RenderSystem::geometryPass()
 
     Shader& gBufferShader = ShaderManager::GetShaderProgram("gBufferShader");
     gBufferShader.use();
+
+    GLint maxAttach = 0;
+    glGetIntegerv(GL_MAX_COLOR_ATTACHMENTS, &maxAttach);
 
     gBufferShader.setMat4("view", Common::currentViewMatrix);
     gBufferShader.setMat4("projection", Common::currentProjMatrix);
@@ -390,14 +393,20 @@ void RenderSystem::geometryPass()
 
         glm::mat3 normalMatrix = glm::transpose(glm::inverse(model));
 
+        int r = (entity & 0x000000FF) >> 0;
+        int g = (entity & 0x0000FF00) >> 8;
+        int b = (entity & 0x00FF0000) >> 16;
+
+        glm::vec3 meshIdColor(r / 255.0f, g / 255.0f, b / 255.0f);
+
         gBufferShader.use();
 
         gBufferShader.setMat4("model", model);
         gBufferShader.setMat3("normalMatrix", normalMatrix);
+        gBufferShader.setVec3("meshIdColor", meshIdColor);
 
         if (ecs.HasComponent<CModel>(entity))
         {
-
             if (ecs.HasComponent<CAnimator>(entity))
             {
                 std::vector<glm::mat4> transforms = ecs.GetComponent<CAnimator>(entity).animator.GetFinalBoneMatrices();
@@ -540,6 +549,7 @@ void RenderSystem::lightingPass()
         lightingShader.setBool("roughnessDebug", Common::roughnessDebug);
         lightingShader.setBool("metallicDebug", Common::metallicDebug);
         lightingShader.setBool("emissionDebug", Common::emissionDebug);
+        lightingShader.setBool("mousePickingDebug", Common::showMousePickingDebug);
         lightingShader.setBool("bloom", Common::bloomOn);
         lightingShader.setInt("dirShadowMap", 9);
         lightingShader.setBool("ssaoOn", Common::ssaoOn);
@@ -578,6 +588,10 @@ void RenderSystem::lightingPass()
         glActiveTexture(GL_TEXTURE26);
         glBindTexture(GL_TEXTURE_2D, RenderingUtil::gDirLightSpacePosition);
         lightingShader.setInt("gDirLightSpacePosition", 26);
+
+        glActiveTexture(GL_TEXTURE27);
+        glBindTexture(GL_TEXTURE_2D, RenderingUtil::gMeshId);
+        lightingShader.setInt("gMeshId", 27);
 
         glBindVertexArray(RenderingUtil::mScreenQuadVAO);
         glDisable(GL_DEPTH_TEST);
@@ -747,6 +761,7 @@ void RenderSystem::postProcessingPass()
     postProcessingShader.setBool("albedoDebug", Common::albedoDebug);
     postProcessingShader.setBool("roughnessDebug", Common::roughnessDebug);
     postProcessingShader.setBool("metallicDebug", Common::metallicDebug);
+    postProcessingShader.setBool("mousePickingDebug", Common::showMousePickingDebug);
     postProcessingShader.setFloat("exposure", Common::exposure);
     postProcessingShader.setBool("reinhard", Common::reinhard);
     postProcessingShader.setBool("uncharted2", Common::uncharted);
@@ -779,7 +794,6 @@ void RenderSystem::postProcessingPass()
     glActiveTexture(GL_TEXTURE6);
     glBindTexture(GL_TEXTURE_2D, RenderingUtil::gAlbedo);
 
-
     if (Common::bloomOn) {
         glActiveTexture(GL_TEXTURE7);
         glBindTexture(GL_TEXTURE_2D, RenderingUtil::mPingPongBuffers[(Common::bloomKernelSize * 2) % 2 ? !Bloom::g_horizontal : Bloom::g_horizontal]);
@@ -806,34 +820,6 @@ void RenderSystem::forwardRenderingPass()
     glEnable(GL_DEPTH_TEST);
 
     glBindFramebuffer(GL_FRAMEBUFFER, RenderingUtil::gFinalRenderTarget);
-
-    if (Common::lightPosDebug)
-    {
-        for (const auto& entity : mEntities)
-        {
-            auto& transform = ecs.GetComponent<CTransform>(entity);
-
-            if (ecs.HasComponent<CLight>(entity))
-            {
-                auto& light = ecs.GetComponent<CLight>(entity);
-
-                Shader& solidColorShader = ShaderManager::GetShaderProgram("solidColorShader");
-
-                solidColorShader.use();
-
-                glm::mat4 model = glm::mat4(1.0f);
-                model = glm::translate(model, transform.position + light.offset);
-                model = glm::scale(model, glm::vec3(0.1f));
-
-                solidColorShader.setMat4("projection", Common::currentProjMatrix);
-                solidColorShader.setMat4("view", Common::currentViewMatrix);
-                solidColorShader.setMat4("model", model);
-                solidColorShader.setVec3("color", light.color);
-
-                Util::renderSphere();
-            }
-        }
-    }
 
     if (Common::bulletLinesDebug)
     {

@@ -279,6 +279,7 @@ void UI::Update()
         ImGui::Checkbox("Show metalness", &Common::metallicDebug);
         ImGui::Checkbox("Show emission", &Common::emissionDebug);
         ImGui::Checkbox("Show physics debug lines", &Common::bulletLinesDebug);
+        ImGui::Checkbox("Show mouse picking debug", &Common::showMousePickingDebug);
 
         ImGui::TreePop();
     }

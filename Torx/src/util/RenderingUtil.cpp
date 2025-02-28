@@ -59,6 +59,7 @@ unsigned int RenderingUtil::gViewNormal;
 unsigned int RenderingUtil::gGameWindowFBO;
 unsigned int RenderingUtil::gGameWindowTexture;
 unsigned int RenderingUtil::gFinalRenderTarget{ 0 };
+unsigned int RenderingUtil::gMeshId;
 
 void RenderingUtil::Init()
 {
@@ -878,9 +879,19 @@ void RenderingUtil::CreateGeometryPassFBO()
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
     glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT7, GL_TEXTURE_2D, gViewNormal, 0);
 
+    // mesh id's for mouse picking
+    glGenTextures(1, &gMeshId);
+    glBindTexture(GL_TEXTURE_2D, gMeshId);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, Common::SCR_WIDTH, Common::SCR_HEIGHT, 0, GL_RGB, GL_FLOAT, NULL);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT8, GL_TEXTURE_2D, gMeshId, 0);
+
     glBindTexture(GL_TEXTURE_2D, 0);
 
-    unsigned int attachments[8] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1, GL_COLOR_ATTACHMENT2, GL_COLOR_ATTACHMENT3, GL_COLOR_ATTACHMENT4, GL_COLOR_ATTACHMENT5,  GL_COLOR_ATTACHMENT6,  GL_COLOR_ATTACHMENT7 };
+    unsigned int attachments[8] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1, GL_COLOR_ATTACHMENT2, GL_COLOR_ATTACHMENT3, GL_COLOR_ATTACHMENT4, GL_COLOR_ATTACHMENT5,  GL_COLOR_ATTACHMENT6,  GL_COLOR_ATTACHMENT7};
     glDrawBuffers(8, attachments);
 
     unsigned int gBufferRBO;

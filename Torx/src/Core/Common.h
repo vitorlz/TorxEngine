@@ -56,4 +56,5 @@ public:
 	static glm::mat4 currentProjMatrix;
 	static glm::vec3 currentCamPos;
 	static bool voxelizeInRealTime;
+	static bool showMousePickingDebug;
 };

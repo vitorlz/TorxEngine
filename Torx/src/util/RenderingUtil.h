@@ -49,6 +49,7 @@ public:
 	static unsigned int gGameWindowTexture;
 	static unsigned int gGameWindowFBO;
 	static unsigned int gFinalRenderTarget;
+	static unsigned int gMeshId;
 
 	// diffuse indirect lighting
 	static unsigned int mEnvironmentCubemap;

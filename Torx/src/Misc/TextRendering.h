@@ -27,7 +27,7 @@ public:
 	
 	void RenderText(Shader& s, std::string text, float x, float y, float scale, float lineSpace, glm::vec3 color);
 
-	void RenderIcon(Shader& s, wchar_t unicode, float x, float y, float scale, glm::mat4 model, glm::vec3 color);
+	void RenderIcon(Shader& s, wchar_t unicode, float x, float y, float scale, glm::vec3 worldPos, glm::vec3 color);
 	
 	static FT_Library m_ft;
 
