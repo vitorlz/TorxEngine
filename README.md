@@ -69,7 +69,6 @@ The editor camera controls are very similar to Blender's:
     <td>Select an entity.</td>
   </tr>
 </table>
-Mouse picking will only work if the entity has a rigidbody component. <br/>
 If you hit play in the Sandbox project, you will be able to control the player with WASD and the 
 mouse cursor will be hidden. Hit ESCAPE to see your mouse again and click the stop button to go back to the editor camera.
 
@@ -77,7 +76,7 @@ mouse cursor will be hidden. Hit ESCAPE to see your mouse again and click the st
 <li>Implement one more GI option</li> 
 <li>Python scripting</li> 
 <li>Improve performance</li> 
-<li>Improve UI and user experience</li> 
+<li>Improve UI</li> 
 <li>Transparency</li> 
 
 
