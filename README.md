@@ -77,7 +77,7 @@ mouse cursor will be hidden. Hit ESCAPE to see your mouse again and click the st
 <li>Implement one more GI option</li> 
 <li>Python scripting</li> 
 <li>Improve performance</li> 
-<li>Improve UI and user experience</li> 
+<li>Improve UI</li> 
 <li>Transparency</li> 
 
 
