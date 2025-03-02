@@ -36,7 +36,10 @@ namespace Scene
 		{
 			nlohmann::json e;
 
-			e["components"] = {};
+
+			bool hasComponents = false;
+
+			//e["components"] = {};
 
 			if (ecs.HasComponent<CTransform>(entity))
 			{
@@ -45,6 +48,8 @@ namespace Scene
 				e["components"]["transform"]["scale"] = { transform.scale.x, transform.scale.y, transform.scale.z };
 				e["components"]["transform"]["rotation"] = { transform.rotation.w, transform.rotation.x, transform.rotation.y, transform.rotation.z };
 				e["id"] = entity;
+
+				hasComponents = true;
 			}
 
 			if (ecs.HasComponent<CRigidBody>(entity))
@@ -53,6 +58,8 @@ namespace Scene
 				e["components"]["rigidbody"]["mass"] = rigidBody.mass;
 
 				e["id"] = entity;
+
+				hasComponents = true;
 			}
 
 
@@ -63,6 +70,8 @@ namespace Scene
 				e["components"]["model"]["path"] = model.path;
 				e["components"]["model"]["hasAOTexture"] = model.hasAOTexture;
 				e["id"] = entity;
+
+				hasComponents = true;
 			}
 
 			if (ecs.HasComponent<CMesh>(entity))
@@ -79,6 +88,8 @@ namespace Scene
 				}
 				e["components"]["mesh"]["textureScaling"] = { mesh.textureScaling.x, mesh.textureScaling.y };
 				e["id"] = entity;
+
+				hasComponents = true;
 			}
 
 			if (ecs.HasComponent<CLight>(entity))
@@ -95,6 +106,8 @@ namespace Scene
 				e["components"]["light"]["shadowCaster"] = light.shadowCaster;
 				e["components"]["light"]["isDirty"] = light.isDirty;
 				e["components"]["light"]["offset"] = { light.offset.x , light.offset.y, light.offset.z };
+
+				hasComponents = true;
 			}
 
 			if (ecs.HasComponent<CPlayer>(entity))
@@ -103,6 +116,8 @@ namespace Scene
 
 				e["components"]["player"]["flashlightOn"] = player.flashlightOn;
 				e["components"]["player"]["movementSpeed"] = player.movementSpeed;
+
+				hasComponents = true;
 			}
 
 			if (ecs.HasComponent<CCamera>(entity))
@@ -126,6 +141,8 @@ namespace Scene
 				e["components"]["camera"]["right"] = camera.right;
 				e["components"]["camera"]["bottom"] = camera.bottom;
 				e["components"]["camera"]["top"] = camera.top;
+
+				hasComponents = true;
 			}
 
 			if (ecs.HasComponent<CNativeScript>(entity))
@@ -133,8 +150,11 @@ namespace Scene
 				const auto& scriptComponent = ecs.GetComponent<CNativeScript>(entity);
 
 				e["components"]["script"]["name"] = scriptComponent.name;
+
+				hasComponents = true;
 			}
 
+			
 			json["entities"].push_back(e);
 		}
 
@@ -172,7 +192,10 @@ namespace Scene
 		for (const auto& e : jsonData["entities"])
 		{
 			Entity newEntity = ecs.CreateEntity();
-
+			
+			if (!e.contains("components"))
+				break;
+		
 			if (e["components"].contains("transform"))
 			{
 				ecs.AddComponent<CTransform>(

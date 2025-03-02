@@ -392,7 +392,7 @@ void UI::Update()
 
     if (Torx::Engine::MODE == Torx::EDITOR)
     {
-        glm::vec2 gameWindowMousePosRel(gameWindowMousePos.x / gameWindowSize.x , gameWindowMousePos.y / gameWindowSize.y);
+        glm::vec2 gameWindowMousePosRel(gameWindowMousePos.x / gameWindowSize.x , (gameWindowMousePos.y - 19) / (gameWindowSize.y - 19));
 
         glBindFramebuffer(GL_FRAMEBUFFER, RenderingUtil::gBufferFBO);
 
@@ -400,7 +400,7 @@ void UI::Update()
 
         glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
 
-        glm::vec2 mousePickPos(gameWindowMousePosRel.x* Common::SCR_WIDTH, Common::SCR_HEIGHT - ((gameWindowMousePosRel.y * Common::SCR_HEIGHT)));
+        glm::vec2 mousePickPos(gameWindowMousePosRel.x * Common::SCR_WIDTH, Common::SCR_HEIGHT - ((gameWindowMousePosRel.y * Common::SCR_HEIGHT)));
 
         unsigned char data[4];
         glReadPixels(mousePickPos.x, mousePickPos.y, 1, 1, GL_RGB, GL_UNSIGNED_BYTE, data);
@@ -707,6 +707,7 @@ void UI::Update()
                     {
                         ecs.DestroyEntity(e);
                     }
+                    selectedEntity = -1;
                     ecs.ResetEntityIDs();
                     ECSCore::UpdateSystems(0.0f);
                     Scene::SetEnvironmentMap("");
@@ -790,6 +791,7 @@ void UI::Update()
                     {
                         ecs.DestroyEntity(e);
                     }
+                    selectedEntity = -1;
                     ecs.ResetEntityIDs();
                     ECSCore::UpdateSystems(0.0f);
                     Scene::SetEnvironmentMap("");
@@ -925,8 +927,7 @@ void UI::RenderGameWindow()
     if (ImGui::Button(ICON_FA_STOP))
     {
         if (Torx::Engine::MODE == Torx::PLAY)
-        {
-            
+        {   
             for (Entity e : ecs.GetLivingEntities())
             {
 
@@ -941,6 +942,8 @@ void UI::RenderGameWindow()
             
             if (!Scene::g_editorScene.empty())
             {
+
+                //std::cout << "Editor scene: " << Scene::g_editorScene.
             
                 Scene::DeserializeScene(Scene::g_editorScene);
             }

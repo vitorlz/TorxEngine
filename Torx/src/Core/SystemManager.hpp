@@ -23,7 +23,8 @@ public:
 	}
 
 	// remember that signature is just a type we defined in types.hpp (std::bitset<MAX_COMPONENTS>)
-	template<typename T> void SetSignature(Signature signature) {
+	template<typename T> void SetSignature(Signature signature) 
+	{
 		const char* typeName = typeid(T).name();
 
 		assert(mSystems.find(typeName) != mSystems.end() && "Trying to use system before it is registered.");

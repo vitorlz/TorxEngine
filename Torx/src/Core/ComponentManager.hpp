@@ -24,7 +24,7 @@ public:
 
 		// Add this component type to the component type map. The mNextComponentType will be which bit in the signature this type of component
 		// will correspond to
-		
+
 		mComponentTypes.insert({ typeName, mNextComponentType });
 
 		// Create a ComponentArray pointer and add it to the component arrays map
@@ -49,6 +49,8 @@ public:
 		// Add a component to an entity by inserting the component in a component array of its type and also mapping the entity to that component's
 		// index in the array and mapping the index to the entity (in the component array class).
 		GetComponentArray<T>()->InsertData(entity, component);
+
+		std::cout << "COMPONENT ADDED \n";
 		if (std::is_same<T, CPlayer>::value)
 		{
 			mPlayerList.push_back(entity);
@@ -76,7 +78,11 @@ public:
 		{
 			auto const& componentArray = pair.second;
 
-			componentArray->EntityDestroyed(entity);
+			if (componentArray && pair.first != "");
+			{
+				componentArray->EntityDestroyed(entity);
+			}
+			
 		}
 	}
 

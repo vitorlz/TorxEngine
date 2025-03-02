@@ -43,13 +43,15 @@ public:
 		// put the destroyed ID at the back of the queue
 		mAvailableEntities.push(entity);
 
-		unsigned int i = 0;
-		for (Entity livingEntityID : mLivingEntityIDs)
+		for (int i = 0; i < mLivingEntityIDs.size(); i++)
 		{
-			if (livingEntityID == entity)
+			if (mLivingEntityIDs[i] == entity)
+			{
+				std::cout << "Entity destroyed: " << entity << "\n";
+
 				mLivingEntityIDs.erase(mLivingEntityIDs.begin() + i);
-			
-			i++;
+				break;
+			}
 		}
 
 		--mLivingEntityCount;
