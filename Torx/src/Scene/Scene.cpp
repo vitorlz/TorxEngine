@@ -35,11 +35,9 @@ namespace Scene
 		for (Entity entity : livingEntities)
 		{
 			nlohmann::json e;
-
-
 			bool hasComponents = false;
 
-			//e["components"] = {};
+			e["components"] = {};
 
 			if (ecs.HasComponent<CTransform>(entity))
 			{
@@ -192,9 +190,6 @@ namespace Scene
 		for (const auto& e : jsonData["entities"])
 		{
 			Entity newEntity = ecs.CreateEntity();
-			
-			if (!e.contains("components"))
-				break;
 		
 			if (e["components"].contains("transform"))
 			{
@@ -323,9 +318,13 @@ namespace Scene
 		}
 
 		//std::string envMapPath = "res/textures/hdr/" + jsonData["config"]["environmentMap"].get<std::string>();
+		
 		SetEnvironmentMap(jsonData["config"]["environmentMap"].get<std::string>());
-		RenderingUtil::LoadNewEnvironmentMap(jsonData["config"]["environmentMap"].get<std::string>().c_str());
-
+		if (!jsonData["config"]["environmentMap"].get<std::string>().empty())
+		{	
+			RenderingUtil::LoadNewEnvironmentMap(jsonData["config"]["environmentMap"].get<std::string>().c_str());
+		}
+		
 		// VXGI
 		if (jsonData["config"].contains("vxgi"))
 		{

@@ -5,6 +5,7 @@
 #include <cassert>
 #include <unordered_map>
 #include <iostream>
+#include <stacktrace>
 
 // we use the virtual keyword so that we can have base class pointers that point to a derived class instance and then we can call the 
 // methods specific to each derived class using the base class pointers, and depending on which derived class the base class pointer points to, 
@@ -25,35 +26,41 @@ template<typename T> class ComponentArray : public IComponentArray
 public:
 	void InsertData(Entity entity, T component)
 	{
-
 		// check if the key (entity) already exists in the map. Remember that the entity ID will only be a key in the EntityToIndexMap if
 		// it already points to an index of a component array of this type, that is, it already has a component of this type.
-		assert(mEntityToIndexMap.find(entity) == mEntityToIndexMap.end() && "Component added to same entity more than once");
+		//assert(mEntityToIndexMap.find(entity) == mEntityToIndexMap.end() && "Component added to same entity more than once");
 
 		// put a new entry at end and update the maps
 		size_t newIndex = mSize;
 		mEntityToIndexMap[entity] = newIndex;
 		mIndexToEntityMap[newIndex] = entity;
 		mComponentArray[newIndex] = component;
+		
 		++mSize;
 	}
 
 	void RemoveData(Entity entity)
 	{
-		// If the first statement is true it means that the component exists
-		assert(mEntityToIndexMap.find(entity) != mEntityToIndexMap.end() && "Removing non-existent component.");
-
-		// copy element at end into deleted element's place to maintain density (we wanted a tightly packed array)
+		// only proceed if the entity actually exists in the component array
+		if (mSize == 0 || mEntityToIndexMap.find(entity) == mEntityToIndexMap.end())
+		{
+			std::cout << "Entity " << entity << " has no components\n";
+			return;
+		}
 
 		size_t indexOfRemovedEntity = mEntityToIndexMap[entity];
 		size_t indexOfLastElement = mSize - 1;
-		mComponentArray[indexOfRemovedEntity] = mComponentArray[indexOfLastElement];
+		
+		if (indexOfRemovedEntity != indexOfLastElement) 
+		{
+			mComponentArray[indexOfRemovedEntity] = mComponentArray[indexOfLastElement];
 
-		// Update map to point to moved spot
-		Entity entityOfLastElement = mIndexToEntityMap[indexOfLastElement];
-		mEntityToIndexMap[entityOfLastElement] = indexOfRemovedEntity;
-		mIndexToEntityMap[indexOfRemovedEntity] = entityOfLastElement;
+			Entity entityOfLastElement = mIndexToEntityMap[indexOfLastElement];
+			mEntityToIndexMap[entityOfLastElement] = indexOfRemovedEntity;
+			mIndexToEntityMap[indexOfRemovedEntity] = entityOfLastElement;
+		}
 
+		// Remove entity from the maps
 		mEntityToIndexMap.erase(entity);
 		mIndexToEntityMap.erase(indexOfLastElement);
 
@@ -65,10 +72,13 @@ public:
 	// mEntityToIndexMap(entity). Then we retrieve the component by simply doing mComponentArray(mEntityToIndexMap(entity));
 	T& GetData(Entity entity) 
 	{
-		assert(mEntityToIndexMap.find(entity) != mEntityToIndexMap.end() && "Retrieving non-existing component");
+		if (mEntityToIndexMap.find(entity) == mEntityToIndexMap.end())
+		{
+			std::cout << "Retrieving non-existing component" << "\n";
+		}
 
 		// Return a reference to the entity's component.
-		return mComponentArray[mEntityToIndexMap[entity]];
+		return mComponentArray[mEntityToIndexMap.at(entity)];
 	}
 
 	void EntityDestroyed(Entity entity) override

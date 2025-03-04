@@ -50,7 +50,6 @@ public:
 		// index in the array and mapping the index to the entity (in the component array class).
 		GetComponentArray<T>()->InsertData(entity, component);
 
-		std::cout << "COMPONENT ADDED \n";
 		if (std::is_same<T, CPlayer>::value)
 		{
 			mPlayerList.push_back(entity);
@@ -78,11 +77,7 @@ public:
 		{
 			auto const& componentArray = pair.second;
 
-			if (componentArray && pair.first != "");
-			{
-				componentArray->EntityDestroyed(entity);
-			}
-			
+			componentArray->EntityDestroyed(entity);			
 		}
 	}
 

@@ -166,6 +166,9 @@ void RenderSystem::directionalShadowMapPass()
 
     for (Entity lightEntity : dirLightShadowEntities)
     {
+        if (!ecs.HasComponent<CTransform>(lightEntity))
+            continue;
+            
         auto& transform = ecs.GetComponent<CTransform>(lightEntity);
 
         float near_plane = 0.1f, far_plane = 40.0f;

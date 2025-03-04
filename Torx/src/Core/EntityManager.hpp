@@ -22,11 +22,15 @@ public:
 		// This will stop the program if we exceed the maximum number of entities (only workds in debug)
 		assert(mLivingEntityCount < MAX_ENTITIES && "Too many entities in existance");
 
+
+
 		// Take an ID from the front of the queue
 		Entity id = mAvailableEntities.front();
 		mAvailableEntities.pop();
 		mLivingEntityIDs.push_back(id);
 		++mLivingEntityCount;
+		
+
 
 		return id;
 	}
@@ -60,6 +64,8 @@ public:
 	void SetSignature(Entity entity, Signature signature) 
 	{
 		assert(entity < MAX_ENTITIES && "Entity out of range.");
+
+		std::cout << "Entity: " << entity << " signature set\n";
 
 		// Put this entity's signature into the array (indexed using the entity's ID)
 		mSignatures[entity] = signature;

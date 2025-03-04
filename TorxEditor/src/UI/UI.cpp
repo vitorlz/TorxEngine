@@ -47,7 +47,6 @@ bool UI::firstMouseUpdateAfterMenu{ false };
 bool UI::hovering{ false };
 bool UI::spectatingCamera{ false };
 int UI::selectedEntity{ -1 };
-int UI::hoveredEntity{ -1 };
 
 bool UI::projectLoaded{ false };
 
@@ -390,6 +389,8 @@ void UI::Update()
     static bool addingNewEntity{ false };
     static Entity newEntity;
 
+    static bool selectedLightIcon = false;
+
     if (Torx::Engine::MODE == Torx::EDITOR)
     {
         glm::vec2 gameWindowMousePosRel(gameWindowMousePos.x / gameWindowSize.x , (gameWindowMousePos.y - 19) / (gameWindowSize.y - 19));
@@ -404,25 +405,19 @@ void UI::Update()
 
         unsigned char data[4];
         glReadPixels(mousePickPos.x, mousePickPos.y, 1, 1, GL_RGB, GL_UNSIGNED_BYTE, data);
-
-        hoveredEntity = data[0] + data[1] * 256 + data[2] * 256 * 256;
-
-        static bool hoveringLightIcon = false;
-        if (hoveredEntity >= 1000 && ecs.HasComponent<CLight>(hoveredEntity % 1000))
-        {
-            hoveredEntity = hoveredEntity % 1000;
-            hoveringLightIcon = true;
-        }
-        else
-        {
-            hoveringLightIcon = false;
-        }
-        
-        static bool selectedLightIcon = false;
+       
         if (inputSing.rightMousePressed)
         {
-            selectedLightIcon = hoveringLightIcon;
-            selectedEntity = hoveredEntity;
+            selectedEntity = data[0] + data[1] * 256 + data[2] * 256 * 256;
+
+            if (selectedEntity >= 1000 && ecs.HasComponent<CLight>(selectedEntity % 1000))
+            {
+                selectedLightIcon = true;
+                selectedEntity %= 1000;
+            }
+            else
+                selectedLightIcon = false;
+            
             addingNewEntity = false;
         }
 
@@ -450,6 +445,7 @@ void UI::Update()
     {
         newEntity = ecs.CreateEntity();
         selectedEntity = newEntity;
+        selectedLightIcon = false;
         addingNewEntity = true;
     }
 
@@ -686,7 +682,7 @@ void UI::Update()
         ImGui::InputText("", fileName, 32);
         path = "res/scenes";
         path /= std::string(fileName) + ".json";
-        //std::cout << "New save path: " << path.string() << "\n";
+    
         if (std::filesystem::is_regular_file(path))
         {
             ImGui::TextColored(ImVec4(1.0f, 1.0f, 0.0f, 1.0f), "Title already exists, please choose a new one.");
@@ -1091,7 +1087,6 @@ void UI::showComponents(Entity entity)
             if (ImGui::Button("Cancel", ImVec2(120, 0))) { ImGui::CloseCurrentPopup(); }
             ImGui::EndPopup();
         }
-
     }
 
     if (ecs.HasComponent<CPlayer>(entity))
@@ -1617,13 +1612,12 @@ void showEntityOptions(Entity entity, bool addingNewEntity)
         ImGui::EndPopup();
     }
 
-    if (!addingNewEntity)
+   
+    if (ImGui::Button("Destroy Entity"))
     {
-        if (ImGui::Button("Destroy Entity"))
-        {
-            ecs.DestroyEntity(entity);
-        }
+        ecs.DestroyEntity(entity);
     }
+    
   
     if (ImGui::Button("Duplicate"))
     {

@@ -100,7 +100,7 @@ void Editor::RenderGizmo(int selectedEntity, bool isLightIcon)
 
     glm::mat4 model = glm::mat4(1.0f);
 
-    if (isLightIcon)
+    if (isLightIcon && ecs.HasComponent<CLight>(selectedEntity))
     {
         light = &ecs.GetComponent<CLight>(selectedEntity);
         model = glm::translate(model, transform.position + light->offset);
@@ -290,6 +290,9 @@ void Editor::RenderIcons()
 
         for (const auto& entity : entities)
         {
+            if (!ecs.HasComponent<CTransform>(entity))
+                continue;
+
             auto& transform = ecs.GetComponent<CTransform>(entity);
 
             if (ecs.HasComponent<CLight>(entity))
@@ -319,11 +322,6 @@ void Editor::RenderIcons()
                     unicode = 0xf185;
                 }
 
-                if (entity == UI::hoveredEntity)
-                {
-                    color = glm::vec3(1.0f);
-                }
-
                 fontawesome.RenderIcon(iconShader, unicode,
                     0.0f, 0.0f, 0.5f, worldPos, color);
                 
@@ -337,6 +335,9 @@ void Editor::RenderIcons()
 
         for (auto entity : entities)
         {
+            if (!ecs.HasComponent<CTransform>(entity))
+                continue;
+
             auto& transform = ecs.GetComponent<CTransform>(entity);
 
             if (ecs.HasComponent<CLight>(entity))
@@ -365,7 +366,6 @@ void Editor::RenderIcons()
 
                 fontawesome.RenderIcon(iconShader, unicode,
                     0.0f, 0.0f, 0.5f, worldPos, meshIdColor);
-
             }
         }
     }
