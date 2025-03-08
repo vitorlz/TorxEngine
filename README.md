@@ -67,6 +67,18 @@ The editor camera controls are very similar to Blender's:
     <td>Right click</td>
     <td>Select an entity.</td>
   </tr>
+ <tr>
+    <td>G when object is selected</td>
+    <td>Translate</td>
+  </tr>
+ <tr>
+    <td>R when object is selected</td>
+    <td>Rotate</td>
+  </tr>
+ <tr>
+    <td>S when object is selected</td>
+    <td>Scale</td>
+  </tr>
 </table>
 If you hit play in the Sandbox project, you will be able to control the player with WASD and the 
 mouse cursor will be hidden. Hit ESCAPE to see your mouse again and click the stop button to go back to the editor camera.
